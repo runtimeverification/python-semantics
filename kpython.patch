@@ -1,0 +1,72 @@
+Index: core/kompile
+===================================================================
+--- core/kompile	(revision 6034)
++++ core/kompile	(working copy)
+@@ -515,7 +515,7 @@
+ $kmaude_keywords_pattern =~ s/\\bsyntax\\b/\\ssyntax\\s/sg;
+ my $kmaude_kwds_pattern = join("|", @kmaude_keywords);
+ 
+-my @k_attributes = qw(binder strict metadata prec format assoc comm id: hybrid gather ditto parser seqstrict structural transition anywhere function computational superheat generated supercool large latex );           
++my @k_attributes = qw(binder strict required metadata prec format assoc comm id: hybrid gather ditto parser seqstrict structural transition anywhere function computational superheat generated supercool large latex );           
+ my $k_attributes_pattern = join("|",  @k_attributes);   
+ 
+ my $k_sorts = ":Bag:BagItem:#Bool:CellLabel:CellKey:CellAttribute:#Char:#Int:K:KAssignments:KHybridLabel:KLabel:KResult:KResultLabel:KSentence:List:ListItem:List{KResult}:List{K}:Map:MapItem:#Nat:NeBag:NeK:NeList:NeList{KResult}:NeList{K}:NeMap:NeSet:#NzInt:#NzNat:Set:SetItem:#String:#Zero";
+@@ -1933,7 +1935,7 @@
+ 
+     # freeze all strings before spacifying
+     my $tmp = $_;
+-    while ($tmp =~ /(rule|context|configuration).*?(?=$kmaude_keywords_pattern)/sg)
++    while ($tmp =~ /(macro|rule|context|configuration).*?(?=$kmaude_keywords_pattern)/sg)
+     {
+ 	my $all = $&;
+ 	my $alls = $all;
+@@ -2201,6 +2206,10 @@
+ 
+                 $production =~ s/`/ /gs;
+ # print "SORTS: @sorts\n";
++
++
++                $production =~ s/^\((.*)\)$/`($1`)/gs;
++
+ 		if ($latex || $pdf || $ps || $crop || $eps || $png)
+ 		{
+ 			$result .= ($production eq "_")
+@@ -2222,7 +2231,7 @@
+ 
+ sub op_attribute {
+ 	local ($_) = @_;
+-	/strict|prec|hybrid|gather|metadata|latex|ditto|format|assoc|comm|id:/;
++	/strict|required|prec|hybrid|gather|metadata|latex|ditto|format|assoc|comm|id:/;
+ }
+ 
+ 
+Index: core/perl/common_functions.pl
+===================================================================
+--- core/perl/common_functions.pl	(revision 6034)
++++ core/perl/common_functions.pl	(working copy)
+@@ -1615,7 +1615,7 @@
+ #       line numbers metadata                 #
+ ###############################################
+ 
+-my @k_attributes = qw(binder strict metadata prec format assoc comm id hybrid gather ditto parser seqstrict structural anywhere transition supercool superheat large latex);
++my @k_attributes = qw(binder strict required metadata prec format assoc comm id hybrid gather ditto parser seqstrict structural anywhere transition supercool superheat large latex);
+ my $k_attributes_pattern = join("|",  @k_attributes);
+ 
+ 
+@@ -2539,7 +2539,23 @@
+ 	"";
+     }
+     /sge;
+-    
++
++    # required
++    $attributes =~ s/\b(required)\b/
++    {
++        $metadata .= " $1=()";
++        "";
++    }
++    /sge;
++
+     # gather
+     $attributes =~ s/\b(gather\s*\(.*?\))/
+     {
