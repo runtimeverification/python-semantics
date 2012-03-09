@@ -12,9 +12,9 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   syntax ObjRef ::= "function" "(" #Id "," Parameters "," Statements "," #Bool "," K "," Expression ")" [:strict(6):]
 
-  rule <k> def X:#Id ( Ps:Parameters ) : Ss:K => function(X, Ps, Ss, true, .K, ref("function")) ; ...</k>
+  rule <k> def X:#Id ( Ps:Parameters ) : Ss:K => function(X, Ps, Ss, true, .Obj, ref("function")) ; ...</k>
   rule <k> def X ( Ps ) -> K:K : Ss => function(X, Ps, Ss, true, K, ref("function")) ; ...</k>
-  rule <k> lambda Ps : E:Expression => function(#id "<lambda>", Ps, return E, false, ., ref("function")) ...</k> 
+  rule <k> lambda Ps : E:Expression => function(#id "<lambda>", Ps, return E, false, .Obj, ref("function")) ...</k> 
 
   rule <k> function(X, Ps, Ss, T:#Bool, K, O:Object) => (addParams(Listify(Ps), N, false, K) ~> enclose(N, N2) ~> test(T, bind(X, N), .) ~> ref(N)) ...</k>
        <nextLoc> N:#Nat => N +Int 1 </nextLoc>
@@ -32,7 +32,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   context addParams((_:List ListItem((** _) : HOLE) _:List), _, _, _) 
   context addParams(_, _, _, HOLE)
 
-  rule <k> addParams(., _, _, .) => . ...</k>
+  rule <k> addParams(., _, _, .Obj) => . ...</k>
   rule <k> enclose(N, N2) => . ...</k>
        <blockId> N2 </blockId>
        <isClass> false </isClass>
@@ -58,7 +58,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
          <oattrs>... "co_kwonlyargcount" |-> (N2 => N2 +Int 1) "co_kwonlyargnames" |-> list(_ (. => ListItem(Id2String(X)))) ...</oattrs>
        ...</object>
 
-  rule <k> addParams(((ListItem(X = obj(B,_)) => ListItem(X)) _), N, false, _) ...</k>
+  rule <k> addParams(((ListItem(X = obj(B:Builtin,_)) => ListItem(X)) _), N, false, _) ...</k>
        <object>...
          <id>N</id>
          <oattrs>... "__defaults__" |-> map(_ (. => Id2String(X) |-> B)) ...</oattrs>
@@ -70,7 +70,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
          <oattrs>... "__kwdefaults__" |-> map(_ (. => Id2String(X) |-> B)) ...</oattrs>
        ...</object>
 
-  rule <k> addParams((ListItem(* X => *) L), N, _, _) ...</k>
+  rule <k> addParams(((ListItem(* X) => ListItem(*)) L), N, _, _) ...</k>
        <object>...
          <id>N</id>
          <oattrs>... . => "co_varargname" |-> Id2String(X) ...</oattrs>
@@ -78,22 +78,22 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule <k> addParams(((ListItem(*) => .) L), _, (false => true), _) ...</k>
 
-  rule <k> addParams(((ListItem(** X) => .) _), N, _) ...</k>
+  rule <k> addParams(((ListItem(** X) => .) _), N, _, _) ...</k>
        <object>...
          <id>N</id>
          <oattrs>... . => "co_kwargname" |-> Id2String(X) ...</oattrs>
        ...</object>
 
-  rule <k> addParams((ListItem((Arg:Argument : obj(B,_)) => Arg) _), N, _) ...</k>
+  rule <k> addParams((ListItem(Arg:Argument : obj(B,_)) => ListItem(Arg)) _, N, _, _) ...</k>
        <object>...
          <id>N</id>
          <oattrs>... "__annotations__" |-> map(Rho:Map => Rho[B / paramName(Arg)]) ...</oattrs>
        ...</object>
 
-  rule <k> addParams(., N, (obj(B,_) => .)) ...</k>
+  rule <k> addParams(., N, _, (obj(B,_) => .Obj)) ...</k>
        <object>...
          <id>N</id>
          <oattrs>... "__annotations__" |-> map(Rho => Rho[B / "return"]) ...</oattrs>
        ...</object>
 
-end modaule
+end module
