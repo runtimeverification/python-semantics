@@ -4,3 +4,4 @@ python-compiled.maude
 programs/*.out
 .k
 .*.sw?
+kompile_*
