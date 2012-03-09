@@ -1,0 +1,50 @@
+in machine-integers
+in python-syntax
+in python-semantics-syntax
+in python-semantics-logic
+in python-semantics-common
+in python-semantics-ops
+in python-semantics-boolean-ops
+in python-semantics-literals
+in python-semantics-try
+in python-semantics-arithmetic-ops
+in python-semantics-assignment
+in python-semantics-attribute-ref
+in python-semantics-builtin-modules
+in python-semantics-calls
+in python-semantics-dicts
+in python-semantics-dunder-builtin
+in python-semantics-environment
+in python-semantics-exceptions
+in python-semantics-functions
+in python-semantics-integers
+in python-semantics-iterators
+in python-semantics-lists
+in python-semantics-macros
+in python-semantics-methods
+in python-semantics-objects
+in python-semantics-statements
+in python-semantics-strings
+in python-semantics-tuples
+
+module PYTHON
+  imports PYTHON-SEMANTICS-ARITHMETIC-OPS
+  imports PYTHON-SEMANTICS-ASSIGNMENT
+  imports PYTHON-SEMANTICS-ATTRIBUTE-REF
+  imports PYTHON-SEMANTICS-BOOLEAN-OPS
+  imports PYTHON-SEMANTICS-CALLS
+  imports PYTHON-SEMANTICS-DICTS
+  imports PYTHON-SEMANTICS-DUNDER-BUILTIN
+  imports PYTHON-SEMANTICS-ENVIRONMENT
+  imports PYTHON-SEMANTICS-EXCEPTIONS
+  imports PYTHON-SEMANTICS-FUNCTIONS
+  imports PYTHON-SEMANTICS-INTEGERS
+  imports PYTHON-SEMANTICS-ITERATORS
+  imports PYTHON-SEMANTICS-LISTS
+  imports PYTHON-SEMANTICS-MACROS
+  imports PYTHON-SEMANTICS-METHODS
+  imports PYTHON-SEMANTICS-OBJECTS
+  imports PYTHON-SEMANTICS-STATEMENTS
+  imports PYTHON-SEMANTICS-STRINGS
+  imports PYTHON-SEMANTICS-TUPLES
+end module

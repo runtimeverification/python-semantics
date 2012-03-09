@@ -1,0 +1,3 @@
+in python-compiled
+set trace on .
+rew #eval_ (# "$PGM"(.List{K}) |-> '_==_(# 5(.List{K}),,# 5(.List{K}))) .

@@ -1,0 +1,4 @@
+
+load /home/k/k-framework/core/maude/compiler/../lib/k-prelude
+ load .k/python
+

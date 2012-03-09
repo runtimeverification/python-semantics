@@ -1,0 +1,6 @@
+syntax: glob
+tests/*
+python-compiled.maude
+programs/*.out
+.k
+.*.sw?

@@ -1,0 +1,29 @@
+This is pdfTeX, Version 3.1415926-2.3-1.40.12 (TeX Live 2011) (format=pdflatex 2011.10.22)  26 OCT 2011 16:39
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**^^F
+(/usr/local/texlive/2011/texmf-dist/tex/latex/tools/.tex
+! Interruption.
+<to be read again> 
+                   \begingroup 
+l.1 
+    %%
+? 
+! Emergency stop.
+<to be read again> 
+                   \begingroup 
+l.1 
+    %%
+End of file on the terminal!
+
+ 
+Here is how much of TeX's memory you used:
+ 5 strings out of 495066
+ 249 string characters out of 3181961
+ 45057 words of memory out of 3000000
+ 3286 multiletter control sequences out of 15000+200000
+ 3640 words of font info for 14 fonts, out of 3000000 for 9000
+ 14 hyphenation exceptions out of 8191
+ 4i,0n,1p,6b,6s stack positions out of 5000i,500n,10000p,200000b,50000s
+!  ==> Fatal error occurred, no output PDF file produced!
