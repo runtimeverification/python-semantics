@@ -46,7 +46,7 @@ module PYTHON-SEMANTICS-CALLS
  
   //TODO: SyntaxError for repeated keyword argument
   // cannot specify a parameter both positionally and as a keyword
-  rule <k> matchArgs(obj(_,<oattrs>... "co_argnames" |-> list(ListItem(S) _) "__name__" |-> S2:#String ...</oattrs>),.,_ S |-> _,#id S |-> _,_) => raiseInternal("TypeError", S2 +String "() got multiple values for keyword argument '" +String S +String "'") ...</k>
+  rule <k> matchArgs(obj(_,<oattrs>... "__name__" |-> S2:#String ...</oattrs>),.,_ S |-> _,_ #id S |-> _,_) => raiseInternal("TypeError", S2 +String "() got multiple values for keyword argument '" +String S +String "'") ...</k>
 
   // fill in default value for unspecified parameter
   rule <k> matchArgs(obj(_,<oattrs>... S2 |-> list((ListItem(S) => .) _) S3:#String |-> map(_ S |-> B _) ...</oattrs>),.,M,_ (. => #id S |-> B),_) ...</k> when notBool(S in keys(M)) andBool ((S2 ==Bool "co_argnames" andBool S3 ==Bool "__defaults__") orBool (S2 ==Bool "co_kwonlyargnames" andBool S3 ==Bool "__kwdefaults__"))
@@ -58,10 +58,10 @@ module PYTHON-SEMANTICS-CALLS
   rule <k> matchArgs(obj(_,<oattrs>... "co_kwonlyargnames" |-> list(_ ListItem(S) _) "__kwdefaults__" |-> map(M) "__name__" |-> S2 ...</oattrs>),_,M2,_,_) => raiseInternal("TypeError", S2 +String "() needs keyword-only argument " +String S) ...</k> when notBool(S in keys(M) orBool S in keys(M2))
 
   // raise TypeError if there is no kwarg and there are leftover keyword arguments
-  rule <k> matchArgs(obj(_,<oattrs> "co_kwonlyargnames" |-> list(L) "co_argnames" |-> list(L2:List) "__name__" |-> S2 M</oattrs>),_,S |-> _ _,_,_) => raiseInternal("TypeError", S2 +String "() got an unexpected keyword argument '" +String S +String "'") ...</k> when notBool(S in Setify(L) orBool S in Setify(L2) orBool "co_kwargname" in keys(M))
+  rule <k> matchArgs(obj(_,<oattrs> "co_kwonlyargnames" |-> list(L) "co_argnames" |-> list(L2:List) "__name__" |-> S2 M</oattrs>),_,S |-> _ _,M2,_) => raiseInternal("TypeError", S2 +String "() got an unexpected keyword argument '" +String S +String "'") ...</k> when notBool(S in Setify(L) orBool S in Setify(L2) orBool S in keys(M2) orBool "co_kwargname" in keys(M))
 
   // leftover keyword arguments get stored in kwarg
-  rule <k> (. => addArg(S, { DeMapify(M) })) ~> matchArgs(obj(_,<oattrs>... "co_kwargname" |-> S ("co_kwonlyargnames" |-> list(.) => .) "co_argnames" |-> list(.) ...</oattrs>),.,(M => .),_,_) ...</k>
+  rule <k> (. => addArg(S, { DeMapify(M) })) ~> matchArgs(obj(_,<oattrs>... "co_kwargname" |-> S ("co_kwonlyargnames" |-> list(.) => .) "co_argnames" |-> list(.) ...</oattrs>),.,(M => .),M2,_) ...</k> when keys(M) -Set Ids2Strings(keys(M2)) ==Bool keys(M)
 
   rule <k> matchArgs(obj(B:Builtin,_),.,.,M,_) => invoke(ref(B), M) ...</k>
 

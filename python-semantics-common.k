@@ -79,6 +79,10 @@ module PYTHON-SEMANTICS-COMMON
   define lengthMap(_ |-> _ M:Map) => 1 +Nat lengthMap M
   define lengthMap . => 0
 
+  declare Ids2Strings : Set -> Set
+  define Ids2Strings(SetItem(#id S) St) => SetItem(S) Ids2Strings(St)
+  define Ids2Strings(.) => .
+
   declare Listify : Parameters -> List
   define Listify(P:Parameter , Ps:Parameters) => ListItem(P) Listify(Ps)
   define Listify(.Parameters) => .
