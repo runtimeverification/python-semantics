@@ -4,3 +4,5 @@ python-compiled.maude
 programs/*.out
 .k
 .*.sw?
+run.maude
+test.py
