@@ -165,7 +165,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                      | Argument ":" Expression [:ditto:]
                      | "*"
 
-  syntax FuncDef ::= "def" NAME "(" Parameters ")" "->" Expression ":" Statements [:required strict(3):]
+  syntax FuncDef ::= "def" NAME "(" Parameters ")" "->" Expression ":" Statements [:required:]
                    | "def" NAME "(" Parameters ")" ":" Statements [:required:]
 
 
