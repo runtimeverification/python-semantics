@@ -1,6 +1,10 @@
 assert (5,) is (5,)
 assert not ((5,6) is (6,))
 
+assert len((5,)) == 1
+assert len((5,6)) == 2
+assert len(()) == 0
+
 assert (5,).__add__((6,)) is tuple.__add__((5,),(6,)) is (5,) + (6,) is (5,6)
 
 try:
