@@ -44,7 +44,7 @@ module PYTHON-SEMANTICS-DICTS
 
   rule invokeBuiltin(obj("new_dict",_), ListItem(O) _, .) => newHelper(O, ref("dict"), .) ~> {}
   rule invokeBuiltin(obj("init_dict",_), ListItem(_:Object), .) => ref("None")
-  rule invokeBuiltin(obj("init_list",_), ListItem(O) ListItem(O2:Object), .) => mapping(O2, .Obj) -> iterate(O2, .) ~> makeMap(0)
+  rule invokeBuiltin(obj("init_dict",_), ListItem(O) ListItem(O2:Object), .) => mapping(O2, .Obj) -> iterate(O2, .) ~> makeMap(0)
 
   rule map(M) ~> makeMap(_) => { DeMapify(M) }
 
