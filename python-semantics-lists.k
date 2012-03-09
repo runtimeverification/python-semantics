@@ -17,7 +17,17 @@ module PYTHON-SEMANTICS-LISTS
   rule <k> list(L:List) ~> setvalue(obj(B:Builtin,_)) => ref("None") ...</k>
        <object>...
          <id>B</id>
-         <oattrs>... "__value__" |-> (_ => list(L)) ...</oattrs>
+         <oattrs>... "__value__" |-> (_ => list(Idify(L))) ...</oattrs>
        ...</object>
+
+  rule invokeBuiltin(obj("eq_list",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "list", "list", (ref("bool") (equalList(listvalue(O), (listvalue(O2))))))
+  rule invokeBuiltin(obj("ne_list",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "list", "list", not equalList(listvalue(O), listvalue(O2)))
+
+  syntax ObjRef ::= "equalList" "(" List "," List ")"
+
+  rule equalList(ListItem(B) L, ListItem(B2:Builtin) L2:List) => ref(B) == ref(B2) and equalList(L, L2)
+  rule equalList(ListItem(_) _, .) => ref("False")
+  rule equalList(., ListItem(_) _) => ref("False")
+  rule equalList(.,.) => ref("True")
 
 end module

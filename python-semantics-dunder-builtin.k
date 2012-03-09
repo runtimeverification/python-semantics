@@ -149,10 +149,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__call__" |-> def "call_len" (1, 1, false)
            ) ~>
          object "list"("type",ListItem("object"),
+           "__eq__" |-> def "eq_list" (1, 1,  true)
            "__init__" |-> def "init_list" (0, 1, true)
            "__iter__" |-> def "get_iter" (0, 0, true)
            "__getitem__" |-> def "getitem_list" (1, 1, true)
            "__len__" |-> def "len_list" (0, 0, true)
+           "__ne__" |-> def "ne_list" (1, 1, true)
            "__new__" |-> def "new_list" (1, -1, false)
            ,.) ~>
          object "module"("type",ListItem("object"),
