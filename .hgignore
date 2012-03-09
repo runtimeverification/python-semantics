@@ -5,3 +5,4 @@ programs/*.out
 .k
 .*.sw?
 kompile_*
+all_tokens.tok
