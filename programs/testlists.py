@@ -33,3 +33,5 @@ try:
 except StopIteration:
   y = 5
 assert y == 5
+
+assert list((5,)) == [5]
