@@ -41,13 +41,13 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                    | AttributeRef
                    | Subscription
                    | Slicing
-                   | Expression "(" Arguments ")" [:strict(1) prec 42:]
+                   | Expression "(" Arguments ")" [:seqstrict prec 42:]
 
   syntax Arguments ::= List{Argument,","} [:seqstrict:]
   syntax Argument ::= Expression
-                    | #Id "=" Expression
+                    | #Id "=" Expression [:strict(2):]
                     // "*" Expression is implicit
-                    | "**" Expression
+                    | "**" Expression [:strict hybrid:]
 
   syntax AttributeRef ::= Expression "." NAME [:strict(1) prec 42:]
   syntax Subscription ::= Expression "[" Expression "]" [:seqstrict required prec 42:]
@@ -91,7 +91,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                       | Expression "if" Expression "else" Expression [:strict(2) prec 55 gather(e e E):]
 
   syntax Expression ::= "lambda" Parameters ":" Expression [:prec 56:]
-                      | "*" Expression [:prec 56:]
+                      | "*" Expression [:prec 56 strict hybrid:]
 
   syntax Expressions ::= List{Expression,","} [:prec 99 seqstrict:]
 
@@ -165,7 +165,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                      | Argument ":" Expression [:ditto:]
                      | "*"
 
-  syntax FuncDef ::= "def" NAME "(" Parameters ")" "->" Expression ":" Statements [:required strict(3):]
+  syntax FuncDef ::= "def" NAME "(" Parameters ")" "->" Expression ":" Statements [:required:]
                    | "def" NAME "(" Parameters ")" ":" Statements [:required:]
 
 

@@ -2,24 +2,21 @@ module PYTHON-SEMANTICS-CALLS
   imports PYTHON-SEMANTICS-LITERALS
 
   syntax K ::= "processArgs" "(" List "," Map "," Expression "," Expression ")" [:strict(3 4):]
-             | "evaluateArgs" "(" List ")"
+             | "sortArgs" "(" List ")"
              | "matchArgs" "(" Expression "," List "," Map "," Map "," #Nat ")" [:strict(1):]
              | "addArg" "(" #String "," Expression ")" [:strict(2):]
 
-  rule <k> obj(S,ObjState:Bag) (Args:K) => evaluateArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeBuiltin(obj(S,ObjState), ., .) ...</k>
+  rule <k> obj(S,ObjState:Bag) (Args:K) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeBuiltin(obj(S,ObjState), ., .) ...</k>
   rule <k> invokeBuiltin(obj("call_function",_), ListItem(O:Object) L:List, M:Map) => invokeFunction(O, L, M) ...</k>
   rule <k> invokeFunction(O, L, M) => matchArgs(O, L, M, ., 0) ...</k>
 
-  context evaluateArgs(ListItem(HOLE) _) when getKLabel HOLE =/=Bool '*_ and-then getKLabel HOLE =/=Bool '**_ and-then getKLabel HOLE =/=Bool '_=_
-  context evaluateArgs(ListItem(* HOLE) _)
-  context evaluateArgs(ListItem(** HOLE) _)
-  context evaluateArgs(ListItem(_ = HOLE) _)
+  define isKResult(_ = K) => true when isKResult(K)
 
-  rule <k> evaluateArgs((ListItem(O) => .) _) ~> processArgs(_ (. => ListItem(O)),_,_,_) ...</k>
-  rule <k> evaluateArgs((ListItem(X:#Id = O) => .) _) ~> processArgs(_,_ (. => Id2String(X) |-> O),_,_) ...</k>
-  rule <k> evaluateArgs((ListItem(* O) => .) _) ~> processArgs(_,_,(_ => O),_) ...</k>
-  rule <k> evaluateArgs((ListItem(** O) => .) _) ~> processArgs(_,_,_,(_ => O)) ...</k>
-  rule <k> evaluateArgs(.) => . ...</k>
+  rule sortArgs((ListItem(O) => .) _) ~> processArgs(_ (. => ListItem(O)),_,_,_)
+  rule sortArgs((ListItem(X = O) => .) _) ~> processArgs(_,_ (. => Id2String(X) |-> O),_,_)
+  rule sortArgs((ListItem(* O) => .) _) ~> processArgs(_,_,(_ => O),_)
+  rule sortArgs((ListItem(** O) => .) _) ~> processArgs(_,_,_,(_ => O))
+  rule sortArgs(.) => .
 
   rule <k> (. => iterate(O, raiseInternal("TypeError", "argument after * must be a sequence"))) ~> processArgs(_,_,O,_) ...</k>
   rule <k> (list(L:List) => .) ~> processArgs(_ (. => L),_,(_:Object => .Obj),_) ...</k>
