@@ -73,3 +73,37 @@ assert f() is None
 x = False
 assert f() is None
 assert f([5]) is None
+
+def g():
+  try:
+    a
+    assert False
+  except UnboundLocalError:
+    x = 5
+  assert x == 5
+  def a():
+    nonlocal x
+    x = x + 1
+  assert a() is None
+  assert x == 6
+  try:
+    e
+    assert False
+  except UnboundLocalError as e:
+    x = 7
+  assert x == 7
+  return a
+assert g()() is None
+assert x == False
+
+def h():
+  x = 0
+  def b():
+    global x
+    return x
+  assert b() == False
+  return b
+c = h()
+assert c() == False
+x = 5
+assert c() == 5
