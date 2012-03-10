@@ -10,13 +10,16 @@ class KPythonVisitor(ast.NodeVisitor):
     return self.visit_list(node.body, "'_newline_")
 
   def visit_list(self, nodes, op, dotlist=None):
+    visit = self.visit
+    if nodes and isinstance(nodes[0], str):
+      visit = self.getid
     if dotlist and len(nodes) == 1:
-      return op + "(" + self.visit(nodes[0]) + ",," + "'.List`{\"" + dotlist + "\"`}(.List{K}))"
+      return op + "(" + visit(nodes[0]) + ",," + "'.List`{\"" + dotlist + "\"`}(.List{K}))"
     elif len(nodes) == 1:
-      return self.visit(nodes[0])
+      return visit(nodes[0])
     elif dotlist and len(nodes) == 0:
       return "'.List`{\"" + dotlist + "\"`}(.List{K})"
-    return op + "(" + self.visit(nodes[0]) + ",," + self.visit_list(nodes[1:], op, dotlist) + ")"
+    return op + "(" + visit(nodes[0]) + ",," + self.visit_list(nodes[1:], op, dotlist) + ")"
 
   def visit_FunctionDef(self, node):
     if not node.returns:
@@ -121,6 +124,12 @@ class KPythonVisitor(ast.NodeVisitor):
   def visit_Assert(self, node):
     return ("'assert_('_`,_(" + self.visit(node.test)
             + (",,'_`,_(" + self.visit(node.msg) if node.msg else "") + ",,'.List`{\",\"`}(.List{K})))" + (")" if node.msg else ""))
+
+  def visit_Global(self, node):
+    return "'global_(" + self.visit_list(node.names, "'_`,_", ",") + ")"
+
+  def visit_Nonlocal(self, node):
+    return "'nonlocal_(" + self.visit_list(node.names, "'_`,_", ",") + ")"
 
   def visit_Expr(self, node):
     return "'_;(" + self.visit(node.value) + ")"
