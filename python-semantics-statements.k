@@ -6,7 +6,10 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   syntax ListItem ::= "(" K "," K "," Bag ")"
 
-  rule <k> if O:Object : Ss:K else : Ss2:K => test(plbool(bool(O)), Ss, Ss2) ...</k>
+  rule global _ => .
+  rule nonlocal _ => .
+
+  rule if O:Object : Ss:K else : Ss2:K => test(plbool(bool(O)), Ss, Ss2)
 
   rule <k> (. => lmark) ~> while Condition:K : Ss else: Ss2 ~> (K:K => popl) </k>
        <control>
@@ -14,7 +17,7 @@ module PYTHON-SEMANTICS-STATEMENTS
          C:Bag
        </control>
 
-  rule <k> lmark ~> while Condition : Ss else: Ss2 => if Condition : (Ss ~> lmark ~> while Condition : Ss else: Ss2) else: Ss2 ...</k>
+  rule lmark ~> while Condition : Ss else: Ss2 => if Condition : (Ss ~> lmark ~> while Condition : Ss else: Ss2) else: Ss2
 
   rule <k> popl ~> _ => K </k>
        <control>
@@ -30,7 +33,7 @@ module PYTHON-SEMANTICS-STATEMENTS
          (_ => C)
        </control>
 
-  rule <k> break => popl ...</k>
+  rule break => popl
 
   rule <k> continue => lmark ~> K ~> popl ...</k>
        <lstack> (_, K, _:Bag) ...</lstack>
@@ -51,10 +54,10 @@ module PYTHON-SEMANTICS-STATEMENTS
          C:Bag
        </control>
 
-  rule <k> lmark ~> for Targets in O : Ss else: Ss2 => try: ((Targets, .Expressions) := getmember(O, #id "__next__", true, false, true) () ~> Ss ~> lmark ~> for Targets in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: . ...</k>
+  rule lmark ~> for Targets in O : Ss else: Ss2 => try: ((Targets, .Expressions) := getmember(O, #id "__next__", true, false, true) () ~> Ss ~> lmark ~> for Targets in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
 
-  rule <k> O ; => . ...</k>
+  rule O ; => .
 
-  rule <k> Stmt:K newline Ss => Stmt ~> Ss ...</k>
+  rule Stmt:K newline Ss => Stmt ~> Ss
 
 end module

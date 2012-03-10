@@ -83,10 +83,4 @@ module PYTHON-SEMANTICS-ENVIRONMENT
 
   //TODO: SyntaxErrors for top-level nonlocals, unbound nonlocals, simultaneous global and nonlocal
 
-  rule <currentBlock> N </currentBlock>
-       (<block>...
-         <blockId> N2 </blockId>
-         <parentBlock> N </parentBlock>
-       ...</block> => .) [:structural:]
-
 end module

@@ -122,8 +122,8 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                       | "import" ModuleAliases        [:seqstrict required:]
                       | "from" RelativeModule "import" ModuleAliases        [:strict(1) required:]
                       | "from" Module "import" "*"        [:strict:]
-                      | "global" NAMES        [:strict required:]
-                      | "nonlocal" NAMES      [:strict required:]
+                      | "global" NAMES        [:required:]
+                      | "nonlocal" NAMES      [:required:]
 
   syntax Targets ::= Expressions 
   syntax Target ::= Expression
