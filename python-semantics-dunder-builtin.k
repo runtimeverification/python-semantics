@@ -20,6 +20,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "SyntaxError" |-> "SyntaxError"
            "True" |-> "True"
            "TypeError" |-> "TypeError"
+           "UnboundLocalError" |-> "UnboundLocalError"
            "__debug__" |-> "__debug__"
            "bool" |-> "bool"
            "complex" |-> "complex"
@@ -67,6 +68,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "True"("bool",.,.,
            "__value__" |-> 1) ~>
          object "TypeError"("type",ListItem("Exception"),.,.) ~>
+         object "UnboundLocalError"("type",ListItem("NameError"),.,.) ~>
          object "bool"("type",ListItem("int"),
            "__new__" |-> def "new_bool" (1, 2, false)
            ,.) ~>
