@@ -27,9 +27,10 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   rule <k> (. => Finally:K) ~> popl ...</k>
        <control>
-         <lstack> (Finally, C, X:List, _, Ex:K) => . ...</lstack>
-         <xstack> _ => X </xstack>
+         <lstack> (Finally, C, XL:List, _, FL:List, Ex:K) => . ...</lstack>
+         <xstack> _ => XL </xstack>
          <xcontext> _ => Ex </xcontext>
+         <fstack> _ => FL </fstack>
          (_ => C)
        </control>
 
@@ -40,9 +41,10 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   rule <k> (. => Finally) ~> continue ...</k>
        <control>
-         <lstack> (Finally, C, X, _, Ex) => . ...</lstack>
-         <xstack> _ => X </xstack>
+         <lstack> (Finally, C, XL, _, FL, Ex) => . ...</lstack>
+         <xstack> _ => XL </xstack>
          <xcontext> _ => Ex </xcontext>
+         <fstack> _ => FL </fstack>
          (_ => C)
        </control>
 

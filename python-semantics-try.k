@@ -18,8 +18,9 @@ module PYTHON-SEMANTICS-TRY
 
   rule <k> (try: Try finally: Finally:K => Try ~> popx ~> Finally) ~> K </k>
        <control>
-         <xstack> (. => (Finally, C, XL, LL, Ex)) XL:List </xstack>
-         <lstack> (. => (Finally, C, XL, LL, Ex)) LL:List </lstack>
+         <xstack> (. => (Finally, C, XL, LL, FL, Ex)) XL:List </xstack>
+         <lstack> (. => (Finally, C, XL, LL, FL, Ex)) LL:List </lstack>
+         <fstack> (. => (Finally, C, XL, LL, FL, Ex)) FL:List </fstack>
          <xcontext> Ex </xcontext>
          C:Bag
        </control>
@@ -42,8 +43,9 @@ module PYTHON-SEMANTICS-TRY
   rule <k> (. => Finally) ~> raise ...</k>
        <control>
          <xcontext> B:Builtin </xcontext>
-         <xstack> (Finally, C, _, L, _) => . ...</xstack>
-         <lstack> _ => L </lstack>
+         <xstack> (Finally, C, _, LL, FL, _) => . ...</xstack>
+         <lstack> _ => LL </lstack>
+         <fstack> _ => FL </fstack>
          (_ => C)
        </control>
        <symbols>... "None" |-> N ...</symbols> when B =/=Bool N

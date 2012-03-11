@@ -62,7 +62,7 @@ module PYTHON-SEMANTICS-CALLS
 
   rule <k> matchArgs(obj(B:Builtin,_),.,.,M,_) => invoke(ref(B), M) ...</k>
 
-  syntax ListItem ::= "(" K "," Bag "," #Nat ")"
+  syntax ListItem ::= "(" K "," Bag "," #Nat "," List ")"
   syntax K ::= "bindArgs" "(" Map ")"
              | "bindLocal" "(" #Id "," #Nat ")"
              | "bindLocals" "(" K "," #Bool ")"
@@ -73,7 +73,8 @@ module PYTHON-SEMANTICS-CALLS
        <nextLoc> N3:#Nat => N3 +Int 1 </nextLoc>
        <control>
          <currentBlock> N2 => N3 </currentBlock>
-         <fstack> . => (K, C, N2) ...</fstack>
+         <fstack> . => (K, C, N2, LL) ...</fstack>
+         <lstack> LL => . </lstack>
          C:Bag
        </control>
        (. => <block>...
@@ -84,7 +85,17 @@ module PYTHON-SEMANTICS-CALLS
   rule <k> return O ~> _ => O ~> K ...</k>
        <control>
          <currentBlock> _ => N </currentBlock>
-         <fstack> (K, C, N) => . ...</fstack>
+         <fstack> (K, C, N, LL) => . ...</fstack>
+         <lstack> _ => LL </lstack>
+         (_ => C)
+       </control>
+
+  rule <k> (. => Finally:K) ~> return O ...</k>
+       <control>
+         <fstack> (Finally, C, XL:List, LL:List, _, Ex:K) => . ...</fstack>
+         <xstack> _ => XL </xstack>
+         <xcontext> _ => Ex </xcontext>
+         <lstack> _ => LL </lstack>
          (_ => C)
        </control>
 
