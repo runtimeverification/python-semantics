@@ -81,6 +81,4 @@ module PYTHON-SEMANTICS-ENVIRONMENT
        <parentBlock> N2 </parentBlock>
        <env> Env </env> when notBool(X in keys(Env))
 
-  //TODO: SyntaxErrors for top-level nonlocals, unbound nonlocals, simultaneous global and nonlocal
-
 end module

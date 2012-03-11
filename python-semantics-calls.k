@@ -13,7 +13,7 @@ module PYTHON-SEMANTICS-CALLS
   define isKResult(_ = K) => true when isKResult(K)
 
   rule sortArgs((ListItem(O) => .) _) ~> processArgs(_ (. => ListItem(O)),_,_,_)
-  rule sortArgs((ListItem(X:#Id = O) => .) _) ~> processArgs(_,_ (. => Id2String(X) |-> O),_,_)
+  rule sortArgs((ListItem(X:#Id = O) => .) _) ~> processArgs(_,M (. => Id2String(X) |-> O),_,_) when notBool(Id2String(X) in keys(M))
   rule sortArgs((ListItem(* O) => .) _) ~> processArgs(_,_,(_ => O),_)
   rule sortArgs((ListItem(** O) => .) _) ~> processArgs(_,_,_,(_ => O))
   rule sortArgs(.) => .
@@ -41,7 +41,6 @@ module PYTHON-SEMANTICS-CALLS
   rule <k> matchArgs(obj(_,<oattrs>... "co_argnames" |-> list(_ (ListItem(S) => .) _) ...</oattrs>),.,_ (S |-> O => .),M (. => #id S |-> id(O)),(N => sNat(N))) ...</k> when notBool(#id S in keys(M))
   rule <k> matchArgs(obj(_,<oattrs>... "co_kwonlyargnames" |-> list(_ (ListItem(S) => .) _) ...</oattrs>),.,_ (S |-> O => .),M (. => #id S |-> id(O)),_) ...</k> when notBool(#id S in keys(M))
  
-  //TODO: SyntaxError for repeated keyword argument
   // cannot specify a parameter both positionally and as a keyword
   rule <k> matchArgs(obj(_,<oattrs>... "__name__" |-> S2:#String ...</oattrs>),.,_ S |-> _,_ #id S |-> _,_) => raiseInternal("TypeError", S2 +String "() got multiple values for keyword argument '" +String S +String "'") ...</k>
 
@@ -167,11 +166,13 @@ module PYTHON-SEMANTICS-CALLS
        <currentBlock> N </currentBlock>
        <blockId> N </blockId>
        <globals>... . => SetItem(X) ...</globals>
+       <nonlocals> Nonlocals </nonlocals> when notBool(X in Nonlocals)
 
   rule <k> bindNonlocal(X) => . ...</k>
        <currentBlock> N </currentBlock>
        <blockId> N </blockId>
        <nonlocals>... . => SetItem(X) ...</nonlocals>
+       <globals> Globals </globals> when notBool(X in Globals)
 
   rule <k> bindLocal(X,_) => . ...</k>
        <currentBlock> N </currentBlock>

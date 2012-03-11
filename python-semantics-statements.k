@@ -7,7 +7,8 @@ module PYTHON-SEMANTICS-STATEMENTS
   syntax ListItem ::= "(" K "," K "," Bag ")"
 
   rule global _ => .
-  rule nonlocal _ => .
+  rule <k> nonlocal _ => . ...</k>
+       <currentBlock> N </currentBlock> when N =/=Bool 0
 
   rule if O:Object : Ss:K else : Ss2:K => test(plbool(bool(O)), Ss, Ss2)
 

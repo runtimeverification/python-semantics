@@ -55,7 +55,7 @@ module PYTHON-SEMANTICS-TRY
          <xstack> (_, _, _:Bag, _, false) => . ...</xstack>
        ...</control>
 
-  rule <k> EC:K except ECs => EC ~> ECs ...</k>
+  rule <k> EC:K except ECs => EC ~> ECs ...</k> when notBool(getKLabel EC ==Bool 'except`:_ andBool ECs =/=Bool .ExceptClauses)
   rule <k> .ExceptClauses => . ...</k>
 
   rule <k> raise O:Object => doRaise(test(istype(O, ref("type")), O(), O), ref("None"), true) ...</k>
@@ -98,5 +98,4 @@ module PYTHON-SEMANTICS-TRY
   rule <k> doExcept(Type:Object, Except, X) => test(istype(ref(B), Type), test(X ==Bool .Obj, except: Except, (bind(X, B) ~> except: (try: Except finally: del (X, .List{","})))), .) ...</k>
        <xcontext> B:Builtin </xcontext>
 
-  //TODO: SyntaxError for non-last except block
 end module
