@@ -15,7 +15,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule <k> invokeBuiltin(obj("getattribute_object",_), ListItem(O) ListItem(O2:Object), .) => getmember(O, #id strvalue(O2), true, true, true) ...</k>
   rule <k> invokeBuiltin(obj("getattribute_module",_), ListItem(O) ListItem(O2), .) => getmember(O, #id strvalue(O2), false, true, true) ...</k>
 
-  rule <k> getmember(O, X, T:#Bool, T2:#Bool, true) => getmember(O, X, T, T2, false) -> raiseInternal("AttributeError", "object has no attribute '" +String Id2String(X) +String "'") ...</k>
+  rule <k> getmember(O, X, T:#Bool, T2:#Bool, true) => getmember(O, X, T, T2, false) -> getmember(O, #id "__getattr__", true, false, false) (Id2String(X)) -> raiseInternal("AttributeError", "object has no attribute '" +String Id2String(X) +String "'") ...</k>
   rule <k> getmember(O, X, true, false, false) => descriptormatch(getmember(O, X, false, false, false), O, gettype(O), false) ...</k>
   rule <k> getmember(O, #id S, false, true, false) => mapLookup(O, S) -> getmember(O, #id S, false, false, false) ...</k>
   rule <k> getmember(O:Object , #id S, true, true, false) => descriptormatch(mapLookup(O, S), O, gettype(O), true) -> getmember(O, #id S, true, false, false) ...</k>
