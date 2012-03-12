@@ -11,7 +11,7 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   rule (. => (getmember(O, #id "__setitem__", true, false, false) (Key:Object, Value:Object)) -> raiseInternal("TypeError", "object does not support item assignment")) ~> ((O [ Key ]) , Ts => Ts) := Value
   rule .List{","} := _ => .
 
-  context (HOLE . X) , _:Targets := K:K when isKResult(K)
+  context (HOLE . _:#Id) , _:Targets := K:K when isKResult(K)
   context (HOLE [ _:Expression ]) , _:Targets := K when isKResult(K)
   context (K [ HOLE ]) , _:Targets := K2:K when and(isKResult(K), isKResult(K2))
 
@@ -29,7 +29,7 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   rule list(ListItem(_) _) ~> bindList(., _, _) => raiseInternal("ValueError", "too many values to unpack")
   rule list(.) ~> bindList(ListItem(T) _, _, _) => raiseInternal("ValueError", "need more values to unpack") when getKLabel T =/=Bool '*_
 
-  rule (. => del T) ~> unbindList((ListItem(T) => .) _)
+  rule (. => del (T, .Expressions)) ~> unbindList((ListItem(T) => .) _)
   rule unbindList(.) => .
 
 end module
