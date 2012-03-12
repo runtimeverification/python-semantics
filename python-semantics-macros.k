@@ -8,8 +8,17 @@ module PYTHON-SEMANTICS-MACROS
                                               else: pass
   macro pass = .K
 
-  macro (O:Object , O2:Object) , O3:Object = O:Object , (O2:Object , O3:Object)
-
   macro return = return ref("None")
+
+  macro E [' E2:K , E3:K , Es '] = E [ tuple(E2, E3, Es) ]
+  macro E [' E2:K , .SliceItems '] = E [ E2 ]
+  macro : : = (ref("slice") (ref("None"), ref("None"), ref("None")))
+  macro E : : = (ref("slice") (E, ref("None"), ref("None")))
+  macro : E : = (ref("slice") (ref("None"), E, ref("None")))
+  macro : : E = (ref("slice") (ref("None"), ref("None"), E))
+  macro E : E2 : = (ref("slice") (E, E2, ref("None")))
+  macro E : : E2 = (ref("slice") (E, ref("None"), E2))
+  macro : E : E2 = (ref("slice") (ref("None"), E, E))
+  macro E : E2 : E3 = (ref("slice") (E, E2, E3))
 
 end module

@@ -30,7 +30,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax CompIf ::= "if" "(" Expression ")"
   syntax CompIter ::= CompFor
                     | CompIf
-                    | CompIter "::" CompIter [:strict(1):]
+                    | CompIter "@" CompIter [:strict(1):]
 
   syntax YieldExpression ::= "yield" Expression        [:strict:] 
                            | "yield"
@@ -51,10 +51,17 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
 
   syntax AttributeRef ::= Expression "." NAME [:strict(1) prec 42:]
   syntax Subscription ::= Expression "[" Expression "]" [:seqstrict required prec 42:]
-  syntax Slicing ::= Expression "['" SliceItems "']" [:seqstrict required prec 42:]
-  syntax SliceItems ::= List{SliceItem,","} [:seqstrict:]
+  syntax Slicing ::= Expression "['" SliceItems "']" [:required prec 42:]
+  syntax SliceItems ::= List{SliceItem,","}
   syntax SliceItem ::= Expression
-                     | Expression ":" Expression ":" Expression [:seqstrict:]
+                     | ":" ":"
+                     | Expression ":" ":"
+                     | ":" Expression ":"
+                     | ":" ":" Expression
+                     | Expression ":" Expression ":"
+                     | Expression ":" ":" Expression
+                     | ":" Expression ":" Expression
+                     | Expression ":" Expression ":" Expression
 
   syntax Expression ::= Primary
 
