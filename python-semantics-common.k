@@ -167,7 +167,7 @@ module PYTHON-SEMANTICS-COMMON
   define getref(obj(_,<oattrs> Attrs </oattrs>), S) => ref(Attrs(S))
   context getref(HOLE,_)
 
-  syntax ListItem ::= "(" K "," Bag "," List "," List "," K ")"
+  syntax ListItem ::= "(" K "," Bag "," List "," List "," List "," K ")"
 
   rule binaryOp(O, O2:Object, S, S2, K:K) => test(and(istype(O, ref(S)), istype(O2, ref(S2))), K, ref("NotImplemented"))
   rule unaryOp(O, S, K) => test(istype(O, ref(S)), K, ref("NotImplemented"))
