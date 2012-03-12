@@ -8,7 +8,7 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   rule global _ => .
   rule <k> nonlocal _ => . ...</k>
-       <currentBlock> N </currentBlock> when N =/=Bool 0
+       <currentBlock> N:#Nat </currentBlock> when N =/=Bool 0
 
   rule if O:Object : Ss:K else : Ss2:K => test(plbool(bool(O)), Ss, Ss2)
 
