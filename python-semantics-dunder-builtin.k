@@ -21,6 +21,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "True" |-> "True"
            "TypeError" |-> "TypeError"
            "UnboundLocalError" |-> "UnboundLocalError"
+           "ValueError" |-> "ValueError"
            "__debug__" |-> "__debug__"
            "bool" |-> "bool"
            "complex" |-> "complex"
@@ -69,6 +70,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__value__" |-> 1) ~>
          object "TypeError"("type",ListItem("Exception"),.,.) ~>
          object "UnboundLocalError"("type",ListItem("NameError"),.,.) ~>
+         object "ValueError"("type",ListItem("Exception"),.,.) ~>
          object "bool"("type",ListItem("int"),
            "__new__" |-> def "new_bool" (1, 2, false)
            ,.) ~>
