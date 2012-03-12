@@ -92,6 +92,9 @@ class KPythonVisitor(ast.NodeVisitor):
   def visit_Assign(self, node):
     return "'_:=_(" + self.visit_list(node.targets, "'_`,_",",") + ",," + self.visit(node.value) + ")"
 
+  def visit_AugAssign(self, node):
+    return "'_" + self.visit(node.op) + "=_(" + self.visit(node.target) + ",," + self.visit(node.value) + ")"
+
   def visit_For(self, node):
     return "'for_in_:_else`:_(" + self.visit(node.target) + ",," + self.visit(node.iter) + ",," + self.visit_list(node.body,"'_newline_") + ",," + (self.visit_list(node.orelse,"'_newline_") if node.orelse else "'pass(.List{K})") + ")"
 
@@ -150,7 +153,7 @@ class KPythonVisitor(ast.NodeVisitor):
     return self.visit_list(node.values, self.visit(node.op))
 
   def visit_BinOp(self, node):
-    return self.visit(node.op) + "(" + self.visit(node.left) + ",," + self.visit(node.right) + ")"
+    return "'_" + self.visit(node.op) + "_(" + self.visit(node.left) + ",," + self.visit(node.right) + ")"
 
   def visit_UnaryOp(self, node):
     return self.visit(node.op) + "(" + self.visit(node.operand) + ")"
@@ -242,29 +245,29 @@ class KPythonVisitor(ast.NodeVisitor):
   def visit_Or(self, node):
     return "'_or_"
   def visit_Add(self, node):
-    return "'_+_"
+    return "+"
   def visit_Sub(self, node):
-    return "'_-_"
+    return "-"
   def visit_Mult(self, node):
-    return "'_*_"
+    return "*"
   def visit_Div(self, node):
-    return "'_/_"
+    return "/"
   def visit_Mod(self, node):
-    return "'_%_"
+    return "%"
   def visit_Pow(self, node):
-    return "'_**_"
+    return "**"
   def visit_LShift(self, node):
-    return "'_<<_"
+    return "<<"
   def visit_RShift(self, node):
-    return "'_>>_"
+    return ">>"
   def visit_BitOr(self, node):
-    return "'_|_"
+    return "|"
   def visit_BitXor(self, node):
-    return "'_^_"
+    return "^"
   def visit_BitAnd(self, node):
-    return "'_&_"
+    return "&"
   def visit_FloorDiv(self, node):
-    return "'_floor/_"
+    return "floor/"
   def visit_Invert(self, node):
     return "'~_"
   def visit_Not(self, node):
