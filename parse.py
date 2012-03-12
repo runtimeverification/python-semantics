@@ -215,6 +215,9 @@ class KPythonVisitor(ast.NodeVisitor):
       # index
       return "'_`[_`](" + self.visit(node.value) + ",," + body + ")"
 
+  def visit_Starred(self, node):
+    return "'*_(" + self.visit(node.value) + ")"
+
   def visit_Name(self, node):
     return self.getid(node.id)
 
