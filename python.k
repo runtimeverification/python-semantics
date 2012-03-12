@@ -10,6 +10,7 @@ in python-semantics-try
 in python-semantics-arithmetic-ops
 in python-semantics-assignment
 in python-semantics-attribute-ref
+in python-semantics-augmented-assignment
 in python-semantics-builtin-modules
 in python-semantics-calls
 in python-semantics-dicts
@@ -30,6 +31,7 @@ in python-semantics-tuples
 module PYTHON
   imports PYTHON-SEMANTICS-ARITHMETIC-OPS
   imports PYTHON-SEMANTICS-ASSIGNMENT
+  imports PYTHON-SEMANTICS-AUGMENTED-ASSIGNMENT
   imports PYTHON-SEMANTICS-ATTRIBUTE-REF
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
   imports PYTHON-SEMANTICS-CALLS
