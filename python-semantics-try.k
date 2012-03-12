@@ -8,6 +8,7 @@ module PYTHON-SEMANTICS-TRY
              | "doExcept" "(" Expression "," K "," NAME ")" [:strict(1):]
              | "doExcepts" "(" List "," K "," NAME ")"
              | "doRaise" "(" Expression "," Expression "," #Bool ")" [:strict(1 2):]
+             | "popfinally"
  
   rule <k> (try: Try:K ECs:K else: Else:K => Try ~> popx ~> Else) ~> K:K </k>
        <control>
@@ -16,7 +17,7 @@ module PYTHON-SEMANTICS-TRY
          C:Bag
        </control>
 
-  rule <k> (try: Try finally: Finally:K => Try ~> popx ~> Finally) ~> K </k>
+  rule <k> (try: Try finally: Finally:K => Try ~> popfinally ~> Finally) ~> K </k>
        <control>
          <xstack> (. => (Finally, C, XL, LL, FL, Ex)) XL:List </xstack>
          <lstack> (. => (Finally, C, XL, LL, FL, Ex)) LL:List </lstack>
@@ -24,6 +25,11 @@ module PYTHON-SEMANTICS-TRY
          <xcontext> Ex </xcontext>
          C:Bag
        </control>
+
+  rule <k> popfinally => . ...</k>
+       <xstack> _:ListItem => . ...</xstack>
+       <lstack> _:ListItem => . ...</lstack>
+       <fstack> _:ListItem => . ...</fstack>
 
   rule <k> popx => . ...</k> 
        <xstack> _:ListItem => . ...</xstack>
@@ -95,7 +101,7 @@ module PYTHON-SEMANTICS-TRY
   rule <k> doExcepts(ListItem(B:Builtin) L:List, Except, X) => doExcept(ref(B), Except, X) ~> doExcepts(L, Except, X) ...</k>
 
   //TODO: sys.exc_info
-  rule <k> doExcept(Type:Object, Except, X) => test(istype(ref(B), Type), test(X ==Bool .Obj, except: Except, (bind(X, B) ~> except: (try: Except finally: del (X, .List{","})))), .) ...</k>
+  rule <k> doExcept(Type:Object, Except, X) => test(istype(ref(B), Type), test(X ==Bool .Obj, except: Except, (bind(X, B) ~> except: (try: Except finally: unbind(X)))), .) ...</k>
        <xcontext> B:Builtin </xcontext>
 
 end module
