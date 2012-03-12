@@ -103,7 +103,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax Expressions ::= List{Expression,","} [:prec 99 seqstrict:]
 
   syntax SimpleStmt ::= Expression ";" [:prec 60 gather(e) strict:]
-                      | Targets ":=" Expression [:strict(2) required:]
+                      | Targets ":=" Expression [:strict(2) required prec 60:]
                       | Target "+=" Expression        [:strict(2) required:]
                       | Target "-=" Expression        [:strict(2) required:]
                       | Target "*=" Expression        [:strict(2) required:]
