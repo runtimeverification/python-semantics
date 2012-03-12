@@ -81,7 +81,7 @@ module PYTHON-SEMANTICS-CALLS
          <parentBlock> N </parentBlock>
        ...</block>)
 
-  rule <k> return O ~> _ => O ~> K ...</k>
+  rule <k> return O ~> _ => O ~> K </k>
        <control>
          <currentBlock> _ => N </currentBlock>
          <fstack> (K, C, N, LL) => . ...</fstack>
