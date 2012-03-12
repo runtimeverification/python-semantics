@@ -86,6 +86,9 @@ class KPythonVisitor(ast.NodeVisitor):
     else:
       return "'return(.List{K})"
 
+  def visit_Delete(self, node):
+    return "'del_(" + self.visit_list(node.targets, "'_`,_",",") + ")"
+
   def visit_Assign(self, node):
     return "'_:=_(" + self.visit_list(node.targets, "'_`,_",",") + ",," + self.visit(node.value) + ")"
 
