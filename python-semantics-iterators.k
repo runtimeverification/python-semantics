@@ -18,7 +18,7 @@ module PYTHON-SEMANTICS-ITERATORS
 
   rule <k> invokeBuiltin(obj("getitem_iter",_), ListItem(obj(B,_)), .) => mutable("__index__" |-> 0 "__value__" |-> B, ref("iterator")) ...</k>
 /*
-  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => try: return getmember(ref(B2), #id "__getitem__", true, false, true) (I:#Int) except ref("IndexError"): (setx(.Obj) newline raise ref("StopIteration")) else: pass  ...</k>
+  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => try: return getmember(ref(B2), #id "__getitem__", true, false, true) (I:#Int) except ref("IndexError"): (setx(.Obj) ~> raise ref("StopIteration")) else: pass  ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__index__" |-> (I => I +Int 1) "__value__" |-> B2 ...</oattrs>
