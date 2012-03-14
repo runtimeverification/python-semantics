@@ -164,7 +164,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
 
   syntax Decorated ::=        ClassDef
                      |        FuncDef
-                     |        "@" Primary "newline" Decorated
+                     |        "@" Primary "newline" Decorated [:strict(1):]
 
   syntax Parameters ::= List{Parameter,","} [:seqstrict:]
   syntax Parameter ::= Argument

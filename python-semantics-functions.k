@@ -12,7 +12,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   syntax ObjRef ::= "function" "(" #Id "," Parameters "," Statements "," #Bool "," K "," Expression "," Expression ")" [:strict(6 7):]
 
-  rule <k> def X:#Id ( Ps:Parameters ) : Ss:K => function(X, Ps, Ss, true, .Obj, ref("function"), docString(Ss)) ; ...</k>
+  rule <k> def X:#Id ( Ps:K ) : Ss:K => function(X, Ps, Ss, true, .Obj, ref("function"), docString(Ss)) ; ...</k>
   rule <k> def X ( Ps ) -> K:K : Ss => function(X, Ps, Ss, true, K, ref("function"), docString(Ss)) ; ...</k>
   rule <k> lambda Ps : E:Expression => function(#id "<lambda>", Ps, return E, false, .Obj, ref("function"), ref("None")) ...</k> 
 
@@ -95,5 +95,13 @@ module PYTHON-SEMANTICS-FUNCTIONS
          <id>N</id>
          <oattrs>... "__annotations__" |-> map(Rho => Rho[B / "return"]) ...</oattrs>
        ...</object>
+
+  declare getName : K -> #Id
+  define getName(def X ( _ ) -> _ : _) => X
+  define getName(def X ( _ ) : _) => X
+  define getName(class X ( _ ) : _) => X
+  define getName(@ _ newline K) => getName(K)
+
+  rule @ O newline K => K ~> getName(K) := O(getName(K))
 
 end module
