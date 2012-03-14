@@ -100,7 +100,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule <k> immutable(V,obj(B,_)) => ref(N) ...</k>
        <literals> Ref:Map (. => pair(V,B) |-> N) </literals>
-       <nextLoc> N => N +Int 1 </nextLoc>
+       <nextLoc> N => sNat(N) </nextLoc>
        (. =>
        <object>...
          <id>N</id>
@@ -110,7 +110,7 @@ module PYTHON-SEMANTICS-LITERALS
   rule <k> mutable(V,O) => mutable("__value__" |-> V "__revision__" |-> 0, O) ...</k>
 
   rule <k> mutable(M:Map,obj(B,_)) => ref(N) ...</k>
-       <nextLoc> N => N +Int 1 </nextLoc>
+       <nextLoc> N => sNat(N) </nextLoc>
        (. =>
        <object>...
          <id>N</id>

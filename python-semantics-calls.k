@@ -69,7 +69,7 @@ module PYTHON-SEMANTICS-CALLS
              | "bindNonlocal" "(" K ")"
 
   rule <k> invoke(obj(_:#Nat,<oattrs>... "__closure__" |-> N "__code__" |-> Ss:K ...</oattrs>), M) ~> K:K => bindLocals(Ss, false) ~> bindLocals(Ss, true) ~> bindArgs(M) ~> Ss ~> return </k>
-       <nextLoc> N3:#Nat => N3 +Int 1 </nextLoc>
+       <nextLoc> N3:#Nat => sNat(N3) </nextLoc>
        <control>
          <currentBlock> N2 => N3 </currentBlock>
          <fstack> . => (K, C, N2, LL) ...</fstack>

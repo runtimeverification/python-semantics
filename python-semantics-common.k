@@ -203,9 +203,9 @@ module PYTHON-SEMANTICS-COMMON
          <oattrs>Attrs</oattrs>
        ...</object>
 
-  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> N "__method__" |-> T:#Bool ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when (T andBool lengthList L =/=Bool N +Int 1) orBool ((notBool T) andBool lengthList L =/=Bool N)
+  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> N "__method__" |-> T:#Bool ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when (T andBool lengthList L =/=Bool sNat(N)) orBool ((notBool T) andBool lengthList L =/=Bool N)
 
-  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at least " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when N =/=Bool I andBool ((T andBool lengthList L <Int N +Int 1) orBool ((notBool T) andBool lengthList L <Int N))
+  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at least " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when N =/=Bool I andBool ((T andBool lengthList L <Int sNat(N)) orBool ((notBool T) andBool lengthList L <Int N))
 
   rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at most " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when I >=Int 0 andBool N =/=Bool I andBool ((T andBool lengthList L >Int I +Int 1) orBool ((notBool T) andBool lengthList L >Int I))
 

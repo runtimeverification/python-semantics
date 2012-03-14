@@ -8,7 +8,7 @@ module PYTHON-SEMANTICS-OBJECTS
   rule <k> init(O:Object, Type, L, M) => test(istype(O, Type), (doCall(getmember(O, #id "__init__", true, false, false), L, M) ; ~> O), O) ...</k>
 
   rule <k> invokeBuiltin(obj("new_object",_), ListItem(obj(B:Builtin,_)) _, _) => ref(N) ...</k>
-       <nextLoc> N:#Nat => N +Int 1 </nextLoc>
+       <nextLoc> N:#Nat => sNat(N) </nextLoc>
        (. => <object>...
          <id>N</id>
          <oattrs> "__class__" |-> B </oattrs>

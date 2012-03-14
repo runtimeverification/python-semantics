@@ -17,7 +17,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule <k> lambda Ps : E:Expression => function(#id "<lambda>", Ps, return E, false, .Obj, ref("function")) ...</k> 
 
   rule <k> function(X, Ps, Ss, T:#Bool, K, O:Object) => (addParams(Listify(Ps), N, false, K) ~> enclose(N, N2) ~> test(T, bind(X, N), .) ~> ref(N)) ...</k>
-       <nextLoc> N:#Nat => N +Int 1 </nextLoc>
+       <nextLoc> N:#Nat => sNat(N) </nextLoc>
        <currentBlock> N2:#Nat </currentBlock>
        (. => <object>...
          <id>N</id>
@@ -49,13 +49,13 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule <k> addParams((ListItem(X) L:List => L), N, false, _) ...</k>
        <object>...
          <id>N</id>
-         <oattrs>... "co_argcount" |-> (N2 => N2 +Int 1) "co_argnames" |-> list(_ (. => ListItem(Id2String(X)))) ...</oattrs>
+         <oattrs>... "co_argcount" |-> (N2 => sNat(N2)) "co_argnames" |-> list(_ (. => ListItem(Id2String(X)))) ...</oattrs>
        ...</object>
 
   rule <k> addParams((ListItem(X) L => L), N, true, _) ...</k>
        <object>...
          <id>N</id>
-         <oattrs>... "co_kwonlyargcount" |-> (N2 => N2 +Int 1) "co_kwonlyargnames" |-> list(_ (. => ListItem(Id2String(X)))) ...</oattrs>
+         <oattrs>... "co_kwonlyargcount" |-> (N2 => sNat(N2)) "co_kwonlyargnames" |-> list(_ (. => ListItem(Id2String(X)))) ...</oattrs>
        ...</object>
 
   rule <k> addParams(((ListItem(X = obj(B:Builtin,_)) => ListItem(X)) _), N, false, _) ...</k>

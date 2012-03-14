@@ -15,10 +15,10 @@ module PYTHON-SEMANTICS-DICTS
          <oattrs>... "__revision__" |-> Rev2 ...</oattrs>
        ...</object> when Rev1 ==Bool Rev2 andBool Idx ==Bool lengthList L
 
-  rule <k> invokeBuiltin(obj("iter_dict_keys",_), ListItem(obj(B,_)), .) => ref(key(get(getl(M(get(L, Idx +Int 1))), 0))) ...</k>
+  rule <k> invokeBuiltin(obj("iter_dict_keys",_), ListItem(obj(B,_)), .) => ref(key(get(getl(M(get(L, sNat(Idx)))), 0))) ...</k>
        <object>...
          <id>B</id>
-         <oattrs>... "__revision__" |-> Rev1 "__order__" |-> list(L) "__index__" |-> (Idx => Idx +Int 1) "__index2__" |-> (Idx2:#Nat => 1) "_mapping" |-> B2:Builtin ...</oattrs>
+         <oattrs>... "__revision__" |-> Rev1 "__order__" |-> list(L) "__index__" |-> (Idx => sNat(Idx)) "__index2__" |-> (Idx2:#Nat => 1) "_mapping" |-> B2:Builtin ...</oattrs>
        ...</object>
        <object>...
          <id>B2</id>
@@ -28,7 +28,7 @@ module PYTHON-SEMANTICS-DICTS
   rule <k> invokeBuiltin(obj("iter_dict_keys",_), ListItem(obj(B,_)), .) => ref(key(get(getl(M(get(L, Idx))), Idx2))) ...</k>
        <object>...
          <id>B</id>
-         <oattrs>... "__revision__" |-> Rev1 "__order__" |-> list(L) "__index__" |-> Idx "__index2__" |-> (Idx2:#Nat => Idx2 +Int 1) "_mapping" |-> B2:Builtin ...</oattrs>
+         <oattrs>... "__revision__" |-> Rev1 "__order__" |-> list(L) "__index__" |-> Idx "__index2__" |-> (Idx2:#Nat => sNat(Idx2)) "_mapping" |-> B2:Builtin ...</oattrs>
        ...</object>
        <object>...
          <id>B2</id>
@@ -50,7 +50,7 @@ module PYTHON-SEMANTICS-DICTS
 
   rule <k> list(_) ~> (. => map(.)) ~> makeMap(_) ...</k>
   rule <k> (. => iterate(O, raiseInternal("TypeError", "cannot convert dictionary update sequence element #" +String Int2String(N) +String "to a sequence"))) ~>  list((ListItem(O) => .) _) ~> map(_) ~> makeMap(N) ...</k>
-  rule <k> (list(ListItem(O) ListItem(O2)) => .) ~> list(_) ~> map(_ (. => O |-> O2)) ~> makeMap(N => N +Int 1) ...</k>
+  rule <k> (list(ListItem(O) ListItem(O2)) => .) ~> list(_) ~> map(_ (. => O |-> O2)) ~> makeMap(N => sNat(N)) ...</k>
   rule <k> list(L) ~> list(_) ~> map(_) ~> makeMap(N) => raiseInternal("ValueError", "dictionary update sequence element #" +String Int2String(N) +String " has length " +String Int2String(lengthList L) +String "; 2 is required") ...</k>
   rule <k> (list(.) => .) ~> map(_) ~> makeMap(_) ...</k>
 

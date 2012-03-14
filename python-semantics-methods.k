@@ -7,7 +7,7 @@ module PYTHON-SEMANTICS-METHODS
 
   rule <k> method(obj(FuncId,_), obj(SelfId,_), _) => ref(N:#Nat) ...</k>
        <symbols>... "method" |-> N2:#Nat "None" |-> NoneId:#Nat...</symbols>
-       <nextLoc>N => N +Int 1</nextLoc>
+       <nextLoc>N => sNat(N)</nextLoc>
        (. =>
        <object>...
          <id>N</id>

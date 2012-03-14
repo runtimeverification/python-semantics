@@ -57,7 +57,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <references> .Map </references>
 
   rule <k> object (S:#String => N:#Nat)(_,_,_,_) ...</k>
-       <nextLoc>N => N +Int 1</nextLoc>
+       <nextLoc>N => sNat(N)</nextLoc>
        <store>... . =>
          <object>...
            <id>N</id>
