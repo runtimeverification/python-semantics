@@ -12,7 +12,7 @@ module PYTHON-SEMANTICS-CALLS
 
   define isKResult(_ = K) => true when isKResult(K)
 
-  rule sortArgs((ListItem(O) => .) _) ~> processArgs(_ (. => ListItem(O)),_,_,_)
+  rule sortArgs((ListItem(O) => .) _) ~> processArgs(_ (. => ListItem(O)),.,_,_)
   rule sortArgs((ListItem(X:#Id = O) => .) _) ~> processArgs(_,M (. => Id2String(X) |-> O),_,_) when notBool(Id2String(X) in keys(M))
   rule sortArgs((ListItem(* O) => .) _) ~> processArgs(_,_,(_ => O),_)
   rule sortArgs((ListItem(** O) => .) _) ~> processArgs(_,_,_,(_ => O))
