@@ -4,7 +4,7 @@ module PYTHON-SEMANTICS-COMMON
   imports PYTHON-SEMANTICS-SYNTAX
 
   configuration <T>
-                  <k> initialize ~> $PGM:K </k> //TODO: add predicate
+                  <k> initialize ~> #id "__name__" := "__main__" ~> #id "__doc__" := docString($PGM) ~> $PGM:K </k> //TODO: add predicate
                   <control>
                     <xstack> .List </xstack>
                     <xcontext> ref("None") </xcontext>
@@ -74,6 +74,11 @@ module PYTHON-SEMANTICS-COMMON
   macro name(E) = getmember(E, #id "__name__", true, false, true)
 
   context doCall(HOLE, _, _) when HOLE =/=Bool .
+
+  declare docString : K -> #String
+  define docString(S ;) => S
+  define docString(S ; newline _) => S
+  define docString(_) => ref("None")
 
   declare lengthMap_ : Map -> #Nat
   define lengthMap(_ |-> _ M:Map) => 1 +Nat lengthMap M

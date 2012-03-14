@@ -10,18 +10,18 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule paramName(* X) => Id2String(X)
   rule paramName(** X) => Id2String(X)
 
-  syntax ObjRef ::= "function" "(" #Id "," Parameters "," Statements "," #Bool "," K "," Expression ")" [:strict(6):]
+  syntax ObjRef ::= "function" "(" #Id "," Parameters "," Statements "," #Bool "," K "," Expression "," Expression ")" [:strict(6 7):]
 
-  rule <k> def X:#Id ( Ps:Parameters ) : Ss:K => function(X, Ps, Ss, true, .Obj, ref("function")) ; ...</k>
-  rule <k> def X ( Ps ) -> K:K : Ss => function(X, Ps, Ss, true, K, ref("function")) ; ...</k>
-  rule <k> lambda Ps : E:Expression => function(#id "<lambda>", Ps, return E, false, .Obj, ref("function")) ...</k> 
+  rule <k> def X:#Id ( Ps:Parameters ) : Ss:K => function(X, Ps, Ss, true, .Obj, ref("function"), docString(Ss)) ; ...</k>
+  rule <k> def X ( Ps ) -> K:K : Ss => function(X, Ps, Ss, true, K, ref("function"), docString(Ss)) ; ...</k>
+  rule <k> lambda Ps : E:Expression => function(#id "<lambda>", Ps, return E, false, .Obj, ref("function"), ref("None")) ...</k> 
 
-  rule <k> function(X, Ps, Ss, T:#Bool, K, O:Object) => (addParams(Listify(Ps), N, false, K) ~> enclose(N, N2) ~> test(T, bind(X, N), .) ~> ref(N)) ...</k>
+  rule <k> function(X, Ps, Ss, T:#Bool, K, O:Object, O2:Object) => (addParams(Listify(Ps), N, false, K) ~> enclose(N, N2) ~> test(T, bind(X, N), .) ~> ref(N)) ...</k>
        <nextLoc> N:#Nat => sNat(N) </nextLoc>
        <currentBlock> N2:#Nat </currentBlock>
        (. => <object>...
          <id>N</id>
-         <oattrs> "__annotations__" |-> map(.) "__code__" |-> Ss "__defaults__" |-> map(.) "__kwdefaults__" |-> map(.) "__name__" |-> Id2String(X) "co_argcount" |-> 0 "co_argnames" |-> list(.) "co_kwonlyargcount" |-> 0 "co_kwonlyargnames" |-> list(.) "__class__" |-> id(O) </oattrs>
+         <oattrs> "__annotations__" |-> map(.) "__code__" |-> Ss "__defaults__" |-> map(.) "__kwdefaults__" |-> map(.) "__name__" |-> Id2String(X) "co_argcount" |-> 0 "co_argnames" |-> list(.) "co_kwonlyargcount" |-> 0 "co_kwonlyargnames" |-> list(.) "__class__" |-> id(O) "__doc__" |-> id(O2) </oattrs>
        ...</object>)
 
   context addParams((ListItem(X = HOLE) _:List), _, _, _)
