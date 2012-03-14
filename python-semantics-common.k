@@ -80,6 +80,10 @@ module PYTHON-SEMANTICS-COMMON
   define docString(S ; newline _) => S
   define docString(_) => ref("None")
 
+  declare Env2Dict : Map -> Map
+  define Env2Dict(#id S |-> K M) => S |-> K Env2Dict(M)
+  define Env2Dict(.) => .
+
   declare lengthMap_ : Map -> #Nat
   define lengthMap(_ |-> _ M:Map) => 1 +Nat lengthMap M
   define lengthMap . => 0
