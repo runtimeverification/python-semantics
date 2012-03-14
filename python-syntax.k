@@ -7,7 +7,7 @@ module PYTHON-TOKENS imports LITERALS
   syntax NAME ::= #Id
   syntax NUMBER ::= #Int  | #Float | Imaginary
   syntax STRING ::= #String | Bytes
-  syntax NAMES ::= List{NAME,","} [:seqstrict:] //TODO: remove
+  
 end module
 
 module PYTHON-SYNTAX imports PYTHON-TOKENS

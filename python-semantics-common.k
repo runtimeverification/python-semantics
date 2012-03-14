@@ -4,7 +4,7 @@ module PYTHON-SEMANTICS-COMMON
   imports PYTHON-SEMANTICS-SYNTAX
 
   configuration <T>
-                  <k> initialize ~> #id "__name__" := "__main__" ~> #id "__doc__" := docString($PGM) ~> $PGM:K </k> //TODO: add predicate
+                  <k> initialize ~> #id "__name__" := "__main__" ~> #id "__doc__" := docString($PGM) ~> $PGM:K </k>
                   <control>
                     <xstack> .List </xstack>
                     <xcontext> ref("None") </xcontext>

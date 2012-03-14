@@ -8,7 +8,6 @@ module PYTHON-SEMANTICS-OPS
 
   rule <k> coerceBinary(O:Object, O2:Object, X:#Id, RX:#Id, S:#String) => coerceBinaryBase(O, O2, X, RX) -> (raiseInternal("TypeError", "unsupported operand type(s) for " +String S)) ...</k>
 
-  //TODO modify getmember(_,_,_,false,_)
   rule <k> coerceBinaryBase(O, O2, X, RX) => test(hasbase(getbases(gettype(O2)), gettype(O)), coercion(getmember(O2, RX, true, false, true) (O)), .Obj) -> coercion(getmember(O, X, true, false, true) (O2)) -> coercion(getmember(O2, RX, true, false, true) (O)) ...</k>
 
   rule <k> coerceUnary(O, X, S) => coercion(getmember(O, X, true, false, true) ()) -> (raiseInternal("TypeError", "bad operand type for " +String S)) ...</k>
