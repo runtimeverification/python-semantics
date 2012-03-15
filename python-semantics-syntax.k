@@ -3,7 +3,6 @@ module PYTHON-SEMANTICS-SYNTAX
 
   syntax Value ::= NUMBER
                  | STRING
-                 | #Float "+" #Float "j"
                  | KList
                  | KMap
 

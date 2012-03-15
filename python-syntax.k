@@ -1,11 +1,8 @@
-module LITERALS
-  syntax Imaginary ::= #Float "j"
-  syntax Bytes ::= "b" #String
-end module
+module PYTHON-TOKENS
+  imports COMPLEX-NUMBERS
 
-module PYTHON-TOKENS imports LITERALS
   syntax NAME ::= #Id
-  syntax NUMBER ::= #Int  | #Float | Imaginary
+  syntax NUMBER ::= #Int | #Float | Imaginary
   syntax STRING ::= #String | Bytes
   syntax NAMES ::= List{NAME,","} [:seqstrict:]
 end module
