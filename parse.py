@@ -158,10 +158,8 @@ class KPythonVisitor(ast.NodeVisitor):
   def visit_UnaryOp(self, node):
     return self.visit(node.op) + "(" + self.visit(node.operand) + ")"
 
-  def visit_ops(self, nodes, ops):
-    if len(nodes) == 1:
-      return self.visit(nodes[0])
-    return ops[0] + "(" + self.visit(nodes[0]) + ",," + self.visit_ops(nodes[1:], ops[1:]) + ")"
+  def visit_Lambda(self, node):
+    return "'lambda_:_(" + self.getparams(node.args) + ",," + self.visit(node.body) + ")"
 
   def visit_Dict(self, node):
     result = "'`{_`}("
@@ -174,6 +172,10 @@ class KPythonVisitor(ast.NodeVisitor):
   def visit_Compare(self, node):
     return self.visit(node.ops[0]) + "(" + self.visit(node.left) + ",," + self.visit_ops(node.comparators, [self.visit(n) for n in node.ops[1:]]) + ")"
 
+  def visit_ops(self, nodes, ops):
+    if len(nodes) == 1:
+      return self.visit(nodes[0])
+    return ops[0] + "(" + self.visit(nodes[0]) + ",," + self.visit_ops(nodes[1:], ops[1:]) + ")"
   def visit_Call(self, node):
     return "'_`(_`)(" + self.visit(node.func) + ",," + self.getargs(node.args, node.keywords, node.starargs, node.kwargs) + ")"
 
