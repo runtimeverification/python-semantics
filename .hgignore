@@ -8,3 +8,4 @@ kompile_*
 all_tokens.tok
 run.maude
 test.py
+*.orig
