@@ -102,6 +102,6 @@ module PYTHON-SEMANTICS-FUNCTIONS
   define getName(class X ( _ ) : _) => X
   define getName(@ _ newline K) => getName(K)
 
-  rule @ O newline K => K ~> getName(K) := O(getName(K))
+  rule @ O newline K => K ~> (getName(K), .Expressions) := O(getName(K))
 
 end module

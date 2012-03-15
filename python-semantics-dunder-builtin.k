@@ -210,7 +210,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            , "__name__" |-> undefined("internal type name")) ~>
          object "function"("type",ListItem("object"),
            "__call__" |-> def "call_function" (0, -1, true)
+           "__doc__" |-> "__doc__"
            ,.) ~>
+         object "__doc__" ("reference",.,.,.) ~>
          object "method" ("type", ListItem("object"),
            "__call__" |-> def "call_method" (0, -1, true)
            "__func__" |-> "__func__"

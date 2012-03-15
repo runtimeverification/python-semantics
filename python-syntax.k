@@ -7,7 +7,7 @@ module PYTHON-TOKENS imports LITERALS
   syntax NAME ::= #Id
   syntax NUMBER ::= #Int  | #Float | Imaginary
   syntax STRING ::= #String | Bytes
-  
+  syntax NAMES ::= List{NAME,","} [:seqstrict:]
 end module
 
 module PYTHON-SYNTAX imports PYTHON-TOKENS
@@ -156,7 +156,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax Statement ::=        SimpleStmt
                      |        CompoundStmt
   syntax Statements ::= Statement
-                      | Statement "newline" Statements
+                      | Statement "newline" Statements [:prec 65:]
 
   syntax ExceptClause ::=        "except" ":" Statements
                         |        "except" Expression ":" Statements [:strict(1) gather(e E):]

@@ -4,7 +4,7 @@ module PYTHON-SEMANTICS-COMMON
   imports PYTHON-SEMANTICS-SYNTAX
 
   configuration <T>
-                  <k> initialize ~> #id "__name__" := "__main__" ~> #id "__doc__" := docString($PGM) ~> $PGM:K </k>
+                  <k> initialize ~> (#id "__name__", .Expressions) := "__main__" ~> (#id "__doc__", .Expressions) := docString($PGM:K) ~> $PGM:K </k>
                   <control>
                     <xstack> .List </xstack>
                     <xcontext> ref("None") </xcontext>
@@ -81,7 +81,7 @@ module PYTHON-SEMANTICS-COMMON
   define docString(_) => ref("None")
 
   declare Env2Dict : Map -> Map
-  define Env2Dict(#id S |-> K M) => S |-> K Env2Dict(M)
+  define Env2Dict((#id S |-> K M)) => S |-> K Env2Dict(M)
   define Env2Dict(.) => .
 
   declare lengthMap_ : Map -> #Nat
