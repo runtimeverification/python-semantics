@@ -30,7 +30,7 @@ module PYTHON-SEMANTICS-CLASSES
   define getMetaclass(.Expressions) => ref("type")
 
   //TODO: use result of __prepare__
-  rule invokeClass(O:Object, X, L, M, Env) => doCall(O, ListItem(Id2String(X)) ListItem(immutable(list(Idify(L)), ref("tuple"))) ListItem(processDict(mutable(map(.),ref("dict")), Env2Dict(Env))), stripMetaclass(M))
+  rule invokeClass(O:Object, X, L, M, Env) => doCall(O, ListItem(Id2String(X)) ListItem(immutable(list(Idify(L)), ref("tuple"))) ListItem({DeMapify(Env2Dict(Env))}), stripMetaclass(M))
 
   declare stripMetaclass : Map -> Map
   declare stripMetaclass("metaclass" |-> K M) => stripMetaclass(M)
