@@ -6,11 +6,11 @@ module PYTHON-SEMANTICS-CALLS
              | "matchArgs" "(" Expression "," List "," Map "," Map "," #Nat ")" [:strict(1):]
              | "addArg" "(" #String "," Expression ")" [:strict(2):]
 
-  rule <k> obj(S,ObjState:Bag) (Args:K) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeBuiltin(obj(S,ObjState), ., .) ...</k> when isKResult(Args)
+  rule <k> obj(S,ObjState:Bag) (Args:K) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeBuiltin(obj(S,ObjState), ., .) ...</k> when 'isKResult(Args)
   rule <k> invokeBuiltin(obj("call_function",_), ListItem(O:Object) L:List, M:Map) => invokeFunction(O, L, M) ...</k>
   rule <k> invokeFunction(O, L, M) => matchArgs(O, L, M, ., 0) ...</k>
 
-  define isKResult(_ = K) => true when isKResult(K)
+  define 'isKResult(_ = K) => true when 'isKResult(K)
 
   rule sortArgs((ListItem(O) => .) _) ~> processArgs(_ (. => ListItem(O)),.,_,_)
   rule sortArgs((ListItem(X:#Id = O) => .) _) ~> processArgs(_,M (. => Id2String(X) |-> O),_,_) when notBool(Id2String(X) in keys(M))
@@ -62,28 +62,40 @@ module PYTHON-SEMANTICS-CALLS
   rule <k> matchArgs(obj(B:Builtin,_),.,.,M,_) => invoke(ref(B), M) ...</k>
 
   syntax ListItem ::= "(" K "," Bag "," #Nat "," List ")"
-  syntax K ::= "bindArgs" "(" Map ")"
-             | "bindLocal" "(" #Id "," #Nat ")"
-             | "bindLocals" "(" K "," #Bool ")"
-             | "bindGlobal" "(" K ")"
-             | "bindNonlocal" "(" K ")"
+  syntax ObjRef ::= "makeLocals" "(" Expression "," Expression "," Map ")" [:strict(1 2):]
+                  | "makeLocals" "(" List "," List "," Map "," Expression ")" [:strict(4):]
+                  | "makeCells" "(" Expression "," Expression "," Expression "," #Nat ")" [:strict(1 2 3):]
+                  | "makeCells" "(" List "," List "," List "," Expression "," #Nat ")" [:strict(4):]
 
-  rule <k> invoke(obj(_:#Nat,<oattrs>... "__closure__" |-> N "__code__" |-> Ss:K ...</oattrs>), M) ~> K:K => bindLocals(Ss, false) ~> bindLocals(Ss, true) ~> bindArgs(M) ~> Ss ~> return </k>
-       <nextLoc> N3:#Nat => sNat(N3) </nextLoc>
+  rule <k> invoke(obj(_:#Nat,<oattrs>... "__closure__" |-> Closure:#Nat "__code__" |-> Code:#Nat "__globals__" |-> Globals:#Nat ...</oattrs>), M) ~> K:K => executeFrame(N, ref(Code), ref(N2), makeLocals(ref(Code) . #id "co_freevars", ref(Closure), M), ref(Globals), ref(Globals) ["__builtins__"], makeCells(ref(Code) . #id "co_freevars", ref(Code) . #id "co_cellvars", ref(Closure), N)) ~> return </k>
+       <nextLoc> N => sNat(N) </nextLoc>
        <control>
-         <currentBlock> N2 => N3 </currentBlock>
+         <currentFrame> N2 => N </currentFrame>
          <fstack> . => (K, C, N2, LL) ...</fstack>
          <lstack> LL => . </lstack>
          C:Bag
        </control>
-       (. => <block>...
-         <blockId> N3 </blockId>
-         <parentBlock> N </parentBlock>
-       ...</block>)
+
+  rule makeLocals(Free:Object, O, M) => makeLocals(listvalue(Free), listvalue(O), M, {})
+  rule (. => test(getattr(ref(N2), "cell_contents") ==Bool .Obj, ., O[ref(N)] := ref(N2) . #id "cell_contents")) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, M, O)
+  rule (. => O[Id2String(X)] := ref(B)) ~> makeLocals(_, _, (X |-> B => .) _, O)
+  rule makeLocals(., ., ., O) => ref(id(O))
+
+  rule makeCells(Free, Cells:Object, O, N) => makeCells(listvalue(Free), listvalue(Cells), listvalue(O), {}, N)
+  rule (. => O[ref(N)] := ref(N2)) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O, _)
+  rule <k> (. => O[ref(N)] := ref(N2)) ~> makeCells(_, ListItem(N) _, _, O, Frame:#Nat) ...</k>
+       <nextLoc> N2 => sNat(N2) </nextLoc>
+       (. => <object>...
+         <id>N2</id>
+         <oattrs> "__class__" |-> Cell "cell_contents" |-> .Obj "cell_frame" |-> Frame </oattrs>
+       ...</object>)
+       <symbols>... "cell" |-> Cell:#Nat ...</symbols>
+
+  rule makeCells(.List, .List, .List, O, _) => ref(id(O))
 
   rule <k> return O ~> _ => O ~> K </k>
        <control>
-         <currentBlock> _ => N </currentBlock>
+         <currentFrame> _ => N </currentFrame>
          <fstack> (K, C, N, LL) => . ...</fstack>
          <lstack> _ => LL </lstack>
          (_ => C)
@@ -97,97 +109,5 @@ module PYTHON-SEMANTICS-CALLS
          <lstack> _ => LL </lstack>
          (_ => C)
        </control>
-
-  rule (. => bind(X,B)) ~> bindArgs((X |-> B => .) _)
-  rule bindArgs(.) => .
-
-  rule bindLocals(Stmt:K newline Ss:K, T:#Bool) => bindLocals(Stmt, T) ~> bindLocals(Ss, T)
-  rule bindLocals(., _) => .
-  rule bindLocals(import X, T) => if T then bindLocal(X,0) else . fi
-  rule bindLocals(import X . _, T) => if T then bindLocal(X,0) else . fi
-  rule bindLocals(import _ as X, T) => if T then bindLocal(X,0) else . fi
-  rule bindLocals(from _ import K, T) => if T then bindLocals(import K, T) else . fi
-  rule bindLocals(class X (_) : _, T) => if T then bindLocal(X,0) else . fi
-  rule bindLocals(def X (_) -> _ : _, T) => if T then bindLocal(X,0) else . fi
-  rule bindLocals(def X (_) : _, T) => if T then bindLocal(X,0) else . fi
-  rule bindLocals(K := _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(for K in _ : Ss else: Ss2:K, T) => if T then bindLocals(K, T) else . fi ~> bindLocals(Ss, T) ~> bindLocals(Ss2, T)
-  rule bindLocals(with _ as K : Ss, T) => if T then bindLocals(K, T) else . fi ~> bindLocals(Ss, T)
-  rule bindLocals(try: Ss ECs:K else: Ss2, T) => bindLocals(Ss, T) ~> bindLocals(ECs, T) ~> bindLocals(Ss2, T)
-  rule bindLocals(EC:K except ECs, T) => bindLocals(EC, T) ~> bindLocals(ECs, T)
-  rule bindLocals(.ExceptClauses, _) => .
-  rule bindLocals(except: Ss, T) => bindLocals(Ss, T)
-  rule bindLocals(except _ : Ss, T) => bindLocals(Ss, T)
-  rule bindLocals(except _ as K : Ss, T) => if T then bindLocals(K, T) else . fi ~> bindLocals(Ss, T)
-
-  rule bindLocals(try: Ss finally: Ss2, T) => bindLocals(Ss, T) ~> bindLocals(Ss2, T)
-  rule bindLocals(while _ : Ss else: Ss2, T) => bindLocals(Ss, T) ~> bindLocals(Ss2, T)
-  rule bindLocals(if _ : Ss else: Ss2, T) => bindLocals(Ss, T) ~> bindLocals(Ss2, T)
-  rule bindLocals(_ ;, _) => .
-  rule bindLocals(K += _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(K -= _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(K *= _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(K /= _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(K floor/= _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(K %= _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(K **= _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(K >>= _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(K <<= _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(K &= _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(K ^= _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(K |= _, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(del K, T) => if T then bindLocals(K, T) else . fi
-  rule bindLocals(return, _) => .
-  rule bindLocals(return _, _) => .
-  rule bindLocals(raise, _) => .
-  rule bindLocals(raise _, _) => .
-  rule bindLocals(raise _ from _, _) => .
-  rule bindLocals(break, _) => .
-  rule bindLocals(continue, _) => .
-  rule bindLocals(global Xs:NAMES, T) => if T then . else bindGlobal(Xs) fi
-  rule bindLocals(nonlocal Xs, T) => if T then . else bindNonlocal(Xs) fi
-
-  rule bindLocals((K , K2:K), T) => bindLocals(K, T) ~> bindLocals(K2, T)
-  rule bindLocals(.Expressions, _) => .
-  rule bindLocals(tuple(K), T) => bindLocals(K, T)
-  rule bindLocals([ K ], T) => bindLocals(K, T)
-  rule bindLocals(_ . _, _) => .
-  rule bindLocals(_ [ _ ], _) => .
-  rule bindLocals(_ [' _ '], _) => .
-  rule bindLocals(* K, T) => bindLocals(K, T)
-  rule bindLocals(X, _) => bindLocal(X,0)
-
-  rule bindGlobal(X, Xs) => bindGlobal(X) ~> bindGlobal(Xs)
-  rule bindGlobal(.NAMES) => .
-  rule bindNonlocal(X, Xs) => bindNonlocal(X) ~> bindNonlocal(Xs)
-  rule bindNonlocal(.NAMES) => .
-
-  rule <k> bindGlobal(X) => . ...</k>
-       <currentBlock> N </currentBlock>
-       <blockId> N </blockId>
-       <globals>... . => SetItem(X) ...</globals>
-       <nonlocals> Nonlocals </nonlocals> when notBool(X in Nonlocals)
-
-  rule <k> bindNonlocal(X) => . ...</k>
-       <currentBlock> N </currentBlock>
-       <blockId> N </blockId>
-       <nonlocals>... . => SetItem(X) ...</nonlocals>
-       <globals> Globals </globals> when notBool(X in Globals)
-
-  rule <k> bindLocal(X,_) => . ...</k>
-       <currentBlock> N </currentBlock>
-       <blockId> N </blockId>
-       <globals>... SetItem(X) ...</globals>
-
-  rule <k> bindLocal(X,_) => . ...</k>
-       <currentBlock> N </currentBlock>
-       <blockId> N </blockId>
-       <nonlocals>... SetItem(X) ...</nonlocals>
-
-  rule <k> bindLocal(X,N2) => bind(X,N2) ...</k>
-       <currentBlock> N </currentBlock>
-       <blockId> N </blockId>
-       <globals> Globals:Set </globals>
-       <nonlocals> Nonlocals:Set </nonlocals> when notBool(X in Globals orBool X in Nonlocals)
 
 end module

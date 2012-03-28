@@ -6,8 +6,6 @@ module PYTHON-SEMANTICS-SYNTAX
                  | KList
                  | KMap
 
-  macro F:#Float j = 0.0 + F j
-
   syntax Object ::= "obj" "(" Builtin "," Bag ")"
 
   syntax Builtin ::= #Nat
@@ -15,6 +13,7 @@ module PYTHON-SEMANTICS-SYNTAX
 
   syntax NAME ::= ObjRef
                 | Null
+                | Undefined
 
   syntax Null ::= ".Obj"
 

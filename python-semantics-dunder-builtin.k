@@ -2,52 +2,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
   imports PYTHON-SEMANTICS-BUILTIN-MODULES
 
   rule <k> builtins => (
-         object "builtins"(
-           "module",.,
-           "AssertionError" |-> "AssertionError"
-           "AttributeError" |-> "AttributeError"
-           "BaseException" |-> "BaseException"
-           "Exception" |-> "Exception"
-           "False" |-> "False"
-           "IndexError" |-> "IndexError"
-           "KeyError" |-> "KeyError"
-           "LookupError" |-> "LookupError"
-           "NameError" |-> "NameError"
-           "None" |-> "None"
-           "NotImplemented" |-> "NotImplemented"
-           "RuntimeError" |-> "RuntimeError"
-           "StopIteration" |-> "StopIteration"
-           "SyntaxError" |-> "SyntaxError"
-           "True" |-> "True"
-           "TypeError" |-> "TypeError"
-           "UnboundLocalError" |-> "UnboundLocalError"
-           "ValueError" |-> "ValueError"
-           "__debug__" |-> "__debug__"
-           "bool" |-> "bool"
-           "complex" |-> "complex"
-           "dict" |-> "dict"
-           "hash" |-> "hash"
-           "int" |-> "int"
-           "iter" |-> "iter"
-           "float" |-> "float"
-           "len" |-> "len"
-           "list" |-> "list"
-           "object" |-> "object"
-           "str" |-> "str"
-           "tuple" |-> "tuple"
-           "type" |-> "type",
-           "__debug__" |-> ref("True")) ~>
-         object "__debug__" ("attribute",.,.,.) ~>
-         object "sys"(
-           "module",.,
-           "hash_info" |-> "hash_info" ,
-           "hash_info" |-> list(ListItem(64) ListItem(2305843009213693951) ListItem(314159) ListItem(0) ListItem(1000003))) ~>
-         object "hash_info" ("attribute",.,.,.) ~>
+
+         // module "builtins"
          object "AssertionError"("type",ListItem("Exception"),.,.) ~>
          object "AttributeError"("type",ListItem("Exception"),.,.) ~>
          object "BaseException"("type",ListItem("object"),
-           "__cause__" |-> "__cause__"
-           "__context__" |-> "__context__"
+           "__cause__" |-> ref("__cause__")
+           "__context__" |-> ref("__context__")
            "__init__" |-> def "init_baseexception" (0, -1, true)
            ,.) ~>
          object "__cause__" ("reference",.,.,.) ~>
@@ -79,8 +40,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "keys" |-> def "keys_dict" (0, 0, true)
            "__getitem__" |-> def "getitem_dict" (1, 1, true)
            "__init__" |-> def "init_dict" (0, 1, true)
+           "__iter__" |-> def "iter_dict" (0, 0, true)
            "__len__" |-> def "len_dict" (0, 0, true)
            "__new__" |-> def "new_dict" (1, -1, false)
+           "__setitem__" |-> def "setitem_dict" (2, 2, true)
            ,.) ~>
          object "dict_keys" ("type",ListItem("object"),
            "__iter__" |-> def "iter_dict_keys" (0, 0, true)
@@ -162,10 +125,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "new_list" (1, -1, false)
            ,.) ~>
          object "module"("type",ListItem("object"),
+           "__dict__" |-> ref("__dict__")
            "__getattribute__" |-> def "getattribute_module" (1, 1, true)
            ,.) ~>
+         object "__dict__"("reference",.,.,.) ~>
          object "object"("type",root,
-           "__class__" |-> "__class__"
+           "__class__" |-> ref("__class__")
            "__getattribute__" |-> def "getattribute_object" (1, 1, true)
            "__eq__" |-> def "eq_object" (0, 1, true)
            "__init__" |-> def "init_object" (0, -1, true)
@@ -182,45 +147,141 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ,.) ~>
          object "tuple"("type",ListItem("object"),
            "__add__" |-> def "add_tuple" (1, 1, true)
+           "__contains__" |-> def "contains_tuple" (1, 1, true)
            "__getitem__" |-> def "getitem_tuple" (1, 1, true)
-           "__iter__" |-> "get_iter"
+           "__iter__" |-> ref("get_iter")
            "__len__" |-> def "len_tuple" (0, 0, true)
            "__new__" |-> def "new_tuple" (1, 2, false)
            ,.) ~>
          object "type"("type",ListItem("object"),
            "__call__" |-> def "call_type" (1, -1, true)
-           "__name__" |-> "__name__" ,.) ~>
+           "__name__" |-> ref("__name__") ,.) ~>
          object "__name__" ("attribute",.,.,.) ~>
+
+         // module "types"
          object "attribute"("type",ListItem("object"),
            "__get__" |-> def "get_attr" (1, 2, true)
-           "__new__" |-> "new_raise"
-           , "__name__" |-> undefined("internal type name")) ~>
-         object "reference"("type",ListItem("object"),
-           "__get__" |-> def "get_ref" (1, 2, true)
-           "__new__" |-> "new_raise"
-           , "__name__" |-> undefined("internal type name")) ~>
-         object "builtin-method" ("type",ListItem("object"),
-           "__call__" |-> "call_builtin_function"
-           "__get__" |-> def "get_builtin_method" (1, 2, true)
-           "__new__" |-> "new_raise"
+           "__new__" |-> ref("new_raise")
            , "__name__" |-> undefined("internal type name")) ~>
          object "builtin-function" ("type",ListItem("object"),
            "__call__" |-> def "call_builtin_function" (0, -1, true)
-           "__new__" |-> "new_raise"
+           "__new__" |-> ref("new_raise")
            , "__name__" |-> undefined("internal type name")) ~>
+         object "builtin-method" ("type",ListItem("object"),
+           "__call__" |-> ref("call_builtin_function")
+           "__get__" |-> def "get_builtin_method" (1, 2, true)
+           "__new__" |-> ref("new_raise")
+           , "__name__" |-> undefined("internal type name")) ~>
+         object "code"("type",ListItem("object"),
+           "co_name" |-> ref("co_name")
+           "co_argcount" |-> ref("co_argcount")
+           "co_nlocals" |-> ref("co_nlocals")
+           "co_varnames" |-> ref("co_varnames")
+           "co_cellvars" |-> ref("co_cellvars")
+           "co_freevars" |-> ref("co_freevars")
+           "co_consts" |-> ref("co_consts")
+           "co_names" |-> ref("co_names")
+           ,.) ~>
+         object "co_name" ("attribute",.,.,.) ~>
+         object "co_argcount" ("attribute",.,.,.) ~>
+         object "co_nlocals" ("attribute",.,.,.) ~>
+         object "co_varnames" ("reference",.,.,.) ~>
+         object "co_cellvars" ("reference",.,.,.) ~>
+         object "co_freevars" ("reference",.,.,.) ~>
+         object "co_consts" ("reference",.,.,.) ~>
+         object "co_names" ("reference",.,.,.) ~>
+         object "frame"("type",ListItem("object"),
+           "__new__" |-> ref("new_raise")
+           "f_back" |-> ref("f_back")
+           "f_builtins" |-> ref("f_builtins")
+           "f_code" |-> ref("f_code")
+           "f_globals" |-> ref("f_globals")
+           "f_lasti" |-> ref("f_lasti")
+           "f_locals" |-> ref("f_locals")
+           , "f_lasti" |-> undefined("bytecode is implementation specific")) ~>
+         object "f_back" ("reference",.,.,.) ~>
+         object "f_builtins" ("reference",.,.,.) ~>
+         object "f_code" ("reference",.,.,.) ~>
+         object "f_globals" ("reference",.,.,.) ~>
+         object "f_lasti" ("attribute",.,.,.) ~>
+         object "f_locals" ("reference",.,.,.) ~>
          object "function"("type",ListItem("object"),
            "__call__" |-> def "call_function" (0, -1, true)
-           "__doc__" |-> "__doc__"
+           "__doc__" |-> ref("__doc__")
            ,.) ~>
          object "__doc__" ("reference",.,.,.) ~>
          object "method" ("type", ListItem("object"),
            "__call__" |-> def "call_method" (0, -1, true)
-           "__func__" |-> "__func__"
-           "__self__" |-> "__self__"
+           "__func__" |-> ref("__func__")
+           "__self__" |-> ref("__self__")
            , .) ~>
-         object "__func__" ("attribute",.,.,.) ~>
-         object "__self__" ("attribute",.,.,.) ~>
-         genv( "__builtins__" , "builtins" )
+         object "__func__" ("reference",.,.,.) ~>
+         object "__self__" ("reference",.,.,.) ~>
+         object "reference"("type",ListItem("object"),
+           "__get__" |-> def "get_ref" (1, 2, true)
+           "__new__" |-> ref("new_raise")
+           , "__name__" |-> undefined("internal type name"))) ...</k>
+
+  rule <k> modules => (
+
+         // module declarations
+         module "builtins"({
+           ("AssertionError" : ref("AssertionError"))
+         , ("AttributeError" : ref("AttributeError"))
+         , ("BaseException" : ref("BaseException"))
+         , ("Exception" : ref("Exception"))
+         , ("False" : ref("False"))
+         , ("IndexError" : ref("IndexError"))
+         , ("KeyError" : ref("KeyError"))
+         , ("LookupError" : ref("LookupError"))
+         , ("NameError" : ref("NameError"))
+         , ("None" : ref("None"))
+         , ("NotImplemented" : ref("NotImplemented"))
+         , ("RuntimeError" : ref("RuntimeError"))
+         , ("StopIteration" : ref("StopIteration"))
+         , ("SyntaxError" : ref("SyntaxError"))
+         , ("True" : ref("True"))
+         , ("TypeError" : ref("TypeError"))
+         , ("UnboundLocalError" : ref("UnboundLocalError"))
+         , ("ValueError" : ref("ValueError"))
+           //TODO: parametrize
+         , ("__debug__" : if T then ref("True") else ref("False") fi)
+         , ("__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices.")
+         , ("bool" : ref("bool"))
+         , ("complex" : ref("complex"))
+         , ("dict" : ref("dict"))
+         , ("hash" : ref("hash"))
+         , ("int" : ref("int"))
+         , ("iter" : ref("iter"))
+         , ("float" : ref("float"))
+         , ("len" : ref("len"))
+         , ("list" : ref("list"))
+         , ("object" : ref("object"))
+         , ("str" : ref("str"))
+         , ("tuple" : ref("tuple"))
+         , ("type" : ref("type"))
+         , .KeyData
+         }) ~>
+         module "sys"({
+           //TODO: parametrize
+           ("hash_info" : tuple(N1, N2, N3, N4, N5))
+         , .KeyData
+         }) ~>
+         module "types"({
+           ("BuiltinFunctionType" : ref("builtin-function"))
+         , ("BuiltinMethodType" : ref("builtin-method"))
+         , ("CodeType" : ref("code"))
+         , ("FrameType" : ref("frame"))
+         , ("FunctionType" : ref("function"))
+         , ("GetSetDescriptorType" : undefined("cpython implementation type"))
+         , ("LambdaType" : ref("function"))
+         , ("MemberDescriptorType" : undefined("cpython implementation type"))
+         , ("MethodType" : ref("method"))
+         , ("ModuleType" : ref("module"))
+         , .KeyData
+         })
        ) ...</k>
+       <debug> T:#Bool </debug>
+       <hashInfo> ListItem(N1:#Nat) ListItem(N2:#Nat) ListItem(N3:#Nat) ListItem(N4:#Nat) ListItem(N5:#Nat) </hashInfo>
 
 end module

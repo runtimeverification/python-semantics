@@ -1,5 +1,8 @@
 module PYTHON-TOKENS
   imports COMPLEX-NUMBERS
+  imports BYTES
+
+  //TODO: redo with hooks
 
   syntax NAME ::= #Id
   syntax NUMBER ::= #Int | #Float | Imaginary
@@ -38,17 +41,18 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                    | AttributeRef
                    | Subscription
                    | Slicing
-                   | Expression "(" Arguments ")" [:seqstrict prec 42:]
+                   | Expression "(" Arguments ")" [:seqstrict:]
 
   syntax Arguments ::= List{Argument,","} [:seqstrict:]
   syntax Argument ::= Expression
-                    | #Id "=" Expression [:strict(2):]
+                    | NAME "=" Expression [:strict(2):]
                     // "*" Expression is implicit
                     | "**" Expression [:strict hybrid:]
 
-  syntax AttributeRef ::= Expression "." NAME [:strict(1) prec 42:]
-  syntax Subscription ::= Expression "[" Expression "]" [:seqstrict required prec 42:]
-  syntax Slicing ::= Expression "['" SliceItems "']" [:required prec 42:]
+  syntax AttributeRef ::= Expression "." NAME [:strict(1):]
+
+  syntax Subscription ::= Expression "[" Expression "]" [:seqstrict required:]
+  syntax Slicing ::= Expression "['" SliceItems "']" [:required:]
   syntax SliceItems ::= List{SliceItem,","}
   syntax SliceItem ::= Expression
                      | ":" ":"
@@ -125,7 +129,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                       | "continue"
                       | "import" ModuleAliases        [:seqstrict required:]
                       | "from" RelativeModule "import" ModuleAliases        [:strict(1) required:]
-                      | "from" Module "import" "*"        [:strict:]
+                      | "from" Primary "import" "*"        [:strict:]
                       | "global" NAMES        [:required:]
                       | "nonlocal" NAMES      [:required:]
 
@@ -133,12 +137,10 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax Target ::= Expression
   
   syntax ModuleAliases ::= List{ModuleAlias,","}
-  syntax ModuleAlias ::= Module [:required:]
-                       | Module "as" NAME
-  syntax Module ::= NAME
-                    NAME "." Module
+  syntax ModuleAlias ::= Expression
+                       | Expression "as" NAME
   syntax RelativeModule ::= ".dir"
-                          | Module [:required:]
+                          | Expression [:required:]
                           | "." RelativeModule        [:strict:]
 
   syntax ExceptClauses ::= List{ExceptClause,"except"}

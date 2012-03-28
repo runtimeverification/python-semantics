@@ -23,12 +23,12 @@ module PYTHON-SEMANTICS-LITERALS
   rule <k> I:#Int => immutable(I,ref("int")) ...</k>
   rule <k> S:#String => immutable(S,ref("str")) ...</k>
   rule <k> F:#Float => immutable(F,ref("float")) ...</k>
-  rule <k> tuple(Osc:Expressions) => immutable(list(IdListify(Osc)), ref("tuple")) ...</k>
-  rule <k> [ Osc ] => mutable(list(IdListify(Osc)), ref("list")) ...</k>
+  rule <k> tuple(Osc:Expressions) => immutable(list(Idify(Listify(Osc))), ref("tuple")) ...</k>
+  rule <k> [ Osc ] => mutable(list(Idify(Listify(Osc))), ref("list")) ...</k>
   rule <k> { Osc } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k>
   rule <k> { OPs:KeyData } => processDict(mutable(map(.),ref("dict")), Mapify(OPs)) ...</k>
 
-  rule <k> (. => processDictElement(Dict:Object, Key:Object, (ref("hash")(Key)), Value:Object)) ~> processDict(Dict, _ (Key |-> Value => .)) ...</k>
+  rule <k> (. => processDictElement(Dict:Object, Key:Object, (ref("hash")(Key)), Value:K)) ~> processDict(Dict, _ (Key |-> Value => .)) ...</k>
 
   rule <k> processDict(Dict, .) => ref(id(Dict)) ...</k>
 

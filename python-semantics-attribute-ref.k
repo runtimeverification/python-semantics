@@ -13,7 +13,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule <k> O . X:#Id => getmember(O, #id "__getattribute__", true, false, true) (Id2String(X)) ...</k>
 
   rule <k> invokeBuiltin(obj("getattribute_object",_), ListItem(O) ListItem(O2:Object), .) => getmember(O, #id strvalue(O2), true, true, true) ...</k>
-  rule <k> invokeBuiltin(obj("getattribute_module",_), ListItem(O) ListItem(O2), .) => getmember(O, #id strvalue(O2), false, true, true) ...</k>
+  rule <k> invokeBuiltin(obj("getattribute_module",_), ListItem(O) ListItem(O2), .) => getmember(O, #id strvalue(O2), true, true, false) -> try: (O . #id "__dict__" [ O2 ]) except ref("KeyError") : (setx(.Obj) ~> raiseInternal("AttributeError", "object has no attribute '" +String  strvalue(O2) +String "'")) else: pass ...</k>
 
   rule <k> getmember(O, X, T:#Bool, T2:#Bool, true) => getmember(O, X, T, T2, false) -> (getmember(O, #id "__getattr__", true, false, false) (Id2String(X))) -> raiseInternal("AttributeError", "object has no attribute '" +String Id2String(X) +String "'") ...</k>
   rule <k> getmember(O, X, true, false, false) => descriptormatch(getmember(O, X, false, false, false), O, gettype(O), false) ...</k>

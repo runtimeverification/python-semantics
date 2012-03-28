@@ -4,24 +4,15 @@ module PYTHON-SEMANTICS-COMMON
   imports PYTHON-SEMANTICS-SYNTAX
 
   configuration <T>
-                  <k> initialize ~> (#id "__name__", .Expressions) := "__main__" ~> (#id "__doc__", .Expressions) := docString($PGM:K) ~> $PGM:K </k>
+                  <k> initialize($PGM:K) </k>
                   <control>
                     <xstack> .List </xstack>
                     <xcontext> ref("None") </xcontext>
-                    <currentBlock> 0 </currentBlock>
+                    <currentFrame> .K </currentFrame>
                     <lstack> .List </lstack>
                     <fstack> .List </fstack>
+                    <scope> .List </scope>
                   </control>
-                  <blocks>
-                    <block multiplicity="+">
-                      <env> .Map </env>
-                      <blockId> 0 </blockId>
-                      <parentBlock> .K </parentBlock>
-                      <globals> .Set </globals>
-                      <nonlocals> .Set </nonlocals>
-                      <isClass> false </isClass>
-                    </block>
-                  </blocks>
                   <store>
                     <object multiplicity="*">
                       <id> 0 </id>
@@ -33,14 +24,13 @@ module PYTHON-SEMANTICS-COMMON
                   <references> "None" |-> 1 </references>
                   <literals> .Map </literals>
                   <nextLoc> 1 </nextLoc>
+                  <debug> $DEBUG:#Bool </debug>
+                  <hashInfo> $HASHINFO:List </hashInfo>
                 </T>
 
-  syntax K ::= "initialize"
+  syntax K ::= "initialize" "(" K ")"
              | "bind" "(" NAME "," Builtin ")" 
-             | "doBind" "(" NAME "," Builtin "," #Bool ")" 
-             | "doNonlocalBind" "(" NAME "," Builtin "," #Int "," #Bool ")"
              | "unbind" "(" NAME ")"
-             | "iterate" "(" Expression "," K ")" [:strict(1):]
              | "mapping" "(" Expression "," K ")" [:strict(1):]
              | "addItem" "(" Expression ")" [:strict:]
              | "addPair" "(" Builtin "," Expression ")" [:strict(2):]
@@ -48,6 +38,10 @@ module PYTHON-SEMANTICS-COMMON
              | "setx" "(" K ")"
              | "newHelper" "(" Expression "," Expression "," Set ")" [:strict(1 2):]
              | "raiseInternal" "(" #String "," #String ")"
+             | "setattr" "(" Builtin "," #String "," K ")"
+             | "setref" "(" Builtin "," #String "," Expression ")" [:strict(3):]
+             | "executeModule" "(" Expression "," Expression "," Expression ")" [:strict:]
+             | "executeFrame" "(" #Nat "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression ")" [:strict(2 3 4 5 6 7):]
 
   syntax Test ::= "istype" "(" Expression "," Expression ")" [:strict:]
                 | "hasbase" "(" Expression "," Expression ")" [:strict:]
@@ -70,6 +64,9 @@ module PYTHON-SEMANTICS-COMMON
                   | "immutable" "(" Value "," Expression ")" [:strict(2):]
                   | "copy" "(" Expression "," Expression ")" [:strict:]
                   | "name" "(" Expression ")"
+                  | "codeObject" "(" #Id "," Parameters "," K ")"
+
+  syntax ListRef ::= "iterate" "(" Expression "," K ")" [:strict(1):]
 
   macro name(E) = getmember(E, #id "__name__", true, false, true)
 
@@ -92,13 +89,13 @@ module PYTHON-SEMANTICS-COMMON
   define Ids2Strings(SetItem(#id S) St) => SetItem(S) Ids2Strings(St)
   define Ids2Strings(.) => .
 
-  declare Listify : Parameters -> List
+  declare Listify : K -> List
   define Listify(P:Parameter , Ps:Parameters) => ListItem(P) Listify(Ps)
   define Listify(.Parameters) => .
 
-  declare IdListify : Expressions -> List
-  define IdListify(O:Object , Es:Expressions) => ListItem(id(O)) IdListify(Es)
-  define IdListify(.Expressions) => .
+  declare DeListify : List -> Parameters
+  define DeListify(ListItem(P) L) => P , DeListify(L)
+  define DeListify(.) => .Parameters
 
   declare Idify : List -> List
   define Idify(ListItem(O) L) => ListItem(id(O)) Idify(L)
@@ -113,11 +110,11 @@ module PYTHON-SEMANTICS-COMMON
   define DeSetify(.) => .
 
   declare sorted : List -> List
-  define sorted(ListItem(K) L) => sorted(less(L, K)) ListItem(K) sorted(more(L, K)) when L =/=Bool .
-  define sorted(ListItem(K)) => ListItem(K)
+  define sorted(ListItem(K) L) => sorted(less(L, K)) ListItem(K) sorted(more(L, K))
+  define sorted(.) => .
 
   declare less : List K -> List
-  define less((ListItem(K) L), K2) => ListItem(K) less(L, K2) when lt(K, K2)
+  define less((ListItem(K) L), K2:K) => ListItem(K) less(L, K2) when lt(K, K2)
   define less((ListItem(K) L), K2) => less(L, K2) when notBool lt(K, K2)
   define less(.,_) => .
 
@@ -127,25 +124,26 @@ module PYTHON-SEMANTICS-COMMON
   define more(.,_) => .
 
   declare lt : K K -> #Bool
-  define lt(S, N) => true
-  define lt(N, S) => false
+  define lt(S, I) => true
+  define lt(I, S) => false
   define lt(S, S2) => S <String S2
-  define lt(N, N2:#Nat) => N <Nat N2
+  define lt(I, I2:#Int) => I <Int I2
 
   declare lookup : Map Set -> Set
-  define lookup((K |-> K2:K M), (SetItem(K) St)) => SetItem(K2) lookup(M, St)
+  define lookup((K |-> K2 M), (SetItem(K) St)) => SetItem(K2) lookup(M, St)
   define lookup(_, .) => .
 
   declare Mapify : KeyData -> Map
-  define Mapify(O : O2 , KD:KeyData) => O |-> O2 Mapify(KD)
+  define Mapify(K : K2 , KD:KeyData) => K |-> K2 Mapify(KD)
   define Mapify(.KeyData) => .
 
   declare DeMapify : Map -> KeyData
   define DeMapify((K |-> K2 M)) => (K : K2) , DeMapify(M)
   define DeMapify(.) => .List{","}
 
-  declare id : Object -> Builtin
+  declare id : Expression -> Builtin
   define id(obj(B,_)) => B
+  define id(undefined(S)) => undefined(S)
 
   declare intvalue : Expression -> #Int
   define intvalue(obj(_,<oattrs>... "__value__" |-> I:#Int ...</oattrs>)) => I
@@ -176,6 +174,21 @@ module PYTHON-SEMANTICS-COMMON
   define getref(obj(_,<oattrs> Attrs </oattrs>), S) => ref(Attrs(S))
   context getref(HOLE,_)
 
+  declare _&Set_ : Set Set -> Set
+  define St1:Set &Set St2:Set => St1 -Set (St1 -Set St2)
+
+  rule <k> setattr(B, S, K) => . ...</k>
+       <object>...
+         <id>B</id>
+         <oattrs> Attrs => Attrs[K / S] </oattrs>
+       ...</object>
+
+  rule <k> setref(B, S, O) => . ...</k>
+       <object>...
+         <id>B</id>
+         <oattrs> Attrs => Attrs[id(O) / S] </oattrs>
+       ...</object>
+
   syntax ListItem ::= "(" K "," Bag "," List "," List "," List "," K ")"
 
   rule binaryOp(O, O2:Object, S, S2, K:K) => test(and(istype(O, ref(S)), istype(O2, ref(S2))), K, ref("NotImplemented"))
@@ -193,8 +206,8 @@ module PYTHON-SEMANTICS-COMMON
   rule hasbase(list(ListItem(N) L), Base) => or(hasbase(ref(N), Base),hasbase(list(L), Base))
   rule hasbase(list(.List), Base) => false
 
-  rule <k> invokeBuiltin(obj("get_attr",_), ListItem(obj(_, <oattrs>... "__name__" |-> S ...</oattrs>)) ListItem(O) ListItem(_), .) => getattr(O, S) ...</k>
   rule <k> invokeBuiltin(obj("get_ref",_), ListItem(obj(_, <oattrs>... "__name__" |-> S ...</oattrs>)) ListItem(O) ListItem(_), .) => getref(O, S) ...</k>
+  rule <k> invokeBuiltin(obj("get_attr",_), ListItem(obj(_, <oattrs>... "__name__" |-> S ...</oattrs>)) ListItem(O) ListItem(_), .) => getattr(O, S) ...</k>
 
   rule <k> ref(S) => ref(N) ...</k>
        <symbols>... S |-> N ...</symbols>
@@ -234,6 +247,23 @@ module PYTHON-SEMANTICS-COMMON
   rule <k> newHelper(O, Type, St:Set) => test(hasbase(O, Type), test(id(O) in lookup(Sym, St), raiseInternal("TypeError", "unsafe builtin __new__ call error message"), .), raiseInternal("TypeError", "invalid builtin __new__ call argument type error message")) ...</k>
        <symbols> Sym:Map </symbols>
 
-  rule <k> raiseInternal(S, S2) => raise mutable("args" |-> undefined(S2),ref(S)) ...</k>
+  rule raiseInternal(S, S2) => raise mutable("args" |-> undefined(S2),ref(S))
+
+  rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => ((Dict [ "__name__"]) , .Expressions) := CO . #id "co_name" ~> ((Dict [ "__doc__" ]) , .Expressions) := CO . #id "co_consts" [0] ~> ((Dict [ "__builtins__" ]) , .Expressions) := Builtins ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple()) ~> setref(id(CO), "co_cellvars", tuple()) ~> executeFrame(sNat(N), ref(id(CO)), ref("None"), Dict, Dict, Builtins, {}) ...</k>
+       <nextLoc> N => sNat(sNat(N)) </nextLoc>
+       (. => <object>...
+         <id>N</id>
+         <oattrs> "__dict__" |-> id(Dict) "__class__" |-> Module </oattrs>
+       ...</object>)
+       <symbols>... "module" |-> Module:#Nat ...</symbols>
+
+
+  rule <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . #id "__dict__"), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells) ~> getattr(CO, "co_code") ...</k>
+       <currentFrame> _ => N </currentFrame>
+       (. => <object>...
+         <id>N</id>
+         <oattrs> "__class__" |-> Frame </oattrs>
+       ...</object>)
+       <symbols>... "frame" |-> Frame:#Nat ...</symbols>
 
 end module

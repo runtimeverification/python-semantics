@@ -19,6 +19,6 @@ module PYTHON-SEMANTICS-OBJECTS
   rule <k> invokeBuiltin(obj("eq_object",_), ListItem(O) ListItem(O2:Object), .) => test(plbool(O is O2), ref("True"), ref("NotImplemented")) ...</k>
   rule <k> invokeBuiltin(obj("ne_object",_), ListItem(O) ListItem(O2), .) => test(plbool(O is not O2), ref("True"), ref("NotImplemented")) ...</k>
  
-  rule <k> invokeBuiltin(obj("new_raise",_), ListItem(O:Object) _, _) => raiseInternal("TypeError","cannot create instances of this type") ...</k>
+  rule <k> invokeBuiltin(obj("new_raise",_), ListItem(O:Object) _, _) => raiseInternal("TypeError", "cannot create instances of this type") ...</k>
 
 end module

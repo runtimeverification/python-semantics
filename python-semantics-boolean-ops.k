@@ -8,6 +8,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
                   | "checkBool" "(" Expression ")" [:strict:]
                   | "checkInt" "(" Expression ")" [:strict:]
                   | "checkLen" "(" Expression ")" [:strict:]
+                  | "contains" "(" ListRef "," Expression ")" [:strict:]
 
   rule bool(true) => ref("True")
   rule bool(false) => ref("False")
@@ -28,18 +29,24 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   define plbool(obj(_, <oattrs>... "__value__" |-> I:#Int ...</oattrs>)) => I =/=Bool 0
   context plbool(HOLE)  
 
-  rule <k> not O => bool(negate(plbool(bool(O)))) ...</k>
-  rule <k> O and K:K => test(plbool(bool(O)), K, O) ...</k>
-  rule <k> O or K => test(plbool(bool(O)), O, K) ...</k>
+  rule not O => bool(negate(plbool(bool(O))))
+  rule O and K:K => test(plbool(bool(O)), K, O)
+  rule O or K => test(plbool(bool(O)), O, K)
 
-  rule <k> obj(B:Builtin,_) is obj(B2:Builtin,_) => bool(B ==Bool B2) ...</k>
-  rule <k> O is not O2 => not (O is O2) ...</k>
-  rule <k> O < O2:Object => coerceBoolean(O, O2, #id "__lt__", #id "__gt__", "<") ...</k>
-  rule <k> O > O2 => coerceBoolean(O, O2, #id "__gt__", #id "__lt__", ">") ...</k>
-  rule <k> O <= O2 => coerceBoolean(O, O2, #id "__le__", #id "__ge__", "<=") ...</k>
-  rule <k> O >= O2 => coerceBoolean(O, O2, #id "__ge__", #id "__le__", ">=") ...</k>
-  rule <k> O != O2 => coerceBinaryBase(O, O2, #id "__ne__", #id "__ne__") -> (O is not O2) ...</k>
-  rule <k> O == O2 => coerceBinaryBase(O, O2, #id "__eq__", #id "__eq__") -> (O is O2) ...</k>
+  rule obj(B:Builtin,_) is obj(B2:Builtin,_) => bool(B ==Bool B2)
+  rule O is not O2 => not (O is O2)
+  rule O < O2:Object => coerceBoolean(O, O2, #id "__lt__", #id "__gt__", "<")
+  rule O > O2 => coerceBoolean(O, O2, #id "__gt__", #id "__lt__", ">")
+  rule O <= O2 => coerceBoolean(O, O2, #id "__le__", #id "__ge__", "<=")
+  rule O >= O2 => coerceBoolean(O, O2, #id "__ge__", #id "__le__", ">=")
+  rule O != O2 => coerceBinaryBase(O, O2, #id "__ne__", #id "__ne__") -> (O is not O2)
+  rule O == O2 => coerceBinaryBase(O, O2, #id "__eq__", #id "__eq__") -> (O is O2)
+  rule O in O2 => bool((getmember(O2, #id "__contains__", true, false, false) (O)) -> contains(iterate(O2, .), O))
+  rule O not in O2 => not (O in O2)
+
+  rule contains(list(ListItem(O) L:List), O2) => ref("True") if O == O2 else contains(list(L), O2)
+  rule contains(list(ListItem(B) L:List), O2) => ref("True") if ref(B) == O2 else contains(list(L), O2)
+  rule contains(list(.), O2) => ref("False")
 
   rule <k> Lbl(O,,(Lbl2(O2,,Cmp))) => '_and_(Lbl(O,,O2),,Lbl2(O2,,Cmp)) ...</k>
   when _and-then_(Lbl ==Bool '_<_ or-else Lbl ==Bool '_>_ or-else Lbl ==Bool '_==_ or-else Lbl ==Bool '_>=_ or-else Lbl ==Bool '_<=_ or-else Lbl ==Bool '_!=_

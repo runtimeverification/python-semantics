@@ -58,6 +58,6 @@ module PYTHON-SEMANTICS-INTEGERS
 
   //TODO: string conversion
   rule <k> invokeBuiltin(obj("new_int",_), ListItem(O), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(0, O) ...</k>
-  rule <k> invokeBuiltin(obj("new_int",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("int"), SetItem("bool")) ~>immutable(getmember(O2, #id "__int__", true, false, false) -> ref("new_int") (O, O2, 10), O) ...</k>
+  rule <k> invokeBuiltin(obj("new_int",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("int"), SetItem("bool")) ~>immutable((getmember(O2, #id "__int__", true, false, false) -> ref("new_int")) (O, O2, 10), O) ...</k>
 
 end module

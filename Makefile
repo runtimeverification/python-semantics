@@ -4,7 +4,8 @@ TEST_RESULTS = ${TESTS:.py=.out}
 test: ${TEST_RESULTS}
 
 %.out: %.py python-compiled.maude
-	test -n "`krun --parser=./parser $< | grep "< k > (.).K </ k >"`"
+	./kpython $< > /dev/null 2>&1
+	@ test -n "grep \"< k > (.).K </ k >\" .k/krun_tmp/maude_out"
 	@ cp .k/krun_tmp/maude_out $@
 
 python-compiled.maude: ?*.k

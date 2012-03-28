@@ -3,7 +3,7 @@ module PYTHON-SEMANTICS-MACROS
 
   macro assert E:K , Es:K = if #id "__debug__" :
                                                (if not E :
-                                                  raise ref("AssertionError") (Es)
+                                                  raise #id "AssertionError" (Es)
                                                 else: pass)
                                               else: pass
   macro pass = .K

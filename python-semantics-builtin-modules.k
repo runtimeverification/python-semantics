@@ -3,11 +3,13 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
 
   syntax K ::= "builtins"
              | "resolve"
+             | "modules"
              | "object" K "(" K "," List "," Map "," Map ")"
              | "def" #String "(" #Int "," #Int "," #Bool ")"
              | "incref" "(" List "," #Nat ")"
              | "incref" "(" #String "," #Nat ")"
              | "genv" "(" #String "," #String ")"
+             | "module" K "(" Expression ")" [:strict(2):]
 
   syntax ListItem ::= "refs" "(" List ")"
                     | "root"
@@ -16,7 +18,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
   rule refs(ListItem(S) L) => ListItem(ref(S)) refs(L)
   rule refs(.List) => .List
 
-  rule <k> initialize => (builtins ~> resolve) ...</k>
+  rule <k> initialize(Program:K) => builtins ~> resolve ~> modules ~> executeModule(codeObject(#id "__main__", .Parameters, Program), ref("builtins"), {}) ...</k>
 
   rule <k> resolve ...</k>
        <oenv>... (_ |-> (ref(S) => B)) ...</oenv>
@@ -30,11 +32,6 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
 
   rule <k> resolve ...</k>
        <oattrs>... _ |-> (ref(S) => B) ...</oattrs>
-       <symbols>... S |-> B ...</symbols>
-       <references>... S |-> (sNat(N) => N) ...</references>
-
-  rule <k> resolve ...</k>
-       <env>... _ |-> (ref(S) => B) ...</env>
        <symbols>... S |-> B ...</symbols>
        <references>... S |-> (sNat(N) => N) ...</references>
 
@@ -84,28 +81,26 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
          <oattrs>... . => "__bases__" |-> list(refs(L)) ...</oattrs>
        ...</object> when L =/=Bool .List andBool L =/=Bool root
 
-  rule <k> (. => incref(S2:#String,1)) ~> object N(_,_,(S |-> S2 => .) _,_) ...</k>
+  rule <k> (. => incref(S2:#String,1)) ~> object N(_,_,(S |-> ref(S2) => .) _,_) ...</k>
        <object>...
          <id>N</id>
          <oenv>... . => S |-> ref(S2) ...</oenv>
        ...</object>
 
-  rule <k> object N(_,_,(S |-> undefined(S2) => .) _,_) ...</k>
+  context object N(_, _, S |-> HOLE _, _) when getKLabel HOLE =/=Bool 'ref`(_`)
+
+  rule <k> object N(_,_,(S |-> O:Object => .) _,_) ...</k>
        <object>...
          <id>N</id>
-         <oenv>... . => S |-> undefined(S2) ...</oenv>
+         <oenv>... . => S |-> id(O) ...</oenv>
        ...</object>
 
-  rule <k> (. => if IsMethod then incref("builtin-method",1) else incref("builtin-function",1) fi) ~> object N(_,_,(S |-> def S2(Min:#Int, Max:#Int, IsMethod:#Bool) => .) _,_) ...</k>
-       <object>...
-         <id>N</id>
-         <oenv>... . => S |-> S2 ...</oenv>
-       ...</object>
+  rule <k> (. => if IsMethod then incref("builtin-method",1) else incref("builtin-function",1) fi) ~> (def S(Min:#Int, Max:#Int, IsMethod:#Bool) => ref(S)) ...</k>
        (. => <object>...
-         <id>S2</id>
+         <id>S</id>
          <oattrs> "__min__" |-> Min "__max__" |-> Max "__method__" |-> IsMethod "__class__" |-> if IsMethod then ref("builtin-method") else ref("builtin-function") fi </oattrs>
        ...</object>)
-       <symbols> M:Map => M[S2 / S2] </symbols> when notBool(S2 in keys(M))
+       <symbols> M:Map => M[S / S] </symbols> when notBool(S in keys(M))
 
   rule <k> (. => if IsMethod then incref("builtin-method",1) else incref("builtin-function",1) fi) ~> object N(_,_,_,(S |-> def S2(Min, Max, IsMethod) => .) _) ...</k>
        <object>...
@@ -138,10 +133,12 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <references>Ref:Map (. => (S |-> N2)) </references> when notBool(S in keys(Ref))
   rule incref(.List,_) => .
 
-  rule <k> genv(S,S2) => incref(S2,1) ...</k>
-       <block>...
-         <blockId> 0 </blockId>
-         <env>... . => #id S |-> ref(S2) ...</env>
-       ...</block>
+  rule <k> module S(O) => ((ref(N) . #id "__dict__" ["__name__"]), .Expressions) := S ...</k>
+       <nextLoc> N => sNat(N) </nextLoc>
+       (. => <object>...
+         <id>N</id>
+         <oattrs> "__dict__" |-> id(O) "__class__" |-> Module </oattrs>
+       ...</object>)
+       <symbols>... (. => S |-> N) "module" |-> Module:#Nat ...</symbols>
 
 end module

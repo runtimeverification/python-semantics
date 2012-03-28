@@ -16,11 +16,7 @@ module PYTHON-SEMANTICS-STRINGS
   define char(C:#Char) => C
 
   rule <k> accumulate((S:#String => substrString(S, 1, lengthString(S) -Int 1)), (I:#Int => (mult(Imag, I, Width) xorInt asciiString(char(substrString(S, 0, 1))))), _) ...</k>
-       <symbols>... "sys" |-> Sys:Builtin ...</symbols>
-       <object>...
-         <id>Sys</id>
-         <oattrs>... "hash_info" |-> list(ListItem(Width:#Nat) ListItem(_) ListItem(_) ListItem(_) ListItem(Imag:#Int)) ...</oattrs>
-       ...</object> when lengthString(S) =/=Bool 0
+       <hashInfo> ListItem(Width:#Nat) ListItem(_) ListItem(_) ListItem(_) ListItem(Imag:#Int) </hashInfo> when lengthString(S) =/=Bool 0
 
   rule <k> accumulate("", I, Len:#Nat) => test((I xorInt Len) ==Bool -1, -2, (I xorInt Len)) ...</k>
 

@@ -18,8 +18,10 @@ module PYTHON-SEMANTICS-LOGIC
   context equals(_,HOLE)
 
   define and(false, _) => false
+  define and(_, false) => false
   define and(true, K) => K
   define or(true, _) => true
+  define or(_, true) => true
   define or(false, K) => K
   define negate(T:#Bool) => notBool T
   define equals(K, K2:K) => K ==Bool K2
