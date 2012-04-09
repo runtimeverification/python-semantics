@@ -5,7 +5,7 @@ test: ${TEST_RESULTS}
 
 %.out: %.py python-compiled.maude
 	./kpython $< > /dev/null 2>&1
-	@ test -n "grep \"< k > (.).K </ k >\" .k/krun_tmp/maude_out"
+	@ test "`grep "< k > (.).K </ k >" .k/krun_tmp/maude_out`"
 	@ cp .k/krun_tmp/maude_out $@
 
 python-compiled.maude: ?*.k
