@@ -1,4 +1,5 @@
 module PYTHON-SEMANTICS-FUNCTIONS
+  imports PYTHON-VISITOR
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
   syntax K ::= "makeFunction" "(" #Nat "," List "," K "," #Bool ")"
@@ -147,10 +148,6 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule makeCodeObject(N, ., Ss, _) => makescope(N) ~> visit(Ss, 'compileVisitor) ~> storescope ~> propscope ~> delscope
 
-  syntax K ::= "visit" "(" K "," KLabel ")"
-             | "visited" "(" List{K} ")"
-             | "visiting" "(" KLabel "," List{K} "," #Nat "," KLabel ")"
-
   syntax K ::= "compileVisitor" "(" KLabel "," #Nat "," K ")" [:klabel(compileVisitor):]
              | "compileReturner" "(" K ")" [:klabel(compileReturner):]
              | "parameterVisitor" "(" KLabel "," #Nat "," K ")" [:klabel(parameterVisitor):]
@@ -180,17 +177,10 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule addGlobals(.NAMES) => .
   rule addNonlocals(.NAMES) => .
 
-  declare returner : KLabel -> KLabel
   define returner('compileVisitor) => 'compileReturner
   define returner('parameterVisitor) => 'parameterReturner
   define returner('bindVisitor) => 'bindReturner
   define returner('importVisitor) => 'importReturner
-
-  rule visit(Lbl:KLabel(Kl:List{K}), Visitor:KLabel) => visited(.List{K}) ~> visiting(Lbl, Kl, 0, Visitor)
-  rule visit(., Visitor) => returner(Visitor)(.)
-  rule (. => Visitor((wklabel Lbl),, N,, K)) ~> visited(_) ~> visiting(Lbl, (K,,Kl => Kl), (N:#Nat => sNat(N)), Visitor)
-  rule (visited(K) => .) ~> visited(_,,(.List{K} => K))
-  rule visited(Kl) ~> visiting(Lbl, .List{K}, _, Visitor) => returner(Visitor)(Lbl(Kl))
 
   rule compileVisitor('import_, 0, K) => visit(K, 'importVisitor)
   rule compileVisitor('from_import_, 0, K) => visited(K)
