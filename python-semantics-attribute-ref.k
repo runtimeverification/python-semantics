@@ -38,5 +38,6 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
 
   //TODO: add super
   rule descriptor(O, O2, _, true) => (getmember(O, #id "__get__", false, false, false) ( O , #id "None" , O2)) -> O
+  rule descriptor(O, O2, Type:Object, false) => (getmember(O, #id "__get__", false, false, false) ( O , O2 , Type )) -> O
 
 end module
