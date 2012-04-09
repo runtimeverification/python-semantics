@@ -5,14 +5,21 @@ module PYTHON-SEMANTICS-METHODS
 
   rule <k> invokeBuiltin(obj("get_builtin_method",_), ListItem(Self:Object) ListItem(Instance:Object) ListItem(Owner:Object), .) => method(Self, Instance, Owner) ...</k>
 
+  syntax K ::= "triple" "(" K "," K "," K ")"
+
   rule <k> method(obj(FuncId,_), obj(SelfId,_), _) => ref(N:#Nat) ...</k>
        <symbols>... "method" |-> N2:#Nat "None" |-> NoneId:#Nat...</symbols>
+       <literals> M (. => triple(FuncId, SelfId, N2) |-> N) </literals>
        <nextLoc>N => sNat(N)</nextLoc>
        (. =>
        <object>...
          <id>N</id>
          <oattrs> "__class__" |-> N2 "__func__" |-> FuncId "__self__" |-> SelfId </oattrs>
-       ...</object>) when SelfId =/=Bool NoneId
+       ...</object>) when SelfId =/=Bool NoneId andBool notBool(triple(FuncId, SelfId, N2) in keys M)
+
+  rule <k> method(obj(FuncId,_), obj(SelfId,_), _) => ref(N) ...</k>
+       <literals>... triple(FuncId, SelfId, N2) |-> N ...</literals>
+       <symbols>... "method" |-> N2:#Nat "None" |-> NoneId:#Nat...</symbols> when SelfId =/=Bool NoneId
 
   rule <k> method(O:Object, obj(NoneId,_), _) => O ...</k>
        <symbols>... "None" |-> NoneId ...</symbols>
