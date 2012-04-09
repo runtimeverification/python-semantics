@@ -187,7 +187,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule compileVisitor('from_import_, 1, K) => visit(K, 'importVisitor)
   rule importVisitor('_._, 1, K) => visited(K)
   rule importVisitor('_as_, 0, K) => visited(K)
-  rule importVisitor(Lbl, N, K) => visit(K, 'importVisitor) when notBool((N ==Bool 1 andBool Lbl ==Bool '_._) orBool (N ==Bool 0 andBool Lbl ==Bool '_as_))
+  rule importVisitor(Lbl:KLabel, N, K) => visit(K, 'importVisitor) when notBool((N ==Bool 1 andBool Lbl ==Bool '_._) orBool (N ==Bool 0 andBool Lbl ==Bool '_as_))
   rule importReturner(X) => visit(X, 'bindVisitor)
   rule importReturner(K) => visited(K) when 'isId(K) =/=Bool true
 

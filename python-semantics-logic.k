@@ -2,7 +2,7 @@ module PYTHON-SEMANTICS-LOGIC
   imports PYTHON-SEMANTICS-SYNTAX
   imports PYTHON-SYNTAX
 
-  syntax K ::= K "->" K [:strict(1) gather(e E):]
+  syntax K ::= K "->" K [:strict(1) gather(e E) prec 42:]
 
   syntax ObjRef ::= "test" "(" Test "," K "," K ")" [:strict(1):]
 

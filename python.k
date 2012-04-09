@@ -1,6 +1,7 @@
 in bytes
 in complex-numbers
 in machine-integers
+in python-visitor
 in python-syntax
 in python-semantics-syntax
 in python-semantics-logic
