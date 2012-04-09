@@ -177,6 +177,10 @@ module PYTHON-SEMANTICS-COMMON
   declare _&Set_ : Set Set -> Set
   define St1:Set &Set St2:Set => St1 -Set (St1 -Set St2)
 
+  declare values_ : Map -> Set
+  define values (K |-> K2 M) => SetItem(K2) values M
+  define values . => .
+
   rule <k> setattr(B, S, K) => . ...</k>
        <object>...
          <id>B</id>
