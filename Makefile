@@ -1,6 +1,8 @@
 TESTS = $(wildcard programs/*.py)
 TEST_RESULTS = ${TESTS:.py=.out}
 
+all:	python-compiled.maude
+
 test: ${TEST_RESULTS}
 
 %.out: %.py python-compiled.maude
@@ -9,7 +11,7 @@ test: ${TEST_RESULTS}
 	@ cp .k/krun_tmp/maude_out $@
 
 python-compiled.maude: ?*.k
-	kompile python.k
+	kompile python.k -v
 
 clean:
 	rm -rf .k
