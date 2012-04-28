@@ -48,6 +48,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "dict_keys" ("type",ListItem("object"),
            "__iter__" |-> def "iter_dict_keys" (0, 0, true)
            ,.) ~>
+         object "globals" ( "builtin-function" ,.,.,
+           "__call__" |-> def "call_globals" (0, 0, false)
+           ) ~>
          object "hash"( "builtin-function" ,.,.,
            "__call__" |-> def "call_hash" (1, 1, false)
            ) ~>
@@ -207,8 +210,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "f_locals" ("reference",.,.,.) ~>
          object "function"("type",ListItem("object"),
            "__call__" |-> def "call_function" (0, -1, true)
+           "__code__" |-> ref("__code__")
            "__doc__" |-> ref("__doc__")
            ,.) ~>
+         object "__code__" ("reference",.,.,.) ~>
          object "__doc__" ("reference",.,.,.) ~>
          object "method" ("type", ListItem("object"),
            "__call__" |-> def "call_method" (0, -1, true)

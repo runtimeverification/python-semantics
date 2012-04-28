@@ -60,5 +60,8 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                                    del Frame . #id "f_globals" [S],
                                                    ((Frame . #id "f_globals" [S]), .Expressions) := ref(B))
                                          else: pass
-       
+
+  rule <k> invokeBuiltin(obj("call_globals",_), ., .) => ref(N) . #id "f_globals" ...</k>
+       <currentFrame> N </currentFrame>
+    
 end module
