@@ -90,7 +90,7 @@ module PYTHON-SEMANTICS-COMMON
   define Ids2Strings(.) => .
 
   declare Listify : K -> List
-  define Listify(P:Parameter , Ps:Parameters) => ListItem(P) Listify(Ps)
+  define Listify((P:Parameter , Ps:Parameters)) => ListItem(P) Listify(Ps)
   define Listify(.Parameters) => .
 
   declare DeListify : List -> Parameters
@@ -134,7 +134,7 @@ module PYTHON-SEMANTICS-COMMON
   define lookup(_, .) => .
 
   declare Mapify : KeyData -> Map
-  define Mapify(K : K2 , KD:KeyData) => K |-> K2 Mapify(KD)
+  define Mapify((K : K2 , KD:KeyData)) => K |-> K2 Mapify(KD)
   define Mapify(.KeyData) => .
 
   declare DeMapify : Map -> KeyData
@@ -144,6 +144,9 @@ module PYTHON-SEMANTICS-COMMON
   declare id : Expression -> Builtin
   define id(obj(B,_)) => B
   define id(undefined(S)) => undefined(S)
+
+  declare int : K -> #Int
+  define int(I) => I
 
   declare intvalue : Expression -> #Int
   define intvalue(obj(_,<oattrs>... "__value__" |-> I:#Int ...</oattrs>)) => I
