@@ -37,7 +37,7 @@ module PYTHON-SEMANTICS-COMMON
              | "popx"
              | "setx" "(" K ")"
              | "newHelper" "(" Expression "," Expression "," Set ")" [:strict(1 2):]
-             | "raiseInternal" "(" #String "," #String ")"
+             | "raiseInternal" "(" #String "," Expression ")" [:strict(2):]
              | "setattr" "(" Builtin "," #String "," K ")"
              | "setref" "(" Builtin "," #String "," Expression ")" [:strict(3):]
              | "executeModule" "(" Expression "," Expression "," Expression ")" [:strict:]
@@ -237,11 +237,11 @@ module PYTHON-SEMANTICS-COMMON
 
   context list(.) ~> iterate(HOLE,_)
 
-  rule <k> iterate(O, K) => try: (list(.) ~> iterate(ref("iter") (O), K)) except ref("TypeError") : test(K ==Bool ., raise, K) else: pass ...</k>
-  rule <k> list(L) ~> iterate(O, K) => try: addItem(getmember(O,  #id "__next__", true, false, false) ()) except ref("StopIteration") : list(L) else: (list(L) ~> iterate(O, K)) ...</k>
-  rule <k> (addItem(O) => .) ~> popx ~> list(_ (. => ListItem(O))) ...</k>
-  rule <k> list(L) ~> setx(K) => setx(K) ~> list(L) ...</k>
-  rule <k> list(L) ~> popx => popx ~> list(L) ...</k>
+  rule iterate(O, K) => try: (list(.) ~> iterate(ref("iter") (O), K)) except ref("TypeError") : test(K ==Bool ., raise, K) else: pass
+  rule list(L) ~> iterate(O, K) => try: addItem(getmember(O,  #id "__next__", true, false, false) ()) except ref("StopIteration") : list(L) else: (list(L) ~> iterate(O, K))
+  rule (addItem(O) => .) ~> popx ~> list(_ (. => ListItem(O)))
+  rule K ~> setx(K2) => setx(K2) ~> K when 'isKResult(K)
+  rule K ~> popx => popx ~> K when 'isKResult(K)
 
   rule <k> mapping(O, K) => iterate(getmember(O, #id "keys", true, false, false) () -> K, raiseInternal("TypeError", "o.keys() are not iterable")) ~> map(.) ~> mapping(O, K) ...</k>
   rule <k> list((ListItem(B:Builtin) => .) _) ~> (. => addPair(B, (O [ ref(B) ]))) ~> map(_) ~> mapping(O,_) ...</k>
@@ -251,7 +251,7 @@ module PYTHON-SEMANTICS-COMMON
   rule <k> newHelper(O, Type, St:Set) => test(hasbase(O, Type), test(id(O) in lookup(Sym, St), raiseInternal("TypeError", "unsafe builtin __new__ call error message"), .), raiseInternal("TypeError", "invalid builtin __new__ call argument type error message")) ...</k>
        <symbols> Sym:Map </symbols>
 
-  rule raiseInternal(S, S2) => raise mutable("args" |-> undefined(S2),ref(S))
+  rule raiseInternal(S, O) => raise mutable("args" |-> undefined(strvalue(O)),ref(S))
 
   rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => ((Dict [ "__name__"]) , .Expressions) := CO . #id "co_name" ~> ((Dict [ "__doc__" ]) , .Expressions) := CO . #id "co_consts" [0] ~> ((Dict [ "__builtins__" ]) , .Expressions) := Builtins ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple()) ~> setref(id(CO), "co_cellvars", tuple()) ~> executeFrame(sNat(N), ref(id(CO)), ref("None"), Dict, Dict, Builtins, {}) ...</k>
        <nextLoc> N => sNat(sNat(N)) </nextLoc>
