@@ -225,7 +225,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "reference"("type",ListItem("object"),
            "__get__" |-> def "get_ref" (1, 2, true)
            "__new__" |-> ref("new_raise")
-           , "__name__" |-> undefined("internal type name"))) ...</k>
+           , "__name__" |-> undefined("internal type name")) ~>
+
+         // misc builtins
+         object "cell"("type",ListItem("object"),
+           ., .) ~>
+         object "cell_contents" ("reference",.,.,.)) ...</k>
 
   rule <k> modules => (
 
