@@ -2,8 +2,7 @@ module PYTHON-SEMANTICS-STRINGS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
   imports MACHINE-INTEGERS
 
-  rule <k> invokeBuiltin(obj("add_str",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "str", "str", strvalue(O) +String strvalue(O2)) ...</k>
-  rule <k> invokeBuiltin(obj("radd_str",_), ListItem(O:Object) ListItem(O2:Object), .) => invokeBuiltin(ref("add_str"), ListItem(O2) ListItem(O), .) ...</k>
+  rule <k> invokeBuiltin(obj("add_str",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("str")), strvalue(O) +String strvalue(O2), raiseInternal("TypeError", ("Can't convert '" + name(gettype(O2)) + "' object to str implicitly"))) ...</k>
 
   rule <k> invokeBuiltin(obj("eq_str",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "str", "str", bool(strvalue(O) ==Bool strvalue(O2))) ...</k>
   rule <k> invokeBuiltin(obj("ne_str",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "str", "str", bool(strvalue(O) =/=Bool strvalue(O2))) ...</k>

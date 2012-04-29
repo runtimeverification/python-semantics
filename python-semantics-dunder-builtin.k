@@ -147,7 +147,6 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__eq__" |-> def "eq_str" (1, 1, true)
            "__hash__" |-> def "hash_str" (1, 1, true)
            "__ne__" |-> def "ne_str" (1, 1, true)
-           "__radd__" |-> def "radd_str" (1, 1, true)
            ,.) ~>
          object "tuple"("type",ListItem("object"),
            "__add__" |-> def "add_tuple" (1, 1, true)
