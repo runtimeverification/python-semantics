@@ -10,8 +10,10 @@ module PYTHON-SEMANTICS-LITERALS
              | "processSetElement" "(" Expression "," Expression "," Expression ")" [:strict:]
              | "tableInsert" "(" Builtin "," #Int "," Expression "," K ")" [:strict(3):]
              | "tableLookup" "(" Builtin "," #Int "," Expression ")" [:strict(3):]
+             | "tableDelete" "(" Builtin "," #Int "," Expression ")" [:strict(3):]
              | "bucketInsert" "(" Builtin "," #Int "," Expression "," Expression "," List "," List ")" [:strict(3 4):]
              | "bucketLookup" "(" Expression "," List ")" [:strict(1):]
+             | "bucketDelete" "(" Builtin "," #Int "," Expression "," List "," List ")" [:strict(3):]
              | "setBucket" "(" Builtin "," #Int "," List ")"
  
   declare key : KeyDatum -> Builtin
@@ -58,7 +60,7 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(_ H |-> list(Values)) ...</oattrs>
        ...</object>
 
-  rule <k> bucketInsert(B, H, Key, K, ListItem(Key2:Builtin : Value2:Builtin) Suffix:List, Prefix:List) => test(plbool(Key == ref(Key2)), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem(Key2 : Value2))) ...</k>
+  rule bucketInsert(B, H, Key, K, ListItem(Key2:Builtin : Value2:Builtin) Suffix:List, Prefix:List) => test(plbool(Key == ref(Key2)), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem(Key2 : Value2)))
 
   rule <k> bucketInsert(B, H, Key, K, ., Prefix) => . ...</k>
        <object>...
@@ -70,6 +72,12 @@ module PYTHON-SEMANTICS-LITERALS
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> map(M => M[list(Values)/H]) ...</oattrs>
+       ...</object> when Values =/=Bool .
+
+  rule <k> setBucket(B, H, .) => . ...</k>
+       <object>...
+         <id>B</id>
+         <oattrs>... "__value__" |-> map(M => M[undef/H]) ...</oattrs>
        ...</object>
 
   rule <k> tableLookup(B, H, Key) => bucketLookup(Key, Values) ...</k>
@@ -84,8 +92,23 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
-  rule <k> bucketLookup(Key, ListItem(Key2 : Value2) Suffix) => test(plbool(Key == ref(Key2)), ref(Value2), bucketLookup(Key, Suffix)) ...</k>
-  rule <k> bucketLookup(Key, .) => raise ref("KeyError") (Key) ...</k>
+  rule bucketLookup(Key, ListItem(Key2 : Value2) Suffix) => test(plbool(Key == ref(Key2)), ref(Value2), bucketLookup(Key, Suffix))
+  rule bucketLookup(Key, .) => raise ref("KeyError") (Key)
+
+  rule <k> tableDelete(B, H, Key) => bucketDelete(B, H, Key, Values, .) ...</k>
+       <object>...
+         <id>B</id>
+         <oattrs>... "__value__" |-> map(_ H |-> list(Values)) ...</oattrs>
+       ...</object>
+
+  rule <k> tableDelete(B, H, Key) => raise ref("KeyError") (Key) ...</k>
+       <object>...
+         <id>B</id>
+         <oattrs>... "__value__" |-> map(M) ...</oattrs>
+       ...</object> when notBool(H in keys(M))
+
+  rule bucketDelete(B, H, Key, ListItem(Key2 : Value2) Suffix, Prefix) => test(plbool(Key == ref(Key2)), setBucket(B, H, Prefix Suffix), bucketDelete(B, H, Key, Suffix, Prefix ListItem(Key2 : Value2)))
+  rule bucketDelete(_, _, Key, ., _) => raise ref("KeyError") (Key)
 
   syntax K ::= "pair" "(" Value "," Builtin ")"
  

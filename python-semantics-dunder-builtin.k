@@ -38,6 +38,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "complex"("type",ListItem("object"),.,.) ~>
          object "dict"("type",ListItem("object"),
            "keys" |-> def "keys_dict" (0, 0, true)
+           "__delitem__" |-> def "delitem_dict" (1, 1, true)
            "__getitem__" |-> def "getitem_dict" (1, 1, true)
            "__init__" |-> def "init_dict" (0, 1, true)
            "__iter__" |-> def "iter_dict" (0, 0, true)

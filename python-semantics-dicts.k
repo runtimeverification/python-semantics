@@ -50,6 +50,9 @@ module PYTHON-SEMANTICS-DICTS
 
   rule invokeBuiltin(obj("setitem_dict",_), ListItem(O) ListItem(Key) ListItem(Value:Object), .) => processDict(O, Key |-> Value) ; ~> ref("None") 
 
+  rule invokeBuiltin(obj("delitem_dict",_), ListItem(obj(B,_)) ListItem(Key), .) => ref("hash")(Key) ~> tableDelete(B, 0, Key) ~> ref("None")
+  rule (O => .) ~> tableDelete(_,(_ => intvalue(O)),_)
+
   syntax K ::= "makeMap" "(" #Nat ")"
 
   rule invokeBuiltin(obj("new_dict",_), ListItem(O) _, .) => newHelper(O, ref("dict"), .) ~> {}
