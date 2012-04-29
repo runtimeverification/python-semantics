@@ -14,6 +14,7 @@ try:
 except NameError:
   pass
 
+assert c == 3 and d == 4 and e == 5
 del (c, [d, (e,)])
 
 try:
