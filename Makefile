@@ -1,14 +1,20 @@
-TESTS = $(wildcard programs/*.py)
+TESTS = $(wildcard programs/test*.py)
 TEST_RESULTS = ${TESTS:.py=.out}
+TEST_REFERENCE = ${TESTS:.py=.ref}
 
 all:	python-compiled.maude
 
 test: ${TEST_RESULTS}
 
+ref: ${TEST_REFERENCE}
+
 %.out: %.py python-compiled.maude
 	./kpython $< > /dev/null 2>&1
 	@ test "`grep "< k > (.).K </ k >" .k/krun_tmp/maude_out`"
 	@ cp .k/krun_tmp/maude_out $@
+
+%.ref: %.py
+	python3.2 $< > /dev/null 2>&1
 
 python-compiled.maude: ?*.k
 	kompile python.k -v
