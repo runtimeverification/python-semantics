@@ -2,6 +2,7 @@ syntax: glob
 tests/*
 python-compiled.maude
 programs/*.out
+programs/*.ref
 .k
 .*.sw?
 kompile_*
@@ -9,3 +10,4 @@ all_tokens.tok
 run.maude
 test.py
 *.orig
+IN.maude

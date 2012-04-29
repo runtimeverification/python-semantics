@@ -15,6 +15,7 @@ ref: ${TEST_REFERENCE}
 
 %.ref: %.py
 	python3.2 $< > /dev/null 2>&1
+	@ touch $@
 
 python-compiled.maude: ?*.k
 	kompile python.k -v
@@ -26,4 +27,5 @@ clean:
 	rm -f all_tokens.tok
 	rm -f kmain-python.maude python.maude shared.maude
 	rm -f out
-	rm -f programs/*.out
+	rm -f programs/*.out programs/*.ref
+	rm -f IN.maude
