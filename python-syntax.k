@@ -119,7 +119,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                       | Target "|=" Expression        [:strict(2) required:]
                       | "assert" Expressions [:prec 60:]
                       | "pass"
-                      | "del" Targets       [:required:]
+                      | "del" Targets       [:required prec 60:]
                       | "return" Expression        [:strict(1):]
                       | "return"
                       | "raise"

@@ -57,8 +57,8 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                          else: pass ~>
                                          if S in Code . #id "co_names" :
                                               test(B ==Bool 0,
-                                                   del Frame . #id "f_globals" [S],
-                                                   ((Frame . #id "f_globals" [S]), .Expressions) := ref(B))
+                                                   (del ((Frame . #id "f_globals" [S]), .Expressions)),
+                                                   (((Frame . #id "f_globals" [S]), .Expressions) := ref(B)))
                                          else: pass
 
   rule <k> invokeBuiltin(obj("call_globals",_), ., .) => ref(N) . #id "f_globals" ...</k>

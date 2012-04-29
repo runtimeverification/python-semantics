@@ -19,8 +19,12 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   rule (. => unbindList(Listify(Ts2))) ~> del (tuple(Ts2) , Ts => Ts)
   rule (. => unbindList(Listify(Ts2))) ~> del ([ Ts2 ] , Ts => Ts)
   rule (. => (getmember(O, #id "__delattr__", true, false, true) (Id2String(X)) ;)) ~> del ((O . X) , Ts => Ts)
-  rule (. => (getmember(O, #id "__delitem__", true, false, false) (Key) ;) -> raiseInternal("TypeError", "object does not support item deletion")) ~> del ((O [ Key ]) , Ts => Ts)
+  rule (. => (getmember(O, #id "__delitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item deletion")) (Key, .Expressions) ;)  ~> del ((O [ Key ]) , Ts => Ts)
   rule del .List{","} => .
+
+  context del ((HOLE . _:#Id) , _:Targets)
+  context del ((HOLE [ _:Expression ]) , _:Targets)
+  context del ((K [ HOLE ]) , _:Targets) when 'isKResult(K)
 
   rule (. => iterate(O, .)) ~> bindList(_, O, _)
   rule (. => T, .Expressions := O) ~> list((ListItem(O) => .) _) ~> bindList((ListItem(T:Target) => .) _, _, _) when getKLabel T =/=Bool '*_
