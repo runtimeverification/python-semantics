@@ -11,8 +11,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__context__" |-> ref("__context__")
            "__init__" |-> def "init_baseexception" (0, -1, true)
            ,.) ~>
-         object "__cause__" ("reference",.,.,.) ~>
-         object "__context__" ("reference",.,.,.) ~>
+         object "__cause__" ("reference",.,., "__get__" |-> "__cause__") ~>
+         object "__context__" ("reference",.,., "__get__" |-> "__context__") ~>
          object "Exception"("type",ListItem("BaseException"),.,.) ~>
          object "False"("bool",.,.,
            "__value__" |-> 0) ~>
@@ -131,7 +131,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__dict__" |-> ref("__dict__")
            "__getattribute__" |-> def "getattribute_module" (1, 1, true)
            ,.) ~>
-         object "__dict__"("reference",.,.,.) ~>
+         object "__dict__"("reference",.,., "__get__" |-> "__dict__") ~>
          object "object"("type",root,
            "__class__" |-> ref("__class__")
            "__getattribute__" |-> def "getattribute_object" (1, 1, true)
@@ -140,7 +140,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__ne__" |-> def "ne_object" (1, 1, true)
            "__new__" |-> def "new_object" (1, -1, false)
            ,.) ~>
-         object "__class__" ("reference",.,.,.) ~>
+         object "__class__" ("reference",.,., "__get__" |-> "__class__") ~>
          object "str"("type",ListItem("object"),
            "__add__" |-> def "add_str" (1, 1, true)
            "__eq__" |-> def "eq_str" (1, 1, true)
@@ -158,8 +158,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ,.) ~>
          object "type"("type",ListItem("object"),
            "__call__" |-> def "call_type" (1, -1, true)
-           "__name__" |-> ref("__name__") ,.) ~>
-         object "__name__" ("attribute",.,.,.) ~>
+           "__name__" |-> ref("__name__type") ,.) ~>
+         object "__name__type" ("attribute",.,., "__get__" |-> "__name__") ~>
 
          // module "types"
          object "attribute"("type",ListItem("object"),
@@ -185,14 +185,14 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "co_consts" |-> ref("co_consts")
            "co_names" |-> ref("co_names")
            ,.) ~>
-         object "co_name" ("attribute",.,.,.) ~>
-         object "co_argcount" ("attribute",.,.,.) ~>
-         object "co_nlocals" ("attribute",.,.,.) ~>
-         object "co_varnames" ("reference",.,.,.) ~>
-         object "co_cellvars" ("reference",.,.,.) ~>
-         object "co_freevars" ("reference",.,.,.) ~>
-         object "co_consts" ("reference",.,.,.) ~>
-         object "co_names" ("reference",.,.,.) ~>
+         object "co_name" ("attribute",.,., "__get__" |-> "co_name") ~>
+         object "co_argcount" ("attribute",.,., "__get__" |-> "co_argcount") ~>
+         object "co_nlocals" ("attribute",.,., "__get__" |-> "co_nlocals") ~>
+         object "co_varnames" ("reference",.,., "__get__" |-> "co_varnames") ~>
+         object "co_cellvars" ("reference",.,., "__get__" |-> "co_cellvars") ~>
+         object "co_freevars" ("reference",.,., "__get__" |-> "co_freevars") ~>
+         object "co_consts" ("reference",.,., "__get__" |-> "co_consts") ~>
+         object "co_names" ("reference",.,., "__get__" |-> "co_names") ~>
          object "frame"("type",ListItem("object"),
            "__new__" |-> ref("new_raise")
            "f_back" |-> ref("f_back")
@@ -202,26 +202,28 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "f_lasti" |-> ref("f_lasti")
            "f_locals" |-> ref("f_locals")
            , "f_lasti" |-> undefined("bytecode is implementation specific")) ~>
-         object "f_back" ("reference",.,.,.) ~>
-         object "f_builtins" ("reference",.,.,.) ~>
-         object "f_code" ("reference",.,.,.) ~>
-         object "f_globals" ("reference",.,.,.) ~>
-         object "f_lasti" ("attribute",.,.,.) ~>
-         object "f_locals" ("reference",.,.,.) ~>
+         object "f_back" ("reference",.,., "__get__" |-> "f_back") ~>
+         object "f_builtins" ("reference",.,., "__get__" |-> "f_builtins") ~>
+         object "f_code" ("reference",.,., "__get__" |-> "f_code") ~>
+         object "f_globals" ("reference",.,., "__get__" |-> "f_globals") ~>
+         object "f_lasti" ("attribute",.,., "__get__" |-> "f_lasti") ~>
+         object "f_locals" ("reference",.,., "__get__" |-> "f_locals") ~>
          object "function"("type",ListItem("object"),
            "__call__" |-> def "call_function" (0, -1, true)
            "__code__" |-> ref("__code__")
            "__doc__" |-> ref("__doc__")
+           "__name__" |-> ref("__name__function")
            ,.) ~>
-         object "__code__" ("reference",.,.,.) ~>
-         object "__doc__" ("reference",.,.,.) ~>
+         object "__name__function"("reference",.,., "__get__" |-> "__name__") ~>
+         object "__code__" ("reference",.,., "__get__" |-> "__code__") ~>
+         object "__doc__" ("reference",.,., "__get__" |-> "__doc__") ~>
          object "method" ("type", ListItem("object"),
            "__call__" |-> def "call_method" (0, -1, true)
            "__func__" |-> ref("__func__")
            "__self__" |-> ref("__self__")
            , .) ~>
-         object "__func__" ("reference",.,.,.) ~>
-         object "__self__" ("reference",.,.,.) ~>
+         object "__func__" ("reference",.,., "__get__" |-> "__func__") ~>
+         object "__self__" ("reference",.,., "__get__" |-> "__self__") ~>
          object "reference"("type",ListItem("object"),
            "__get__" |-> def "get_ref" (1, 2, true)
            "__new__" |-> ref("new_raise")
@@ -230,7 +232,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          // misc builtins
          object "cell"("type",ListItem("object"),
            ., .) ~>
-         object "cell_contents" ("reference",.,.,.)) ...</k>
+         object "cell_contents" ("reference",.,., "__get__" |-> "cell_contents")) ...</k>
 
   rule <k> modules => (
 

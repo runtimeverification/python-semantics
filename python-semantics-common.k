@@ -213,8 +213,8 @@ module PYTHON-SEMANTICS-COMMON
   rule hasbase(list(ListItem(N) L), Base) => or(hasbase(ref(N), Base),hasbase(list(L), Base))
   rule hasbase(list(.List), Base) => false
 
-  rule <k> invokeBuiltin(obj("get_ref",_), ListItem(obj(_, <oattrs>... "__name__" |-> S ...</oattrs>)) ListItem(O) ListItem(_), .) => getref(O, S) ...</k>
-  rule <k> invokeBuiltin(obj("get_attr",_), ListItem(obj(_, <oattrs>... "__name__" |-> S ...</oattrs>)) ListItem(O) ListItem(_), .) => getattr(O, S) ...</k>
+  rule <k> invokeBuiltin(obj("get_ref",_), ListItem(obj(_, <oattrs>... "__get__" |-> S ...</oattrs>)) ListItem(O) ListItem(_), .) => getref(O, S) ...</k>
+  rule <k> invokeBuiltin(obj("get_attr",_), ListItem(obj(_, <oattrs>... "__get__" |-> S ...</oattrs>)) ListItem(O) ListItem(_), .) => getattr(O, S) ...</k>
 
   rule <k> ref(S) => ref(N) ...</k>
        <symbols>... S |-> N ...</symbols>
