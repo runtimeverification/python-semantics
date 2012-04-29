@@ -78,7 +78,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule makeFunction(_, ((ListItem(X) => .) _), _, _)
 
   //TODO: co_flags and undefinedness (needs hooks)
-  rule (. => setattr(N, "co_flags", (int(getattr(ref(N), "co_flags")) |Int 4)) ~> addParam(* X)) ~> makeCodeObject(N, ((ListItem(* X) => ListItem(*)) L), _, false)
+  rule (. => setattr(N, "co_flags", (int(getattr(ref(N), "co_flags")) |Int 4)) ~> addParam(* X)) ~> makeCodeObject(N, ((ListItem(* X) => ListItem(*)) L), _, false) 
   rule makeFunction(N, ((ListItem(* X) => ListItem(*)) L), _, _)
   rule makeFunction(_, ((ListItem(*) => .) L), _, (false => true))
   rule makeCodeObject(_, ((ListItem(*) => .) L), _, (false => true))
@@ -115,35 +115,38 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule <k> visited(K) ~> storescope => 
            setattr(N, "co_code", K) ~>
            setref(N, "co_freevars", tuple(DeListify(DeSetify(
-             FREE(Nonlocals, ChildFree, Uses, L) -Set 
+             FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) -Set 
              LOCAL(Defs, Globals, Nonlocals, Params))))) ~>
            setref(N, "co_cellvars", tuple(DeListify(DeSetify(
-             FREE(Nonlocals, ChildFree, Uses, L) &Set
+             FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) &Set
              LOCAL(Defs, Globals, Nonlocals, Params))))) ~>
            setref(N, "co_varnames", tuple(DeListify(PARAMS(Params) DeSetify(
              (LOCAL(Defs, Globals, Nonlocals, Params) -Set
-             FREE(Nonlocals, ChildFree, Uses, L)) -Set
+             FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L)) -Set
              Setify(PARAMS(Params)))))) ~>
            setref(N, "co_names", tuple(DeListify(DeSetify(
              (Uses -Set
-             FREE(Nonlocals, ChildFree, Uses, L)) -Set
+             FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L)) -Set
              LOCAL(Defs, Globals, Nonlocals, Params))))) ...</k>
        <scope> (N, Defs:Set, Uses:Set, Nonlocals:Set, Globals:Set, ChildFree:Set, Params:List) L</scope>
 
   rule <k> propscope => . ...</k>
        <scope> LI:ListItem </scope>
   rule <k> propscope => . ...</k>
-       <scope> (_, _, Uses, Nonlocals, _, ChildFree, Params) (N, Defs, Uses2:Set, Nonlocals2:Set, Globals, ChildFree2:Set (. => FREE(Nonlocals, ChildFree, Uses, (N, Defs, Uses2, Nonlocals2, Globals, ChildFree2, Params2) L)), Params2:List) L </scope>
+       <scope> (_, Defs, Uses, Nonlocals, Globals, ChildFree, Params) (N, Defs2:Set, Uses2:Set, Nonlocals2:Set, Globals2:Set, ChildFree2:Set (. => (FREE(Defs, Uses, Globals, Nonlocals, ChildFree, (N, Defs2, Uses2, Nonlocals2, Globals2, ChildFree2, Params2) L)) -Set LOCAL(Defs, Globals, Nonlocals, Params)), Params2:List) L </scope>
 
   rule <k> delscope => . ...</k>
        <scope> LI:ListItem => . ...</scope>
 
-  declare FREE : Set Set Set List -> Set
+  declare FREE : Set Set Set Set Set List -> Set
   declare LOCAL : Set Set Set List -> Set
+  declare BOUND : Set List -> Set
   declare PARAMS : List -> List
   define LOCAL(Defs, Globals, Nonlocals, Params) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Bool . andBool Setify(PARAMS(Params)) &Set Globals ==Bool .
-  define FREE(Nonlocals, ChildFree, _, .) => Nonlocals ChildFree
-  define FREE(Nonlocals, ChildFree, Uses, (_, Defs, _, Nonlocals2, Globals, _, Params) L) => FREE(Nonlocals, ChildFree, Uses, .) (Uses &Set LOCAL(Defs, Globals, Nonlocals2, Params)) FREE(., ., Uses, L)
+  define FREE(_, _, _, Nonlocals, ChildFree, .) => Nonlocals ChildFree
+  define FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => FREE(Defs, Uses, Globals, Nonlocals, ChildFree, .) (((Uses Defs) &Set BOUND(.,L)) -Set Globals)
+  define BOUND(Bound:Set, L (_, Defs, _, Nonlocals, Globals, _, Params)) => BOUND((Bound LOCAL(Defs, Globals, Nonlocals, Params)) -Set Globals, L)
+  define BOUND(Bound, .) => Bound
   define PARAMS(ListItem(X) Params) => ListItem(Id2String(X)) PARAMS(Params)
   define PARAMS(ListItem(* X) Params) => PARAMS(Params ListItem(* X))
   define PARAMS(ListItem(** X) ListItem(* Y:#Id)) => ListItem(Id2String(Y)) ListItem(Id2String(X))
