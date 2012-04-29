@@ -38,7 +38,7 @@ module PYTHON-SEMANTICS-CALLS
   rule (. => addArg(Code . #id "co_varnames" [N:#Nat], O)) ~> matchArgs(_, Code:Object, (ListItem(O) => .) _, _, _, (N => sNat(N))) when N <Int int(getattr(Code, "co_argcount"))
 
   //leftover positional arguments get stored in vararg
-  rule (. => addArg(Code . #id "co_varnames" [int(getattr(Code, "co_argcount")) +Int int(getattr(Code, "co_kwonlyargcount"))], tuple(DeListify(L)))) ~> matchArgs(_, Code, (L => .), _, _, N) when N >=Int int(getattr(Code, "co_argcount")) andBool (int(getattr(Code, "co_flags")) &Int 4) =/=Bool 0
+  rule (. => addArg(Code . #id "co_varnames" [int(getattr(Code, "co_argcount")) +Int int(getattr(Code, "co_kwonlyargcount"))], tuple(DeListify(L)))) ~> matchArgs(_, Code, (L => .), _, _, N) when N >=Int int(getattr(Code, "co_argcount")) andBool (int(getattr(Code, "co_flags")) &Int 4) =/=Bool 0 andBool L =/=Bool .
 
   rule (addArg(O, O2) => .) ~> matchArgs(_,_,_,_,_ (. => #id strvalue(O) |-> id(O2)), _)
 
