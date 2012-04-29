@@ -21,4 +21,12 @@ module PYTHON-SEMANTICS-MACROS
   macro : E : E2 = (ref("slice") (ref("None"), E, E))
   macro E : E2 : E3 = (ref("slice") (E, E2, E3))
 
+  declare declName : K -> #Id
+  define declName(def X:#Id ( _ ) -> _ : _) => X
+  define declName(def X ( _ ) : _) => X
+  define declName(class X ( _ ) : _) => X
+  define declName(K newline _) => declName(K)
+
+  macro @ K:K newline K2:K = (K2 newline (declName(K2), .Expressions) := K(declName(K2), .Expressions))
+
 end module

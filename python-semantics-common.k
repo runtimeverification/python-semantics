@@ -41,7 +41,8 @@ module PYTHON-SEMANTICS-COMMON
              | "setattr" "(" Builtin "," #String "," K ")"
              | "setref" "(" Builtin "," #String "," Expression ")" [:strict(3):]
              | "executeModule" "(" Expression "," Expression "," Expression ")" [:strict:]
-             | "executeFrame" "(" #Nat "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression ")" [:strict(2 3 4 5 6 7):]
+             | "executeFrame" "(" #Nat "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression "," Map ")" [:strict(2 3 4 5 6 7):]
+             | "setArgs" "(" Map ")"
 
   syntax Test ::= "istype" "(" Expression "," Expression ")" [:strict:]
                 | "hasbase" "(" Expression "," Expression ")" [:strict:]
@@ -190,6 +191,8 @@ module PYTHON-SEMANTICS-COMMON
          <oattrs> Attrs => Attrs[K / S] </oattrs>
        ...</object>
 
+  context setattr(id(HOLE), _, _)
+ 
   rule <k> setref(B, S, O) => . ...</k>
        <object>...
          <id>B</id>
@@ -256,7 +259,7 @@ module PYTHON-SEMANTICS-COMMON
 
   rule raiseInternal(S, O) => raise mutable("args" |-> undefined(strvalue(O)),ref(S))
 
-  rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => ((Dict [ "__name__"]) , .Expressions) := CO . #id "co_name" ~> ((Dict [ "__doc__" ]) , .Expressions) := CO . #id "co_consts" [0] ~> ((Dict [ "__builtins__" ]) , .Expressions) := Builtins ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple()) ~> setref(id(CO), "co_cellvars", tuple()) ~> executeFrame(sNat(N), ref(id(CO)), ref("None"), Dict, Dict, Builtins, {}) ...</k>
+  rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => ((Dict [ "__name__"]) , .Expressions) := CO . #id "co_name" ~> ((Dict [ "__doc__" ]) , .Expressions) := CO . #id "co_consts" [0] ~> ((Dict [ "__builtins__" ]) , .Expressions) := Builtins ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple()) ~> setref(id(CO), "co_cellvars", tuple()) ~> executeFrame(sNat(N), ref(id(CO)), ref("None"), Dict, Dict, Builtins, {}, .) ...</k>
        <nextLoc> N => sNat(sNat(N)) </nextLoc>
        (. => <object>...
          <id>N</id>
@@ -265,12 +268,15 @@ module PYTHON-SEMANTICS-COMMON
        <symbols>... "module" |-> Module:#Nat ...</symbols>
 
 
-  rule <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . #id "__dict__"), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells) ~> getattr(CO, "co_code") ...</k>
+  rule <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . #id "__dict__"), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells) ~> setArgs(Args) ~> getattr(CO, "co_code") ...</k>
        <currentFrame> _ => N </currentFrame>
        (. => <object>...
          <id>N</id>
          <oattrs> "__class__" |-> Frame </oattrs>
        ...</object>)
        <symbols>... "frame" |-> Frame:#Nat ...</symbols>
+
+  rule (. => (X:#Id, .Expressions) := ref(B)) ~> setArgs((X |-> B => .) _)
+  rule setArgs(.) => .
 
 end module

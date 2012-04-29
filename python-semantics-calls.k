@@ -3,12 +3,20 @@ module PYTHON-SEMANTICS-CALLS
 
   syntax K ::= "processArgs" "(" List "," Map "," Expression "," Expression ")" [:strict(3 4):]
              | "sortArgs" "(" List ")"
-             | "matchArgs" "(" Expression "," List "," Map "," Map "," #Nat ")" [:strict(1):]
-             | "addArg" "(" #String "," Expression ")" [:strict(2):]
+             | "matchArgs" "(" Expression "," Expression "," List "," Map "," Map "," #Nat ")" [:strict(1 2):]
+             | "addArg" "(" Expression "," Expression ")" [:strict:]
+             | "addKwArg" "(" #String "," Expression "," Expression ")" [:strict(2 3):]
+             | "addDefaults" "(" #Nat "," Expression ")" [:strict(2):]
+             | "addDefault" "(" Expression ")" [:strict:]
+             | "addKwDefaults" "(" #Nat "," Expression ")" [:strict(2):]
+             | "addKwDefault" "(" Expression ")" [:strict:]
 
-  rule <k> obj(S,ObjState:Bag) (Args:K) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeBuiltin(obj(S,ObjState), ., .) ...</k> when 'isKResult(Args)
+  declare numArgs : Object -> #Nat
+  define numArgs(O) => int(getattr(O, "co_argcount")) +Int int(getattr(O, "co_kwonlyargcount")) +Int ((int(getattr(O, "co_flags")) &Int 4) >>Int 2) +Int ((int(getattr(O, "co_flags")) &Int 8) >>Int 3)
+
+  rule <k> obj(S:#String,ObjState:Bag) (Args:K) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeBuiltin(obj(S,ObjState), ., .) ...</k> when 'isKResult(Args)
   rule <k> invokeBuiltin(obj("call_function",_), ListItem(O:Object) L:List, M:Map) => invokeFunction(O, L, M) ...</k>
-  rule <k> invokeFunction(O, L, M) => matchArgs(O, L, M, ., 0) ...</k>
+  rule <k> invokeFunction(O, L, M) => matchArgs(O, O . #id "__code__", L, M, ., 0) ...</k>
 
   define 'isKResult(_ = K) => true when 'isKResult(K)
 
@@ -18,56 +26,54 @@ module PYTHON-SEMANTICS-CALLS
   rule sortArgs((ListItem(** O) => .) _) ~> processArgs(_,_,_,(_ => O))
   rule sortArgs(.) => .
 
-  rule <k> (. => iterate(O, raiseInternal("TypeError", "argument after * must be a sequence"))) ~> processArgs(_,_,O,_) ...</k>
-  rule <k> (list(L:List) => .) ~> processArgs(_ (. => L),_,(_:Object => .Obj),_) ...</k>
-  rule <k> (. => mapping(O, raiseInternal("TypeError", "argument after ** must be a mapping"))) ~> processArgs(_,_,.Obj,O) ...</k>
-  rule <k> (. => test(istype(O, ref("str")), ., raiseInternal("TypeError", "keywords must be strings"))) ~> map(_ (O |-> O2:Object => .)) ~> processArgs(_,_ (. => strvalue(O) |-> O2),.Obj,_) ...</k>
-  rule <k> (map(.) => .) ~> processArgs(_,_,.Obj,(_:Object => .Obj)) ...</k>
+  rule (. => iterate(O, raiseInternal("TypeError", "argument after * must be a sequence"))) ~> processArgs(_,_,O,_)
+  rule (list(L:List) => .) ~> processArgs(_ (. => L),_,(_:Object => .Obj),_)
+  rule (. => mapping(O, raiseInternal("TypeError", "argument after ** must be a mapping"))) ~> processArgs(_,_,.Obj,O)
+  rule (. => test(istype(O, ref("str")), ., raiseInternal("TypeError", "keywords must be strings"))) ~> map(_ (O |-> O2:Object => .)) ~> processArgs(_,_ (. => strvalue(O) |-> O2),.Obj,_)
+  rule (map(.) => .) ~> processArgs(_,_,.Obj,(_:Object => .Obj))
 
-  rule <k> (processArgs(L, M:Map, .Obj, .Obj) => .) ~> invokeBuiltin(_, (. => L), (. => M)) ...</k>
+  rule (processArgs(L, M:Map, .Obj, .Obj) => .) ~> invokeBuiltin(_, (. => L), (. => M))
 
   //process positional arguments
-  rule <k> matchArgs(obj(_,<oattrs>... "co_argnames" |-> list((ListItem(S:#String) => .) _) ...</oattrs>),(ListItem(O) => .) _, _, _ (. => #id S |-> id(O)),(N => sNat(N))) ...</k>
+  rule (. => addArg(Code . #id "co_varnames" [N:#Nat], O)) ~> matchArgs(_, Code:Object, (ListItem(O) => .) _, _, _, (N => sNat(N))) when N <Int int(getattr(Code, "co_argcount"))
 
   //leftover positional arguments get stored in vararg
-  rule <k> (. => addArg(S, immutable(list(Idify(L)), ref("tuple")))) ~> matchArgs(obj(_,<oattrs>... "co_argnames" |-> list(.) ("co_varargname" |-> S => .) ...</oattrs>), (L => .), _, _, _) ...</k>
+  rule (. => addArg(Code . #id "co_varnames" [int(getattr(Code, "co_argcount")) +Int int(getattr(Code, "co_kwonlyargcount"))], tuple(DeListify(L)))) ~> matchArgs(_, Code, (L => .), _, _, N) when N >=Int int(getattr(Code, "co_argcount")) andBool (int(getattr(Code, "co_flags")) &Int 4) =/=Bool 0
 
-  rule <k> (addArg(S, O) => .) ~> matchArgs(_,_,_,_ (. => #id S |-> id(O)), _) ...</k>
+  rule (addArg(O, O2) => .) ~> matchArgs(_,_,_,_,_ (. => #id strvalue(O) |-> id(O2)), _)
 
   // if there is no vararg, leftover positional arguments raise TypeError
-  rule <k> matchArgs(obj(_,<oattrs> "co_argnames" |-> list(.) "co_argcount" |-> N:#Nat "__defaults__" |-> map(M2:Map) "__name__" |-> S M </oattrs>), ListItem(_) L, _, _, N2:#Nat) => raiseInternal("TypeError", S +String "() takes " +String Int2String(N -Int lengthMap M2) +String " to at most " +String Int2String(N) +String " positional arguments (" +String Int2String(N2) +String " given)") ...</k> when notBool ("co_varargname" in keys(M))
+  rule matchArgs(Function:Object, Code, ListItem(_) L, _, _, N) => raiseInternal("TypeError", Function . #id "__name__" + "() takes at most " +String Int2String(int(getattr(Code, "co_argcount"))) +String " positional arguments (" +String Int2String(N +Int lengthList L +Int 1) +String " given)") when N >=Int int(getattr(Code, "co_argcount")) andBool (int(getattr(Code, "co_flags")) &Int 4) ==Bool 0
 
   // keyword arguments fill positional and kwonly arguments
-  rule <k> matchArgs(obj(_,<oattrs>... "co_argnames" |-> list(_ (ListItem(S) => .) _) ...</oattrs>),.,_ (S |-> O => .),M (. => #id S |-> id(O)),(N => sNat(N))) ...</k> when notBool(#id S in keys(M))
-  rule <k> matchArgs(obj(_,<oattrs>... "co_kwonlyargnames" |-> list(_ (ListItem(S) => .) _) ...</oattrs>),.,_ (S |-> O => .),M (. => #id S |-> id(O)),_) ...</k> when notBool(#id S in keys(M))
+  rule (. => if S in Code . #id "co_varnames" [0 : int(getattr(Code, "co_argcount")) +Int int(getattr(Code, "co_kwonlyargcount"))] : addArg(S, O) else: addKwArg(S, O, Code . #id "co_varnames" [numArgs(Code) -Int 1])) ~> matchArgs(_, Code, ., (S |-> O => .) _, M, _) when notBool(#id S in keys(M))
  
   // cannot specify a parameter both positionally and as a keyword
-  rule <k> matchArgs(obj(_,<oattrs>... "__name__" |-> S2:#String ...</oattrs>),.,_ S |-> _,_ #id S |-> _,_) => raiseInternal("TypeError", S2 +String "() got multiple values for keyword argument '" +String S +String "'") ...</k>
+  rule matchArgs(Function, Code, ., _ S |-> _, _ #id S |-> _, _) => raiseInternal("TypeError", Function . #id "__name__" + "() got multiple values for keyword argument '" +String S +String "'")
 
   // fill in default value for unspecified parameter
-  rule <k> matchArgs(obj(_,<oattrs>... S2 |-> list((ListItem(S) => .) _) S3:#String |-> map(_ S |-> B _) ...</oattrs>),.,M,_ (. => #id S |-> B),_) ...</k> when notBool(S in keys(M)) andBool ((S2 ==Bool "co_argnames" andBool S3 ==Bool "__defaults__") orBool (S2 ==Bool "co_kwonlyargnames" andBool S3 ==Bool "__kwdefaults__"))
-/*
-  // raise TypeError if an unspecified positional argument doesn't have a default
-  rule <k> matchArgs(obj(_,<oattrs>... "co_argnames" |-> list(ListItem(S) _) "__defaults__" |-> map(M) "__name__" |-> S2 "co_argcount" |-> N ...</oattrs>),.,M2,_,N2) => raiseInternal("TypeError", S2 +String "() takes at least " +String Int2String(N -Int lengthMap M) +String " to " +String Int2String(N) +String " positional arguments (" +String Int2String(N2) +String " given)") ...</k> when notBool (S in keys(M) orBool S in keys(M2))
-*/
-  // raise TypeError if an unspecified keyword-only argument doesn't have a default
-  rule <k> matchArgs(obj(_,<oattrs>... "co_kwonlyargnames" |-> list(_ ListItem(S) _) "__kwdefaults__" |-> map(M) "__name__" |-> S2 ...</oattrs>),_,M2,_,_) => raiseInternal("TypeError", S2 +String "() needs keyword-only argument " +String S) ...</k> when notBool(S in keys(M) orBool S in keys(M2))
+  rule (. => addDefaults(0, ref("len")(Function . #id "__defaults__")) ~> addKwDefaults(0, Function . #id "__kwdefaults__")) ~> matchArgs(Function,Code, ., ., M, _) when lengthMap M <Int numArgs(Code)
+  rule (addDefaults(N, _) => .) ~> addKwDefaults(_,_) ~> matchArgs(_,Code, _, _ ,_ ,_) when N ==Bool getattr(Code, "co_argcount")
+  rule (. => addDefault(Code . #id "co_varnames" [N])) ~> addDefaults(N => sNat(N), O) ~> addKwDefaults(_,_) ~> matchArgs(_,Code, _, _, _, _) when N <Int int(getattr(Code, "co_argcount"))
+  rule addDefault(O) ~> addDefaults(N2:#Nat, O2) ~> addKwDefaults(_,_) ~> matchArgs(Function, Code, _, _, M, N) => raiseInternal("TypeError", Function . #id "__name__" + "() takes at least " +String Int2String(int(getattr(Code, "co_argcount")) -Int intvalue(O2)) +String "arguments (" +String Int2String(N) +String " given)") when notBool(#id strvalue(O) in keys(M)) andBool N2 <Int int(getattr(Code, "co_argcount")) -Int intvalue(O2)
+  rule (addDefault(O) => if #id strvalue(O) in keys(M) then . else addArg(O, (Function . #id "__defaults__" [-Int intvalue(O2) +Int N])) fi) ~> addDefaults(N, O2) ~> addKwDefaults(_,_) ~> matchArgs(Function, Code, _, _, M, _) when N >=Int int(getattr(Code, "co_argcount")) -Int intvalue(O2) orBool #id strvalue(O) in keys(M)
+  rule (addKwDefaults(N, _) => .) ~> matchArgs(_, Code, _, _, _, _) when N ==Bool getattr(Code, "co_kwonlyargcount")
+  rule (. => addKwDefault(Code . #id "co_varnames" [N +Int int(getattr(Code, "co_argcount"))])) ~> addKwDefaults((N => sNat(N)), _) ~> matchArgs(_, Code, _, _, _, _) when N <Int int(getattr(Code, "co_kwonlyargcount"))
+  rule (addKwDefault(O) => if #id strvalue(O) in keys(M) then . else if O in O2 : addArg(O, O2[O]) else: raiseInternal("TypeError", Function . #id "__name__" + "() needs keyword-only argument " +String strvalue(O)) fi) ~> addKwDefaults(N, O2) ~> matchArgs(Function, Code, _, _, M, _)
 
-  // raise TypeError if there is no kwarg and there are leftover keyword arguments
-  rule <k> matchArgs(obj(_,<oattrs> "co_kwonlyargnames" |-> list(L) "co_argnames" |-> list(L2:List) "__name__" |-> S2 M</oattrs>),_,S |-> _ _,M2,_) => raiseInternal("TypeError", S2 +String "() got an unexpected keyword argument '" +String S +String "'") ...</k> when notBool(S in Setify(L) orBool S in Setify(L2) orBool S in keys(M2) orBool "co_kwargname" in keys(M))
+  rule (. => addArg(O, {})) ~> addKwArg(S, _, O) ~> matchArgs(_, Code, _, _, M, _) when notBool(#id strvalue(O) in keys(M)) andBool (int(getattr(Code, "co_flags")) &Int 8) =/=Bool 0
+  rule addKwArg(S, _, _) ~> matchArgs(Function, Code, _, _, _, _) => raiseInternal("TypeError", Function . #id "__name__" + "() got an unexpected keyword argument '" +String S +String "'") when (int(getattr(Code, "co_flags")) &Int 8) ==Bool 0
+  rule (addKwArg(S, O, O2) => M(#id strvalue(O2)) [S] := O) ~> matchArgs(_, Code, _, _, M, _) when #id strvalue(O2) in keys(M) andBool (int(getattr(Code, "co_flags")) &Int 8) =/=Bool 0
 
-  // leftover keyword arguments get stored in kwarg
-  rule <k> (. => addArg(S, { DeMapify(M) })) ~> matchArgs(obj(_,<oattrs>... "co_kwargname" |-> S ("co_kwonlyargnames" |-> list(.) => .) "co_argnames" |-> list(.) ...</oattrs>),.,(M => .),M2,_) ...</k> when keys(M) -Set Ids2Strings(keys(M2)) ==Bool keys(M)
-
-  rule <k> matchArgs(obj(B:Builtin,_),.,.,M,_) => invoke(ref(B), M) ...</k>
+  rule <k> matchArgs(obj(B:Builtin,_),Code,.,.,M,_) => invoke(ref(B), M) ...</k> when lengthMap M ==Bool numArgs(Code)
 
   syntax ListItem ::= "(" K "," Bag "," #Nat "," List ")"
-  syntax ObjRef ::= "makeLocals" "(" Expression "," Expression "," Map ")" [:strict(1 2):]
-                  | "makeLocals" "(" List "," List "," Map "," Expression ")" [:strict(4):]
+  syntax ObjRef ::= "makeLocals" "(" Expression "," Expression ")" [:strict(1 2):]
+                  | "makeLocals" "(" List "," List "," Expression ")" [:strict(3):]
                   | "makeCells" "(" Expression "," Expression "," Expression "," #Nat ")" [:strict(1 2 3):]
                   | "makeCells" "(" List "," List "," List "," Expression "," #Nat ")" [:strict(4):]
 
-  rule <k> invoke(obj(_:#Nat,<oattrs>... "__closure__" |-> Closure:#Nat "__code__" |-> Code:#Nat "__globals__" |-> Globals:#Nat ...</oattrs>), M) ~> K:K => executeFrame(N, ref(Code), ref(N2), makeLocals(ref(Code) . #id "co_freevars", ref(Closure), M), ref(Globals), ref(Globals) ["__builtins__"], makeCells(ref(Code) . #id "co_freevars", ref(Code) . #id "co_cellvars", ref(Closure), N)) ~> return </k>
+  rule <k> invoke(obj(_:#Nat,<oattrs>... "__closure__" |-> Closure:#Nat "__code__" |-> CodeId:#Nat "__globals__" |-> Globals:#Nat ...</oattrs>), M) ~> K:K => executeFrame(N, ref(CodeId), ref(N2), makeLocals(ref(CodeId) . #id "co_freevars", ref(Closure)), ref(Globals), ref(Globals) ["__builtins__"], makeCells(ref(CodeId) . #id "co_freevars", ref(CodeId) . #id "co_cellvars", ref(Closure), N), M) ~> return </k>
        <nextLoc> N => sNat(N) </nextLoc>
        <control>
          <currentFrame> N2 => N </currentFrame>
@@ -76,14 +82,13 @@ module PYTHON-SEMANTICS-CALLS
          C:Bag
        </control>
 
-  rule makeLocals(Free:Object, O, M) => makeLocals(listvalue(Free), listvalue(O), M, {})
-  rule (. => test(getattr(ref(N2), "cell_contents") ==Bool .Obj, ., O[ref(N)] := ref(N2) . #id "cell_contents")) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, M, O)
-  rule (. => O[Id2String(X)] := ref(B)) ~> makeLocals(_, _, (X |-> B => .) _, O)
-  rule makeLocals(., ., ., O) => ref(id(O))
+  rule makeLocals(Free:Object, O) => makeLocals(listvalue(Free), listvalue(O), {})
+  rule (. => test(getattr(ref(N2), "cell_contents") ==Bool .Obj, ., (((O[ref(N)]), .Expressions) := getref(ref(N2), "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O)
+  rule makeLocals(.List, .List, O) => ref(id(O))
 
   rule makeCells(Free, Cells:Object, O, N) => makeCells(listvalue(Free), listvalue(Cells), listvalue(O), {}, N)
-  rule (. => O[ref(N)] := ref(N2)) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O, _)
-  rule <k> (. => O[ref(N)] := ref(N2)) ~> makeCells(_, ListItem(N) _, _, O, Frame:#Nat) ...</k>
+  rule (. => ((O[ref(N)]), .Expressions) := ref(N2)) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O, _)
+  rule <k> (. => ((O[ref(N)]), .Expressions) := ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O, Frame:#Nat) ...</k>
        <nextLoc> N2 => sNat(N2) </nextLoc>
        (. => <object>...
          <id>N2</id>

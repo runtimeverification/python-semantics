@@ -49,8 +49,8 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                          if S in Code . #id "co_cellvars" or 
                                             S in Code . #id "co_freevars" :
                                               test(B ==Bool 0,
-                                                   setattr(getref(Frame, "f_cells")[S], "cell_contents", .Obj),
-                                                   setattr(getref(Frame, "f_cells")[S], "cell_contents", B))
+                                                   setattr(id(getref(Frame, "f_cells")[S]), "cell_contents", .Obj),
+                                                   setattr(id(getref(Frame, "f_cells")[S]), "cell_contents", B))
                                          else: pass ~>
                                          if S in Code . #id "co_freevars" :
                                               doBind(#id S, B, getref(getref(Frame, "f_cells")[S], "cell_frame"))
