@@ -57,8 +57,9 @@ module PYTHON-SEMANTICS-INTEGERS
   rule <k> invokeBuiltin(obj("invert_int",_), ListItem(O), .) => unaryOp(O, "int", ~Int intvalue(O)) ...</k>
 
   //TODO: string conversion
-  rule <k> invokeBuiltin(obj("new_int",_), ListItem(O), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(0, O) ...</k>
-  rule <k> invokeBuiltin(obj("new_int",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("int"), SetItem("bool")) ~>immutable((getmember(O2, #id "__int__", true, false, false) -> ref("new_int")) (O, O2, 10), O) ...</k>
+  rule invokeBuiltin(obj("new_int",_), ListItem(O), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(0, O)
+  rule invokeBuiltin(obj("new_int",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(intvalue(O . #id "__int__" ()), O)
+  context immutable(intvalue(HOLE), _)
 
   rule invokeBuiltin(obj("int_int",_), ListItem(O), .) => O
 
