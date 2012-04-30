@@ -41,7 +41,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                    | AttributeRef
                    | Subscription
                    | Slicing
-                   | Expression "(" Arguments ")" [:seqstrict:]
+                   | Expression "(" Arguments ")" [:seqstrict prec 41:]
 
   syntax Arguments ::= List{Argument,","} [:seqstrict:]
   syntax Argument ::= Expression
@@ -49,7 +49,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                     // "*" Expression is implicit
                     | "**" Expression [:strict hybrid:]
 
-  syntax AttributeRef ::= Expression "." NAME [:strict(1):]
+  syntax AttributeRef ::= Expression "." NAME [:strict(1) gather(E e):]
 
   syntax Subscription ::= Expression "[" Expression "]" [:seqstrict required:]
   syntax Slicing ::= Expression "['" SliceItems "']" [:required:]
