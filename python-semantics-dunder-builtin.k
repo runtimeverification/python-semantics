@@ -229,14 +229,26 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "f_lasti" ("attribute",.,., "__get__" |-> "f_lasti") ~>
          object "f_locals" ("reference",.,., "__get__" |-> "f_locals") ~>
          object "function"("type",ListItem("object"),
+           "__annotations__" |-> ref("__annotations__")
            "__call__" |-> def "call_function" (0, -1, true)
+           "__closure__" |-> ref("__closure__")
            "__code__" |-> ref("__code__")
+           "__defaults__" |-> ref("__defaults__")
            "__doc__" |-> ref("__doc__")
+           "__globals__" |-> ref("__globals__")
+           "__kwdefaults__" |-> ref("__kwdefaults__")
+           "__module__" |-> ref("__module__") 
            "__name__" |-> ref("__name__function")
            ,.) ~>
-         object "__name__function"("reference",.,., "__get__" |-> "__name__") ~>
+         object "__annotations__" ("reference",.,., "__get__" |-> "__annotations__") ~>
+         object "__closure__" ("reference",.,., "__get__" |-> "__closure__") ~>
          object "__code__" ("reference",.,., "__get__" |-> "__code__") ~>
+         object "__defaults__" ("reference",.,., "__get__" |-> "__defaults__") ~>
          object "__doc__" ("reference",.,., "__get__" |-> "__doc__") ~>
+         object "__globals__" ("reference",.,., "__get__" |-> "__globals__") ~>
+         object "__kwdefaults__" ("reference",.,., "__get__" |-> "__kwdefaults__") ~>
+         object "__module__" ("reference",.,., "__get__" |-> "__module__") ~>
+         object "__name__function"("reference",.,., "__get__" |-> "__name__") ~>
          object "method" ("type", ListItem("object"),
            "__call__" |-> def "call_method" (0, -1, true)
            "__func__" |-> ref("__func__")
