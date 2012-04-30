@@ -40,7 +40,6 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax Primary ::= Atom
                    | AttributeRef
                    | Subscription
-                   | Slicing
                    | Expression "(" Arguments ")" [:seqstrict prec 41:]
 
   syntax Arguments ::= List{Argument,","} [:seqstrict:]
@@ -52,17 +51,14 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax AttributeRef ::= Expression "." NAME [:strict(1) gather(E e):]
 
   syntax Subscription ::= Expression "[" Expression "]" [:seqstrict required:]
-  syntax Slicing ::= Expression "['" SliceItems "']" [:required:]
-  syntax SliceItems ::= List{SliceItem,","}
-  syntax SliceItem ::= Expression
-                     | ":" ":"
-                     | Expression ":" ":"
-                     | ":" Expression ":"
-                     | ":" ":" Expression
-                     | Expression ":" Expression ":"
-                     | Expression ":" ":" Expression
-                     | ":" Expression ":" Expression
-                     | Expression ":" Expression ":" Expression
+  syntax Expression ::= ":" ":"
+                      | Expression ":" ":"
+                      | ":" Expression ":"
+                      | ":" ":" Expression
+                      | Expression ":" Expression ":"
+                      | Expression ":" ":" Expression
+                      | ":" Expression ":" Expression
+                      | Expression ":" Expression ":" Expression
 
   syntax Expression ::= Primary
 

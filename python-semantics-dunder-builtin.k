@@ -70,7 +70,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__ge__" |-> def "ge_int" (1, 1, true)
            //TODO: getattribute, getnewargs
            "__gt__" |-> def "gt_int" (1, 1, true)
-           //TODO: hash, index
+           //TODO: hash
+           "__index__" |-> ref("int_int")
            "__int__" |-> def "int_int" (0, 0, true)
            "__invert__" |-> def "invert_int" (0, 0, true)
            "__le__" |-> def "le_int" (1, 1, true)
@@ -112,8 +113,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ) ~>
          object "iterator"("type",ListItem("object"),
            "__iter__" |-> def "iter_iter" (0, 0, true)
-           "__next__" |-> def "iter_next" (0, 0, true)
            "__new__" |-> def "new_raise" (1, -1, false)
+           "__next__" |-> def "iter_next" (0, 0, true)
            ,.) ~> 
          object "float"("type",ListItem("object"),.,.) ~>
          object "len"( "builtin-function" ,.,.,
@@ -127,6 +128,11 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__len__" |-> def "len_list" (0, 0, true)
            "__ne__" |-> def "ne_list" (1, 1, true)
            "__new__" |-> def "new_list" (1, -1, false)
+           ,.) ~>
+         object "map"("type",ListItem("object"),
+           "__iter__" |-> ref("iter_iter")
+           "__new__" |-> def "new_map" (3, -1, false)
+           "__next__" |-> def "map_next" (0, 0, true)
            ,.) ~>
          object "module"("type",ListItem("object"),
            "__dict__" |-> ref("__dict__")
@@ -142,6 +148,20 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "new_object" (1, -1, false)
            ,.) ~>
          object "__class__" ("reference",.,., "__get__" |-> "__class__") ~>
+         object "range" ("type",ListItem("object"),
+           "__iter__" |-> def "iter_range" (0, 0, true)
+           "__new__" |-> def "new_range" (1, 4, false)
+           ,.) ~>
+         object "slice" ("type",ListItem("object"),
+           "indices" |-> def "indices_slice" (1, 1, true)
+           "start" |-> ref("start")
+           "stop" |-> ref("stop")
+           "step" |-> ref("step")
+           "__new__" |-> def "new_slice" (1, 4, false)
+           ,.) ~>
+         object "start"("attribute",.,., "__get__" |-> "start") ~>
+         object "stop"("attribute",.,., "__get__" |-> "stop") ~>
+         object "step"("attribute",.,., "__get__" |-> "step") ~>
          object "str"("type",ListItem("object"),
            "__add__" |-> def "add_str" (1, 1, true)
            "__eq__" |-> def "eq_str" (1, 1, true)
@@ -268,7 +288,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , ("float" : ref("float"))
          , ("len" : ref("len"))
          , ("list" : ref("list"))
+         , ("map" : ref("map"))
          , ("object" : ref("object"))
+         , ("range" : ref("range"))
+         , ("slice" : ref("slice"))
          , ("str" : ref("str"))
          , ("tuple" : ref("tuple"))
          , ("type" : ref("type"))

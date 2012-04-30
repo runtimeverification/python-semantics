@@ -10,6 +10,7 @@ in python-semantics-ops
 in python-semantics-boolean-ops
 in python-semantics-literals
 in python-semantics-try
+in python-semantics-slicing
 in python-semantics-arithmetic-ops
 in python-semantics-assignment
 in python-semantics-attribute-ref
