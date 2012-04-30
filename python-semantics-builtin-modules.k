@@ -61,7 +61,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
            <oattrs> "__name__" |-> S </oattrs>
          ...</object>
        </store>
-       <symbols>... . => S |-> N ...</symbols>
+       <symbols>. => S |-> N M</symbols> when notBool(S in keys(M))
 
   rule <k> (. => incref(S,1)) ~> object N((S => .),_,_,_) ...</k>
        <object>...
