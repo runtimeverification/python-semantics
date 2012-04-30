@@ -218,10 +218,7 @@ class KPythonVisitor(ast.NodeVisitor):
     return "'_._(" + self.visit(node.value) + ",," + self.getid(node.attr) + ")"
 
   def visit_Subscript(self, node):
-    (type, body) = self.visit(node.slice)
-    if type == 0:
-      # index
-      return "'_`[_`](" + self.visit(node.value) + ",," + body + ")"
+    return "'_`[_`](" + self.visit(node.value) + ",," + self.visit(node.slice) + ")"
 
   def visit_Starred(self, node):
     return "'*_(" + self.visit(node.value) + ")"
@@ -239,8 +236,25 @@ class KPythonVisitor(ast.NodeVisitor):
   def visit_Tuple(self, node):
     return "'tuple`(_`)(" + self.visit_list(node.elts, "'_`,_", ",") + ")"
 
+  def visit_Slice(self, node):
+    if node.lower:
+      if node.upper:
+        op = "'_:_:_" if node.step else "'_:_:"
+      else:
+        op = "'_:`:_" if node.step else "'_:`:"
+    else:
+      if node.upper:
+        op = "':_:_" if node.step else "':_:"
+      else:
+        op = "':`:_" if node.step else "':`:"
+    op += "(" + (".List{K}" if (not node.lower and not node.upper and not node.step) else ",,".join(((self.visit(node.lower),) if node.lower else ()) + ((self.visit(node.upper),) if node.upper else ()) + ((self.visit(node.step),) if node.step else ()))) + ")"
+    return op
+
+  def visit_ExtSlice(self, node):
+    return "'tuple`(_`)(" + self.visit_list(node.dims, "'_`,_", ",") + ")"
+
   def visit_Index(self, node):
-    return (0, self.visit(node.value))
+    return self.visit(node.value)
 
   def visit_And(self, node):
     return "'_and_"
