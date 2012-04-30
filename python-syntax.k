@@ -7,7 +7,7 @@ module PYTHON-TOKENS
   syntax NAME ::= #Id
   syntax NUMBER ::= #Int | #Float | Imaginary
   syntax STRING ::= #String | Bytes
-  syntax NAMES ::= List{NAME,","} [:seqstrict:]
+  syntax NAMES ::= List{NAME,","} [:seqstrict prec 59:]
 end module
 
 module PYTHON-SYNTAX imports PYTHON-TOKENS
@@ -101,7 +101,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax Expression ::= "lambda" Parameters ":" Expression [:prec 56:]
                       | "*" Expression [:prec 56 strict hybrid:]
 
-  syntax Expressions ::= List{Expression,","} [:prec 99 seqstrict:]
+  syntax Expressions ::= List{Expression,","}
 
   syntax SimpleStmt ::= Expression ";" [:prec 60 gather(e) strict:]
                       | Targets ":=" Expression [:strict(2) required prec 60:]

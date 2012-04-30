@@ -44,7 +44,7 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                             S in Code . #id "co_freevars" :
                                               test(B ==Bool 0,
                                                    del Frame . #id "f_locals" [S],
-                                                   ((Frame . #id "f_locals" [S]), .Expressions) := ref(B))
+                                                   Frame . #id "f_locals" [S], .Expressions := ref(B))
                                          else: pass ~>
                                          if S in Code . #id "co_cellvars" or 
                                             S in Code . #id "co_freevars" :
