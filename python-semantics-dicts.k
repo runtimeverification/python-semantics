@@ -53,18 +53,18 @@ module PYTHON-SEMANTICS-DICTS
   rule invokeBuiltin(obj("delitem_dict",_), ListItem(obj(B,_)) ListItem(Key), .) => ref("hash")(Key) ~> tableDelete(B, 0, Key) ~> ref("None")
   rule (O => .) ~> tableDelete(_,(_ => intvalue(O)),_)
 
-  syntax K ::= "makeMap" "(" #Nat ")"
+  syntax K ::= "makeDict" "(" #Nat ")"
 
   rule invokeBuiltin(obj("new_dict",_), ListItem(O) _, .) => newHelper(O, ref("dict"), .) ~> {}
   rule invokeBuiltin(obj("init_dict",_), ListItem(_:Object), .) => ref("None")
-  rule invokeBuiltin(obj("init_dict",_), ListItem(O) ListItem(O2:Object), .) => mapping(O2, .Obj) -> iterate(O2, .) ~> makeMap(0)
+  rule invokeBuiltin(obj("init_dict",_), ListItem(O) ListItem(O2:Object), .) => mapping(O2, .Obj) -> iterate(O2, .) ~> makeDict(0)
 
-  rule map(M) ~> makeMap(_) => { DeMapify(M) }
+  rule map(M) ~> makeDict(_) => { DeMapify(M) }
 
-  rule <k> list(_) ~> (. => map(.)) ~> makeMap(_) ...</k>
-  rule <k> (. => iterate(O, raiseInternal("TypeError", "cannot convert dictionary update sequence element #" +String Int2String(N) +String "to a sequence"))) ~>  list((ListItem(O) => .) _) ~> map(_) ~> makeMap(N) ...</k>
-  rule <k> (list(ListItem(O) ListItem(O2)) => .) ~> list(_) ~> map(_ (. => O |-> O2)) ~> makeMap(N => sNat(N)) ...</k>
-  rule <k> list(L) ~> list(_) ~> map(_) ~> makeMap(N) => raiseInternal("ValueError", "dictionary update sequence element #" +String Int2String(N) +String " has length " +String Int2String(lengthList L) +String "; 2 is required") ...</k>
-  rule <k> (list(.) => .) ~> map(_) ~> makeMap(_) ...</k>
+  rule <k> list(_) ~> (. => map(.)) ~> makeDict(_) ...</k>
+  rule <k> (. => iterate(O, raiseInternal("TypeError", "cannot convert dictionary update sequence element #" +String Int2String(N) +String "to a sequence"))) ~>  list((ListItem(O) => .) _) ~> map(_) ~> makeDict(N) ...</k>
+  rule <k> (list(ListItem(O) ListItem(O2)) => .) ~> list(_) ~> map(_ (. => O |-> O2)) ~> makeDict(N => sNat(N)) ...</k>
+  rule <k> list(L) ~> list(_) ~> map(_) ~> makeDict(N) => raiseInternal("ValueError", "dictionary update sequence element #" +String Int2String(N) +String " has length " +String Int2String(lengthList L) +String "; 2 is required") ...</k>
+  rule <k> (list(.) => .) ~> map(_) ~> makeDict(_) ...</k>
 
 end module
