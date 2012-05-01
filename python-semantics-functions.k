@@ -73,12 +73,13 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule makeCodeObject(_, ((ListItem(X = _) => ListItem(X)) _), _, _)
 
-  rule (. => test(plbool(getref(ref(N), "__defaults__") is ref("None")), tuple(O), setref(N, "__defaults__", (getref(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(X = O) => ListItem(X)) _), _, false)
+  rule (. => setref(N, "__defaults__", test(plbool(getref(ref(N), "__defaults__") is ref("None")), tuple(O), (getref(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(X = O) => ListItem(X)) _), _, false)
   rule (. => test(plbool(getref(ref(N), "__kwdefaults__") is ref("None")), {Id2String(X) : O}, (getref(ref(N), "__kwdefaults__")[Id2String(X)] := O))) ~> makeFunction(N, ((ListItem(X = O) => ListItem(X)) _), _, true)
   rule makeFunction(_, ((ListItem(X) => .) _), _, _)
 
   //TODO: co_flags and undefinedness (needs hooks)
   rule (. => setattr(N, "co_flags", (int(getattr(ref(N), "co_flags")) |Int 4)) ~> addParam(* X)) ~> makeCodeObject(N, ((ListItem(* X) => ListItem(*)) L), _, false) 
+  context setattr(_, _, (int(getattr(HOLE, _)) |Int _:#Int))
   rule makeFunction(N, ((ListItem(* X) => ListItem(*)) L), _, _)
   rule makeFunction(_, ((ListItem(*) => .) L), _, (false => true))
   rule makeCodeObject(_, ((ListItem(*) => .) L), _, (false => true))
@@ -140,13 +141,13 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   declare FREE : Set Set Set Set Set List -> Set
   declare LOCAL : Set Set Set List -> Set
-  declare BOUND : Set List -> Set
+  declare BOUND : Set Set List -> Set
   declare PARAMS : List -> List
   define LOCAL(Defs, Globals, Nonlocals, Params) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Bool . andBool Setify(PARAMS(Params)) &Set Globals ==Bool .
   define FREE(_, _, _, Nonlocals, ChildFree, .) => Nonlocals ChildFree
-  define FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => FREE(Defs, Uses, Globals, Nonlocals, ChildFree, .) (((Uses Defs) &Set BOUND(.,L)) -Set Globals)
-  define BOUND(Bound:Set, L (_, Defs, _, Nonlocals, Globals, _, Params)) => BOUND((Bound LOCAL(Defs, Globals, Nonlocals, Params)) -Set Globals, L)
-  define BOUND(Bound, .) => Bound
+  define FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L (_, Defs2, _, _, _, _, .)) => FREE(Defs, Uses, Globals, Nonlocals, ChildFree, .) (((Uses Defs) &Set BOUND(.,Defs2,L)) -Set Globals)
+  define BOUND(Bound:Set, Globals, L (_, Defs, _, Nonlocals, Globals2, _, Params)) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals, (Globals -Set LOCAL(Defs, Globals2, Nonlocals, Params)) Globals2, L)
+  define BOUND(Bound, _, .) => Bound
   define PARAMS(ListItem(X) Params) => ListItem(Id2String(X)) PARAMS(Params)
   define PARAMS(ListItem(* X) Params) => PARAMS(Params ListItem(* X))
   define PARAMS(ListItem(** X) ListItem(* Y:#Id)) => ListItem(Id2String(Y)) ListItem(Id2String(X))

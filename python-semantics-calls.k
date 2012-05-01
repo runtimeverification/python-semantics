@@ -5,7 +5,7 @@ module PYTHON-SEMANTICS-CALLS
              | "sortArgs" "(" List ")"
              | "matchArgs" "(" Expression "," Expression "," List "," Map "," Map "," #Nat ")" [:strict(1 2):]
              | "addArg" "(" Expression "," Expression ")" [:strict:]
-             | "addKwArg" "(" #String "," Expression "," Expression ")" [:strict(2 3):]
+             | "addKwArg" "(" #String "," Expression "," Expression ")" [:strict(2):]
              | "addDefaults" "(" #Nat "," Expression ")" [:strict(2):]
              | "addDefault" "(" Expression ")" [:strict:]
              | "addKwDefaults" "(" #Nat "," Expression ")" [:strict(2):]
@@ -41,12 +41,15 @@ module PYTHON-SEMANTICS-CALLS
   rule (. => addArg(Code . #id "co_varnames" [int(getattr(Code, "co_argcount")) +Int int(getattr(Code, "co_kwonlyargcount"))], tuple(DeListify(L)))) ~> matchArgs(_, Code, (L => .), _, _, N) when N >=Int int(getattr(Code, "co_argcount")) andBool (int(getattr(Code, "co_flags")) &Int 4) =/=Bool 0 andBool L =/=Bool .
 
   rule (addArg(O, O2) => .) ~> matchArgs(_,_,_,_,_ (. => #id strvalue(O) |-> id(O2)), _)
+  rule (addArg(O, O2) => .) ~> addKwArg(_,_,_) ~> matchArgs(_,_,_,_,_ (. => #id strvalue(O) |-> id(O2)), _)
+  rule (addArg(O, O2) => .) ~> addDefaults(_,_) ~> addKwDefaults(_,_) ~> matchArgs(_,_,_,_,_ (. => #id strvalue(O) |-> id(O2)), _)
+  rule (addArg(O, O2) => .) ~> addKwDefaults(_,_) ~> matchArgs(_,_,_,_,_ (. => #id strvalue(O) |-> id(O2)), _)
 
   // if there is no vararg, leftover positional arguments raise TypeError
   rule matchArgs(Function:Object, Code, ListItem(_) L, _, _, N) => raiseInternal("TypeError", Function . #id "__name__" + "() takes at most " +String Int2String(int(getattr(Code, "co_argcount"))) +String " positional arguments (" +String Int2String(N +Int lengthList L +Int 1) +String " given)") when N >=Int int(getattr(Code, "co_argcount")) andBool (int(getattr(Code, "co_flags")) &Int 4) ==Bool 0
 
   // keyword arguments fill positional and kwonly arguments
-  rule (. => if S in Code . #id "co_varnames" [0 : int(getattr(Code, "co_argcount")) +Int int(getattr(Code, "co_kwonlyargcount"))] : addArg(S, O) else: addKwArg(S, O, Code . #id "co_varnames" [numArgs(Code) -Int 1])) ~> matchArgs(_, Code, ., (S |-> O => .) _, M, _) when notBool(#id S in keys(M))
+  rule (. => if S in Code . #id "co_varnames" [0 : int(getattr(Code, "co_argcount")) +Int int(getattr(Code, "co_kwonlyargcount")) : ] : addArg(S, O) else: addKwArg(S, O, Code . #id "co_varnames" [numArgs(Code) -Int 1])) ~> matchArgs(_, Code, ., (S |-> O => .) _, M, _) when notBool(#id S in keys(M))
  
   // cannot specify a parameter both positionally and as a keyword
   rule matchArgs(Function, Code, ., _ S |-> _, _ #id S |-> _, _) => raiseInternal("TypeError", Function . #id "__name__" + "() got multiple values for keyword argument '" +String S +String "'")
@@ -61,9 +64,10 @@ module PYTHON-SEMANTICS-CALLS
   rule (. => addKwDefault(Code . #id "co_varnames" [N +Int int(getattr(Code, "co_argcount"))])) ~> addKwDefaults((N => sNat(N)), _) ~> matchArgs(_, Code, _, _, _, _) when N <Int int(getattr(Code, "co_kwonlyargcount"))
   rule (addKwDefault(O) => if #id strvalue(O) in keys(M) then . else if O in O2 : addArg(O, O2[O]) else: raiseInternal("TypeError", Function . #id "__name__" + "() needs keyword-only argument " +String strvalue(O)) fi) ~> addKwDefaults(N, O2) ~> matchArgs(Function, Code, _, _, M, _)
 
+  context addKwArg(S, _, HOLE) ~> matchArgs(_, Code, _, _, _, _) when (int(getattr(Code, "co_flags")) &Int 8) =/=Bool 0
   rule (. => addArg(O, {})) ~> addKwArg(S, _, O) ~> matchArgs(_, Code, _, _, M, _) when notBool(#id strvalue(O) in keys(M)) andBool (int(getattr(Code, "co_flags")) &Int 8) =/=Bool 0
   rule addKwArg(S, _, _) ~> matchArgs(Function, Code, _, _, _, _) => raiseInternal("TypeError", Function . #id "__name__" + "() got an unexpected keyword argument '" +String S +String "'") when (int(getattr(Code, "co_flags")) &Int 8) ==Bool 0
-  rule (addKwArg(S, O, O2) => M(#id strvalue(O2)) [S] := O) ~> matchArgs(_, Code, _, _, M, _) when #id strvalue(O2) in keys(M) andBool (int(getattr(Code, "co_flags")) &Int 8) =/=Bool 0
+  rule (addKwArg(S, O, O2) => (ref(M(#id strvalue(O2))) [S], .Expressions) := O) ~> matchArgs(_, Code, _, _, M, _) when #id strvalue(O2) in keys(M) andBool (int(getattr(Code, "co_flags")) &Int 8) =/=Bool 0
 
   rule <k> matchArgs(obj(B:Builtin,_),Code,.,.,M,_) => invoke(ref(B), M) ...</k> when lengthMap M ==Bool numArgs(Code)
 
