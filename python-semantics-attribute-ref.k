@@ -38,6 +38,9 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
 
   //TODO: add super
   rule descriptor(O, O2, _, true) => (getmember(O, String2Id("__get__"), false, false, false) ( O , ref("None") , O2)) -> O
-  rule descriptor(O, O2, Type:Object, false) => (getmember(O, String2Id("__get__"), false, false, false) ( O , O2 , Type )) -> O
-
+  rule <k> descriptor(O, O2, Type:Object, false) => (getmember(O, String2Id("__get__"), false, false, false) ( O , O2 , Type )) -> O ...</k>
+       <symbols>... "None" |-> None:Nat ...</symbols> when id(O2) =/=Int None
+  rule <k> descriptor(O, O2, Type, false) => (getmember(O, String2Id("__get__"), false, false, false) (O, O2, O2)) -> O ...</k>
+       <symbols>... "None" |-> None:Nat ...</symbols> when id(O2) ==Int None
+ 
 end module

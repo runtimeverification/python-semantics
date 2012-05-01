@@ -7,7 +7,7 @@ module PYTHON-SEMANTICS-METHODS
 
   syntax K ::= "triple" "(" K "," K "," K ")"
 
-  rule <k> method(obj(FuncId,_), obj(SelfId,_), _) => ref(N:Nat) ...</k>
+  rule <k> method(obj(FuncId,_), obj(SelfId,_), obj(OwnerId:Nat,_)) => ref(N:Nat) ...</k>
        <symbols>... "method" |-> N2:Nat "None" |-> NoneId:Nat...</symbols>
        <literals> M (. => triple(FuncId, SelfId, N2) |-> N) </literals>
        <nextLoc>N => N +Int 1</nextLoc>
@@ -15,14 +15,14 @@ module PYTHON-SEMANTICS-METHODS
        <object>...
          <id>N</id>
          <oattrs> "__class__" |-> N2 "__func__" |-> FuncId "__self__" |-> SelfId </oattrs>
-       ...</object>) when SelfId =/=Int NoneId andBool notBool(triple(FuncId, SelfId, N2) in keys M)
+       ...</object>) when (SelfId =/=Int NoneId orBool OwnerId ==Int NoneId) andBool notBool(triple(FuncId, SelfId, N2) in keys M)
 
-  rule <k> method(obj(FuncId,_), obj(SelfId,_), _) => ref(N) ...</k>
+  rule <k> method(obj(FuncId,_), obj(SelfId,_), obj(OwnerId,_)) => ref(N) ...</k>
        <literals>... triple(FuncId, SelfId, N2) |-> N ...</literals>
-       <symbols>... "method" |-> N2:Nat "None" |-> NoneId:Nat...</symbols> when SelfId =/=Int NoneId
+       <symbols>... "method" |-> N2:Nat "None" |-> NoneId:Nat...</symbols> when (SelfId =/=Int NoneId orBool OwnerId ==Int NoneId)
 
-  rule <k> method(O:Object, obj(NoneId,_), _) => O ...</k>
-       <symbols>... "None" |-> NoneId ...</symbols>
+  rule <k> method(O:Object, obj(NoneId,_), obj(OwnerId,_)) => O ...</k>
+       <symbols>... "None" |-> NoneId ...</symbols> when OwnerId =/=Int NoneId
 
   //can't use descriptors because method descriptors use it
   rule <k> obj(N,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), String2Id("__call__"), false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable")) ...</k>
