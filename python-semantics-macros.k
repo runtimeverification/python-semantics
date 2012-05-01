@@ -1,9 +1,9 @@
 module PYTHON-SEMANTICS-MACROS
   imports PYTHON-SEMANTICS-COMMON
 
-  macro assert E:K , Es:K = if #id "__debug__" :
+  macro assert E:K , Es:K = if String2Id("__debug__") :
                                                (if not E :
-                                                  raise #id "AssertionError" (Es)
+                                                  raise String2Id("AssertionError") (Es)
                                                 else: pass)
                                               else: pass
   macro pass = .K
@@ -19,8 +19,8 @@ module PYTHON-SEMANTICS-MACROS
   macro : E : E2 = (ref("slice") (ref("None"), E, E, .Expressions))
   macro E : E2 : E3:Expression = (ref("slice") (E, E2, E3, .Expressions))
 
-  declare declName : K -> #Id
-  define declName(def X:#Id ( _ ) -> _ : _) => X
+  syntax Id ::= "declName" "(" K ")" [:function:]
+  define declName(def X:Id ( _ ) -> _ : _) => X
   define declName(def X ( _ ) : _) => X
   define declName(class X ( _ ) : _) => X
   define declName(K newline _) => declName(K)

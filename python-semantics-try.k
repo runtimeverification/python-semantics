@@ -1,13 +1,13 @@
 module PYTHON-SEMANTICS-TRY
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ListItem ::= "(" K "," K "," Bag "," K "," #Bool ")"
+  syntax ListItem ::= "(" K "," K "," Bag "," K "," Bool ")"
 
   syntax K ::= "savex" "(" Expression ")" [:strict:]
              | "setcause" "(" Builtin "," Expression ")" [:strict(2):]
              | "doExcept" "(" Expression "," K "," NAME ")" [:strict(1):]
              | "doExcepts" "(" List "," K "," NAME ")"
-             | "doRaise" "(" Expression "," Expression "," #Bool ")" [:strict(1 2):]
+             | "doRaise" "(" Expression "," Expression "," Bool ")" [:strict(1 2):]
              | "popfinally"
  
   rule <k> (try: Try:K ECs:K else: Else:K => Try ~> popx ~> Else) ~> K:K </k>
@@ -35,7 +35,7 @@ module PYTHON-SEMANTICS-TRY
        <xstack> _:ListItem => . ...</xstack>
 
   rule <k> raise => raiseInternal("RuntimeError", "No active exception to reraise") ...</k>
-       <xcontext> N:#Nat </xcontext>
+       <xcontext> N:Nat </xcontext>
        <symbols>... "None" |-> N ...</symbols>
 
   rule <k> (. => ECs) ~> raise ...</k>
@@ -44,7 +44,7 @@ module PYTHON-SEMANTICS-TRY
          <xstack> (ECs, _, C, _, (true => false)) ...</xstack>
          (_ => C)
        </control>
-       <symbols>... "None" |-> N ...</symbols> when B =/=Bool N
+       <symbols>... "None" |-> N ...</symbols> when B =/=K N
 
   rule <k> (. => Finally) ~> raise ...</k>
        <control>
@@ -54,21 +54,21 @@ module PYTHON-SEMANTICS-TRY
          <fstack> _ => FL </fstack>
          (_ => C)
        </control>
-       <symbols>... "None" |-> N ...</symbols> when B =/=Bool N
+       <symbols>... "None" |-> N ...</symbols> when B =/=K N
 
   rule <k> raise ...</k>
        <control>...
          <xstack> (_, _, _:Bag, _, false) => . ...</xstack>
        ...</control>
 
-  rule <k> EC:K except ECs => EC ~> ECs ...</k> when notBool(getKLabel EC ==Bool 'except`:_ andBool ECs =/=Bool .ExceptClauses)
+  rule <k> EC:K except ECs => EC ~> ECs ...</k> when notBool(getKLabel EC ==KLabel 'except`:_ andBool ECs =/=K .ExceptClauses)
   rule <k> .ExceptClauses => . ...</k>
 
   rule <k> raise O:Object => doRaise(test(istype(O, ref("type")), O(), O), ref("None"), true) ...</k>
 
   rule <k> raise O from O2:Object => doRaise(test(istype(O, ref("type")), O(), O), test(istype(O2, ref("type")), O2(), O2), false) ...</k>
 
-  rule <k> doRaise(O, O2, T:#Bool) => test(istype(O, ref("BaseException")), test(or(T,istype(O2, ref("BaseException"))), (setcause(O, O2) ~> savex(O) ~> raise) , raiseInternal("TypeError", "exception causes must derive from BaseException")), raiseInternal("TypeError", "exceptions must derive from BaseException")) ...</k>
+  rule <k> doRaise(O, O2, T:Bool) => test(istype(O, ref("BaseException")), test(or(T,istype(O2, ref("BaseException"))), (setcause(O, O2) ~> savex(O) ~> raise) , raiseInternal("TypeError", "exception causes must derive from BaseException")), raiseInternal("TypeError", "exceptions must derive from BaseException")) ...</k>
 
   rule <k> savex(obj(B,_)) => . ...</k>
        <xcontext> B2:Builtin => B </xcontext>
@@ -101,7 +101,7 @@ module PYTHON-SEMANTICS-TRY
   rule <k> doExcepts(ListItem(B:Builtin) L:List, Except, X) => doExcept(ref(B), Except, X) ~> doExcepts(L, Except, X) ...</k>
 
   //TODO: sys.exc_info
-  rule <k> doExcept(Type:Object, Except, X) => test(istype(ref(B), Type), test(X ==Bool .Obj, except: Except, (bind(X, B) ~> except: (try: Except finally: unbind(X)))), .) ...</k>
+  rule <k> doExcept(Type:Object, Except, X) => test(istype(ref(B), Type), test(X ==K .Obj, except: Except, (bind(X, B) ~> except: (try: Except finally: unbind(X)))), .) ...</k>
        <xcontext> B:Builtin </xcontext>
 
 end module

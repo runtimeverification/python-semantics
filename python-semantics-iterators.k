@@ -17,19 +17,19 @@ module PYTHON-SEMANTICS-ITERATORS
        ...</object>
 
   rule <k> invokeBuiltin(obj("getitem_iter",_), ListItem(obj(B,_)), .) => mutable("__index__" |-> 0 "__value__" |-> B, ref("iterator")) ...</k>
-/*
-  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => try: return getmember(ref(B2), #id "__getitem__", true, false, true) (I:#Int) except ref("IndexError"): (setx(.Obj) ~> raise ref("StopIteration")) else: pass  ...</k>
+
+  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => try: (getmember(ref(B2), String2Id("__getitem__"), true, false, true) (I:Int)) except ref("IndexError"): (setx(.Obj) ~> raise ref("StopIteration")) else: pass  ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__index__" |-> (I => I +Int 1) "__value__" |-> B2 ...</oattrs>
        ...</object>
-*/
+
 
   syntax ObjRef ::= "checkIter" "(" Expression ")" [:strict:]
 
-  rule <k> invokeBuiltin(obj("call_iter",_), ListItem(O), .) => checkIter(getmember(O, #id "__iter__", true, false, false) () -> test(equals(getmember(O, #id "__getitem__", true, false, false), .Obj), (ref("getitem_iter") (O)), .Obj) -> (raiseInternal("TypeError", "object is not iterable"))) ...</k>
+  rule <k> invokeBuiltin(obj("call_iter",_), ListItem(O), .) => checkIter(getmember(O, String2Id("__iter__"), true, false, false) () -> test(equals(getmember(O, String2Id("__getitem__"), true, false, false), .Obj), (ref("getitem_iter") (O)), .Obj) -> (raiseInternal("TypeError", "object is not iterable"))) ...</k>
 
-  rule <k> checkIter(O) => test(O . #id "__next__" ==Bool .Obj, raiseInternal("TypeError", "iter() returned non-iterator"), O) ...</k>
+  rule <k> checkIter(O) => test(O . String2Id("__next__") ==K .Obj, raiseInternal("TypeError", "iter() returned non-iterator"), O) ...</k>
   //TODO: sentinels
 
 end module

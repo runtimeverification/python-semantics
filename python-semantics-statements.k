@@ -57,7 +57,7 @@ module PYTHON-SEMANTICS-STATEMENTS
          C:Bag
        </control>
 
-  rule lmark ~> for Targets in O : Ss else: Ss2 => try: ((Targets, .Expressions) := getmember(O, #id "__next__", true, false, true) () ~> Ss ~> lmark ~> for Targets in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
+  rule lmark ~> for Targets in O : Ss else: Ss2 => try: ((Targets, .Expressions) := getmember(O, String2Id("__next__"), true, false, true) () ~> Ss ~> lmark ~> for Targets in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
 
   rule O ; => .
 

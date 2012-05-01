@@ -6,25 +6,19 @@ module PYTHON-SEMANTICS-LOGIC
 
   syntax ObjRef ::= "test" "(" Test "," K "," K ")" [:strict(1):]
 
-  declare and : Test Test -> Test
-  declare or : Test Test -> Test
-  declare negate : Test -> Test
-  declare equals : Expression Expression -> Test
+  syntax Test ::= "and" "(" Test "," Test ")" [:strict(1):]
+  syntax Test ::= "or" "(" Test "," Test ")" [:strict(1):]
+  syntax Test ::= "negate" "(" Test ")" [:strict:]
+  syntax Test ::= "equals" "(" Test "," Test ")" [:strict:]
 
-  context and(HOLE,_)
-  context or(HOLE,_)
-  context negate(HOLE)
-  context equals(HOLE,_)
-  context equals(_,HOLE)
-
-  define and(false, _) => false
-  define and(_, false) => false
-  define and(true, K) => K
-  define or(true, _) => true
-  define or(_, true) => true
-  define or(false, K) => K
-  define negate(T:#Bool) => notBool T
-  define equals(K, K2:K) => K ==Bool K2
+  rule and(false, _) => false
+  rule and(_, false) => false
+  rule and(true, K) => K
+  rule or(true, _) => true
+  rule or(_, true) => true
+  rule or(false, K) => K
+  rule negate(T:Bool) => notBool T
+  rule equals(K, K2:K) => K ==K K2
 
   rule test(true, K:K, _) => K
   rule test(false, _, K) => K

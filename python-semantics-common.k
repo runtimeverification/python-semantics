@@ -24,7 +24,7 @@ module PYTHON-SEMANTICS-COMMON
                   <references> "None" |-> 1 </references>
                   <literals> .Map </literals>
                   <nextLoc> 1 </nextLoc>
-                  <debug> $DEBUG:#Bool </debug>
+                  <debug> $DEBUG:Bool </debug>
                   <hashInfo> $HASHINFO:List </hashInfo>
                 </T>
 
@@ -37,25 +37,25 @@ module PYTHON-SEMANTICS-COMMON
              | "popx"
              | "setx" "(" K ")"
              | "newHelper" "(" Expression "," Expression "," Set ")" [:strict(1 2):]
-             | "raiseInternal" "(" #String "," Expression ")" [:strict(2):]
-             | "setattr" "(" Builtin "," #String "," K ")"
-             | "setref" "(" Builtin "," #String "," Expression ")" [:strict(3):]
+             | "raiseInternal" "(" String "," Expression ")" [:strict(2):]
+             | "setattr" "(" Builtin "," String "," K ")"
+             | "setref" "(" Builtin "," String "," Expression ")" [:strict(3):]
              | "executeModule" "(" Expression "," Expression "," Expression ")" [:strict:]
-             | "executeFrame" "(" #Nat "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression "," Map ")" [:strict(2 3 4 5 6 7):]
+             | "executeFrame" "(" Nat "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression "," Map ")" [:strict(2 3 4 5 6 7):]
              | "setArgs" "(" Map ")"
 
   syntax Test ::= "istype" "(" Expression "," Expression ")" [:strict:]
                 | "hasbase" "(" Expression "," Expression ")" [:strict:]
                 | "hasbase" "(" ListRef "," Expression ")"
 
-  syntax ObjRef ::= "ref" "(" #String ")"
+  syntax ObjRef ::= "ref" "(" String ")"
                   | "ref" "(" K ")"
-                  | "builtin" "(" #Id ")"
+                  | "builtin" "(" Id ")"
                   | "gettype" "(" Expression ")"
                   | "getbases" "(" Expression ")"
-                  | "getmember" "(" Expression "," #Id "," #Bool "," #Bool "," #Bool ")" [:strict(1):] 
-                  | "binaryOp" "(" Expression "," Expression "," #String "," #String "," K ")" [:strict(1 2):]
-                  | "unaryOp" "(" Expression "," #String "," K ")" [:strict(1):]
+                  | "getmember" "(" Expression "," Id "," Bool "," Bool "," Bool ")" [:strict(1):] 
+                  | "binaryOp" "(" Expression "," Expression "," String "," String "," K ")" [:strict(1 2):]
+                  | "unaryOp" "(" Expression "," String "," K ")" [:strict(1):]
                   | "invoke" "(" Expression "," Map ")" [:strict(1):]
                   | "invokeBuiltin" "(" Expression "," List "," Map ")" [:strict(1):]
                   | "invokeFunction" "(" Expression "," List "," Map ")" [:strict(1):]
@@ -65,123 +65,120 @@ module PYTHON-SEMANTICS-COMMON
                   | "immutable" "(" Value "," Expression ")" [:strict(2):]
                   | "copy" "(" Expression "," Expression ")" [:strict:]
                   | "name" "(" Expression ")"
-                  | "codeObject" "(" #Id "," Parameters "," K ")"
+                  | "codeObject" "(" Id "," Parameters "," K ")"
 
   syntax ListRef ::= "iterate" "(" Expression "," K ")" [:strict(1):]
 
-  macro name(E) = getmember(E, #id "__name__", true, false, true)
+  macro name(E) = getmember(E, String2Id("__name__"), true, false, true)
 
-  context doCall(HOLE, _, _) when HOLE =/=Bool .
+  context doCall(HOLE, _, _) when HOLE =/=K .
 
-  declare docString : K -> #String
+  syntax String ::= "docString" "(" K ")" [:function:]
   define docString(S ;) => S
   define docString(S ; newline _) => S
   define docString(_) => ref("None")
 
-  declare Env2Dict : Map -> Map
-  define Env2Dict((#id S |-> K M)) => S |-> K Env2Dict(M)
+  syntax Map ::= "Env2Dict" "(" Map ")" [:function:]
+  define Env2Dict((X |-> K M)) => Id2String(X) |-> K Env2Dict(M)
   define Env2Dict(.) => .
 
-  declare lengthMap_ : Map -> #Nat
-  define lengthMap(_ |-> _ M:Map) => 1 +Nat lengthMap M
+  syntax Nat ::= "lengthMap" Map [:function:]
+  define lengthMap(_ |-> _ M:Map) => 1 +Int lengthMap M
   define lengthMap . => 0
 
-  declare Ids2Strings : Set -> Set
-  define Ids2Strings(SetItem(#id S) St) => SetItem(S) Ids2Strings(St)
+  syntax Set ::= "Ids2Strings" "(" Set ")" [:function:]
+  define Ids2Strings(SetItem(X) St) => SetItem(Id2String(X)) Ids2Strings(St)
   define Ids2Strings(.) => .
 
-  declare Listify : K -> List
+  syntax List ::= "Listify" "(" K ")" [:function:]
   define Listify((P:Parameter , Ps:Parameters)) => ListItem(P) Listify(Ps)
   define Listify(.Parameters) => .
 
-  declare DeListify : List -> Parameters
+  syntax Parameters ::= "DeListify" "(" List ")" [:function:]
   define DeListify(ListItem(P) L) => P , DeListify(L)
   define DeListify(.) => .Parameters
 
-  declare Idify : List -> List
+  syntax List ::= "Idify" "(" List ")" [:function:]
   define Idify(ListItem(O) L) => ListItem(id(O)) Idify(L)
   define Idify(.) => .
 
-  declare Setify : List -> Set
+  syntax Set ::= "Setify" "(" List ")" [:function:]
   define Setify(ListItem(K) L) => SetItem(K) Setify(L)
   define Setify(.) => .
 
-  declare DeSetify : Set -> List
+  syntax List ::= "DeSetify" "(" Set ")" [:function:]
   define DeSetify(SetItem(K) St) => ListItem(K) DeSetify(St)
   define DeSetify(.) => .
 
-  declare sorted : List -> List
+  syntax List ::= "sorted" "(" List ")" [:function:]
   define sorted(ListItem(K) L) => sorted(less(L, K)) ListItem(K) sorted(more(L, K))
   define sorted(.) => .
 
-  declare less : List K -> List
+  syntax List ::= "less" "(" List "," K ")" [:function:]
   define less((ListItem(K) L), K2:K) => ListItem(K) less(L, K2) when lt(K, K2)
   define less((ListItem(K) L), K2) => less(L, K2) when notBool lt(K, K2)
   define less(.,_) => .
 
-  declare more : List K -> List
+  syntax List ::= "more" "(" List "," K ")" [:function:]
   define more((ListItem(K) L), K2) => ListItem(K) more(L, K2) when notBool lt(K, K2)
   define more((ListItem(K) L), K2) => more(L, K2) when lt(K, K2)
   define more(.,_) => .
 
-  declare lt : K K -> #Bool
+  syntax Bool ::= "lt" "(" K "," K ")" [:function:]
   define lt(S, I) => true
   define lt(I, S) => false
   define lt(S, S2) => S <String S2
-  define lt(I, I2:#Int) => I <Int I2
+  define lt(I, I2:Int) => I <Int I2
 
-  declare lookup : Map Set -> Set
+  syntax Set ::= "lookup" "(" Map "," Set ")" [:function:]
   define lookup((K |-> K2 M), (SetItem(K) St)) => SetItem(K2) lookup(M, St)
   define lookup(_, .) => .
 
-  declare Mapify : KeyData -> Map
+  syntax Map ::= "Mapify" "(" KeyData ")" [:function:]
   define Mapify((K : K2 , KD:KeyData)) => K |-> K2 Mapify(KD)
   define Mapify(.KeyData) => .
 
-  declare DeMapify : Map -> KeyData
+  syntax KeyData ::= "DeMapify" "(" Map ")" [:function:]
   define DeMapify((K |-> K2 M)) => (K : K2) , DeMapify(M)
   define DeMapify(.) => .List{","}
 
-  declare id : Expression -> Builtin
+  syntax Builtin ::= "id" "(" Expression ")" [:function:]
   define id(obj(B,_)) => B
   define id(undefined(S)) => undefined(S)
 
-  declare int : K -> #Int
-  define int(I) => I
+  syntax Int ::= "intvalue" "(" Expression ")" [:function:]
+  define intvalue(obj(_,<oattrs>... "__value__" |-> I:Int ...</oattrs>)) => I
 
-  declare intvalue : Expression -> #Int
-  define intvalue(obj(_,<oattrs>... "__value__" |-> I:#Int ...</oattrs>)) => I
+  syntax String ::= "strvalue" "(" Object ")" [:function:]
+  define strvalue(obj(_,<oattrs>... "__value__" |-> S:String ...</oattrs>)) => S
 
-  declare strvalue : Object -> #String
-  define strvalue(obj(_,<oattrs>... "__value__" |-> S:#String ...</oattrs>)) => S
-
-  declare listvalue : Object -> List
+  syntax List ::= "listvalue" "(" Object ")" [:function:]
   define listvalue(obj(_,<oattrs>... "__value__" |-> list(L:List) ...</oattrs>)) => L
 
-  declare mapvalue : Object -> Map
+  syntax Map ::= "mapvalue" "(" Object ")" [:function:]
   define mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ _ |-> list(_ (ListItem(K : K2) => .) _)) ...</oattrs>)) (. => K |-> K2)
   define mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ (_ |-> list(.) => .)) ...</oattrs>))
   define mapvalue(obj(_,<oattrs>... "__value__" |-> map(.) ...</oattrs>)) => .
 
-  declare get : List #Int -> K
+  syntax K ::= "get" "(" List "," Int ")" [:function:]
   define get(ListItem(K) _, 0) => K
-  define get(ListItem(_) L, sNat(N)) => get(L, N)
+  define get(ListItem(_) L, N) => get(L, N -Int 1)
 
-  declare getl : K -> List
+  syntax List ::= "getl" "(" K ")" [:function:]
   define getl(list(L)) => L
 
-  declare getattr : Expression #String -> K
-  define getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:#String) => Attrs(S)
+  syntax K ::= "getattr" "(" Expression "," String ")" [:function:]
+  define getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs(S)
   context getattr(HOLE,_)
 
-  declare getref : Expression #String -> K
+  syntax K ::= "getref" "(" Expression "," String ")" [:function:]
   define getref(obj(_,<oattrs> Attrs </oattrs>), S) => ref(Attrs(S))
   context getref(HOLE,_)
 
-  declare _&Set_ : Set Set -> Set
+  syntax Set ::= Set "&Set" Set [:function:]
   define St1:Set &Set St2:Set => St1 -Set (St1 -Set St2)
 
-  declare values_ : Map -> Set
+  syntax Set ::= "values" Map [:function:]
   define values (K |-> K2 M) => SetItem(K2) values M
   define values . => .
 
@@ -211,7 +208,7 @@ module PYTHON-SEMANTICS-COMMON
   rule istype(O:Object, Type:Object) => hasbase(gettype(O), Type)
 
   //needs predicates to work without obj()
-  rule hasbase(obj(N:#Nat,ObjState:Bag), Base:Object) => or(obj(N,ObjState) ==Bool Base, hasbase(getbases(obj(N,ObjState)), Base))
+  rule hasbase(obj(N:Nat,ObjState:Bag), Base:Object) => or(obj(N,ObjState) ==K Base, hasbase(getbases(obj(N,ObjState)), Base))
 
   rule hasbase(list(ListItem(N) L), Base) => or(hasbase(ref(N), Base),hasbase(list(L), Base))
   rule hasbase(list(.List), Base) => false
@@ -222,7 +219,7 @@ module PYTHON-SEMANTICS-COMMON
   rule <k> ref(S) => ref(N) ...</k>
        <symbols>... S |-> N ...</symbols>
 
-  rule <k> ref(S) => obj(S2:#String,<oattrs>Attrs</oattrs>) ...</k>
+  rule <k> ref(S) => obj(S2:String,<oattrs>Attrs</oattrs>) ...</k>
        <symbols>... S |-> S2 ...</symbols>
        <object>...
          <id>S2</id>
@@ -235,21 +232,21 @@ module PYTHON-SEMANTICS-COMMON
          <oattrs>Attrs</oattrs>
        ...</object>
 
-  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> N "__method__" |-> T:#Bool ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when (T andBool lengthList L =/=Bool sNat(N)) orBool ((notBool T) andBool lengthList L =/=Bool N)
+  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> N "__method__" |-> T:Bool ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when (T andBool lengthList L -Int 1 =/=Int N) orBool ((notBool T) andBool lengthList L =/=Int N)
 
-  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at least " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when N =/=Bool I andBool ((T andBool lengthList L <Int sNat(N)) orBool ((notBool T) andBool lengthList L <Int N))
+  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at least " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when N =/=Int I andBool ((T andBool lengthList L -Int 1 <Int N) orBool ((notBool T) andBool lengthList L <Int N))
 
-  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at most " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when I >=Int 0 andBool N =/=Bool I andBool ((T andBool lengthList L >Int I +Int 1) orBool ((notBool T) andBool lengthList L >Int I))
+  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at most " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when I >=Int 0 andBool N =/=Int I andBool ((T andBool lengthList L -Int 1 >Int I) orBool ((notBool T) andBool lengthList L >Int I))
 
   context list(.) ~> iterate(HOLE,_)
 
-  rule iterate(O, K) => try: (list(.) ~> iterate(ref("iter") (O), K)) except ref("TypeError") : test(K ==Bool ., raise, K) else: pass
-  rule list(L) ~> iterate(O, K) => try: addItem(getmember(O,  #id "__next__", true, false, false) ()) except ref("StopIteration") : list(L) else: (list(L) ~> iterate(O, K))
+  rule iterate(O, K) => try: (list(.) ~> iterate(ref("iter") (O), K)) except ref("TypeError") : test(K ==K ., raise, K) else: pass
+  rule list(L) ~> iterate(O, K) => try: addItem(getmember(O,  String2Id("__next__"), true, false, false) ()) except ref("StopIteration") : list(L) else: (list(L) ~> iterate(O, K))
   rule (addItem(O) => .) ~> popx ~> list(_ (. => ListItem(O)))
   rule K ~> setx(K2) => setx(K2) ~> K when 'isKResult(K)
   rule K ~> popx => popx ~> K when 'isKResult(K)
 
-  rule <k> mapping(O, K) => iterate(getmember(O, #id "keys", true, false, false) () -> K, raiseInternal("TypeError", "o.keys() are not iterable")) ~> map(.) ~> mapping(O, K) ...</k>
+  rule <k> mapping(O, K) => iterate(getmember(O, String2Id("keys"), true, false, false) () -> K, raiseInternal("TypeError", "o.keys() are not iterable")) ~> map(.) ~> mapping(O, K) ...</k>
   rule <k> list((ListItem(B:Builtin) => .) _) ~> (. => addPair(B, (O [ ref(B) ]))) ~> map(_) ~> mapping(O,_) ...</k>
   rule <k> list(_) ~> (addPair(B, O) => .) ~> map(_ (. => B |-> O)) ...</k>
   rule <k> (list(.) => .) ~> map(_) ~> (mapping(_,_) => .) ...</k>
@@ -259,24 +256,24 @@ module PYTHON-SEMANTICS-COMMON
 
   rule raiseInternal(S, O) => raise mutable("args" |-> undefined(strvalue(O)),ref(S))
 
-  rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => ((Dict [ "__name__"]) , .Expressions) := CO . #id "co_name" ~> ((Dict [ "__doc__" ]) , .Expressions) := CO . #id "co_consts" [0] ~> ((Dict [ "__builtins__" ]) , .Expressions) := Builtins ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple()) ~> setref(id(CO), "co_cellvars", tuple()) ~> executeFrame(sNat(N), ref(id(CO)), ref("None"), Dict, Dict, Builtins, {}, .) ...</k>
-       <nextLoc> N => sNat(sNat(N)) </nextLoc>
+  rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => ((Dict [ "__name__"]) , .Expressions) := CO . String2Id("co_name") ~> ((Dict [ "__doc__" ]) , .Expressions) := CO . String2Id("co_consts") [0] ~> ((Dict [ "__builtins__" ]) , .Expressions) := Builtins ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple()) ~> setref(id(CO), "co_cellvars", tuple()) ~> executeFrame(N +Int 1, ref(id(CO)), ref("None"), Dict, Dict, Builtins, {}, .) ...</k>
+       <nextLoc> N => N +Int 2 </nextLoc>
        (. => <object>...
          <id>N</id>
          <oattrs> "__dict__" |-> id(Dict) "__class__" |-> Module </oattrs>
        ...</object>)
-       <symbols>... "module" |-> Module:#Nat ...</symbols>
+       <symbols>... "module" |-> Module:Nat ...</symbols>
 
 
-  rule <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . #id "__dict__"), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells) ~> setArgs(Args) ~> getattr(CO, "co_code") ...</k>
+  rule <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . String2Id("__dict__")), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells) ~> setArgs(Args) ~> getattr(CO, "co_code") ...</k>
        <currentFrame> _ => N </currentFrame>
        (. => <object>...
          <id>N</id>
          <oattrs> "__class__" |-> Frame </oattrs>
        ...</object>)
-       <symbols>... "frame" |-> Frame:#Nat ...</symbols>
+       <symbols>... "frame" |-> Frame:Nat ...</symbols>
 
-  rule (. => (X:#Id, .Expressions) := ref(B)) ~> setArgs((X |-> B => .) _)
+  rule (. => (X:Id, .Expressions) := ref(B)) ~> setArgs((X |-> B => .) _)
   rule setArgs(.) => .
 
 end module

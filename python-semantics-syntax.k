@@ -8,8 +8,8 @@ module PYTHON-SEMANTICS-SYNTAX
 
   syntax Object ::= "obj" "(" Builtin "," Bag ")"
 
-  syntax Builtin ::= #Nat
-                   | #String
+  syntax Builtin ::= Nat
+                   | String
 
   syntax NAME ::= ObjRef
                 | Null
@@ -17,16 +17,16 @@ module PYTHON-SEMANTICS-SYNTAX
 
   syntax Null ::= ".Obj"
 
-  syntax Undefined ::= "undefined" "(" #String ")"
+  syntax Undefined ::= "undefined" "(" String ")"
 
   syntax KResult ::= Object
-                   | #Bool
+                   | Bool
                    | KList
                    | KMap
                    | Null
                    | Undefined
 
-  syntax Test ::= #Bool
+  syntax Test ::= Bool
   syntax ObjRef ::= Object
   syntax ListRef ::= KList
   syntax KList ::= "list" "(" List ")"

@@ -8,23 +8,23 @@ module PYTHON-SEMANTICS-LITERALS
              | "processDictElement" "(" Expression "," Expression "," Expression "," Expression ")" [:strict:]
              | "processSet" "(" Expression "," List ")" [:strict(1):]
              | "processSetElement" "(" Expression "," Expression "," Expression ")" [:strict:]
-             | "tableInsert" "(" Builtin "," #Int "," Expression "," K ")" [:strict(3):]
-             | "tableLookup" "(" Builtin "," #Int "," Expression ")" [:strict(3):]
-             | "tableDelete" "(" Builtin "," #Int "," Expression ")" [:strict(3):]
-             | "bucketInsert" "(" Builtin "," #Int "," Expression "," Expression "," List "," List ")" [:strict(3 4):]
+             | "tableInsert" "(" Builtin "," Int "," Expression "," K ")" [:strict(3):]
+             | "tableLookup" "(" Builtin "," Int "," Expression ")" [:strict(3):]
+             | "tableDelete" "(" Builtin "," Int "," Expression ")" [:strict(3):]
+             | "bucketInsert" "(" Builtin "," Int "," Expression "," Expression "," List "," List ")" [:strict(3 4):]
              | "bucketLookup" "(" Expression "," List ")" [:strict(1):]
-             | "bucketDelete" "(" Builtin "," #Int "," Expression "," List "," List ")" [:strict(3):]
-             | "setBucket" "(" Builtin "," #Int "," List ")"
+             | "bucketDelete" "(" Builtin "," Int "," Expression "," List "," List ")" [:strict(3):]
+             | "setBucket" "(" Builtin "," Int "," List ")"
  
-  declare key : KeyDatum -> Builtin
+  syntax Builtin ::= "key" "(" KeyDatum ")" [:function:]
   define key(B : _) => B
 
-  declare value : KeyDatum -> Builtin
+  syntax Builtin ::= "value" "(" KeyDatum ")" [:function:]
   define value(_ : B) => B
 
-  rule <k> I:#Int => immutable(I,ref("int")) ...</k>
-  rule <k> S:#String => immutable(S,ref("str")) ...</k>
-  rule <k> F:#Float => immutable(F,ref("float")) ...</k>
+  rule <k> I:Int => immutable(I,ref("int")) ...</k>
+  rule <k> S:String => immutable(S,ref("str")) ...</k>
+  rule <k> F:Float => immutable(F,ref("float")) ...</k>
   rule <k> tuple(Osc:Expressions) => immutable(list(Idify(Listify(Osc))), ref("tuple")) ...</k>
   rule <k> [ Osc ] => mutable(list(Idify(Listify(Osc))), ref("list")) ...</k>
   rule <k> { Osc } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k>
@@ -40,7 +40,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   syntax K ::= "checkHash" "(" Expression ")" [:strict:]
 
-  rule <k> invokeBuiltin(obj("call_hash",_), ListItem(O:Object), .) => checkHash(getmember(O, #id "__hash__", true, false, false) () -> (raiseInternal("TypeError", "unhashable type"))) ...</k>
+  rule <k> invokeBuiltin(obj("call_hash",_), ListItem(O:Object), .) => checkHash(getmember(O, String2Id("__hash__"), true, false, false) () -> (raiseInternal("TypeError", "unhashable type"))) ...</k>
 
   rule <k> checkHash(O) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__hash__ method should return an integer")) ...</k>
 
@@ -48,7 +48,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule <k> processSetElement(obj(B,_), Element, Hash) => tableInsert(B, intvalue(Hash), Element, id(Element)) ...</k>
 
-  rule <k> tableInsert(B, H:#Int, Key, K:K) => . ...</k>
+  rule <k> tableInsert(B, H:Int, Key, K:K) => . ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> map(M:Map => M[list(ListItem(K))/H]) ...</oattrs>
@@ -72,7 +72,7 @@ module PYTHON-SEMANTICS-LITERALS
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> map(M => M[list(Values)/H]) ...</oattrs>
-       ...</object> when Values =/=Bool .
+       ...</object> when Values =/=List .
 
   rule <k> setBucket(B, H, .) => . ...</k>
        <object>...
@@ -118,12 +118,12 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> V ...</oattrs>
        ...</object>
 
-  rule <k> immutable(V:Value,obj(B:Builtin,_)) => ref(N:#Nat) ...</k>
+  rule <k> immutable(V:Value,obj(B:Builtin,_)) => ref(N:Nat) ...</k>
        <literals>... pair(V,B) |-> N ...</literals>
 
   rule <k> immutable(V,obj(B,_)) => ref(N) ...</k>
        <literals> Ref:Map (. => pair(V,B) |-> N) </literals>
-       <nextLoc> N => sNat(N) </nextLoc>
+       <nextLoc> N => N +Int 1 </nextLoc>
        (. =>
        <object>...
          <id>N</id>
@@ -133,7 +133,7 @@ module PYTHON-SEMANTICS-LITERALS
   rule <k> mutable(V,O) => mutable("__value__" |-> V "__revision__" |-> 0, O) ...</k>
 
   rule <k> mutable(M:Map,obj(B,_)) => ref(N) ...</k>
-       <nextLoc> N => sNat(N) </nextLoc>
+       <nextLoc> N => N +Int 1 </nextLoc>
        (. =>
        <object>...
          <id>N</id>

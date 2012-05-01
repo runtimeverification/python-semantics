@@ -1,5 +1,5 @@
 module BYTES
 
-  syntax Bytes ::= "b" #String
+  syntax Bytes ::= "b" String
 
 end module

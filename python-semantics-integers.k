@@ -6,7 +6,7 @@ module PYTHON-SEMANTICS-INTEGERS
   rule <k> invokeBuiltin(obj("le_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", bool(intvalue(O) <=Int intvalue(O2))) ...</k>
   rule <k> invokeBuiltin(obj("ge_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", bool(intvalue(O) >=Int intvalue(O2))) ...</k>
   rule <k> invokeBuiltin(obj("eq_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", bool(intvalue(O) ==Int intvalue(O2))) ...</k>
-  rule <k> invokeBuiltin(obj("ne_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", bool(intvalue(O) !=Int intvalue(O2))) ...</k>
+  rule <k> invokeBuiltin(obj("ne_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", bool(intvalue(O) =/=Int intvalue(O2))) ...</k>
 
   rule <k> invokeBuiltin(obj("bool_int",_), ListItem(O), .) => bool(plbool(O)) ...</k>
 
@@ -51,14 +51,14 @@ module PYTHON-SEMANTICS-INTEGERS
   rule <k> invokeBuiltin(obj("or_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", (intvalue(O) |Int intvalue(O2))) ...</k>
   rule <k> invokeBuiltin(obj("ror_int",_), ListItem(O) ListItem(O2), .) => invokeBuiltin(ref("or_int"), ListItem(O2) ListItem(O), .) ...</k>
 
-  rule <k> invokeBuiltin(obj("neg_int",_), ListItem(O), .) => unaryOp(O, "int", -Int intvalue(O)) ...</k>
+  rule <k> invokeBuiltin(obj("neg_int",_), ListItem(O), .) => unaryOp(O, "int", 0 -Int intvalue(O)) ...</k>
   rule <k> invokeBuiltin(obj("pos_int",_), ListItem(O), .) => unaryOp(O, "int", intvalue(O)) ...</k>
   rule <k> invokeBuiltin(obj("abs_int",_), ListItem(O), .) => unaryOp(O, "int", absInt(intvalue(O))) ...</k>
   rule <k> invokeBuiltin(obj("invert_int",_), ListItem(O), .) => unaryOp(O, "int", ~Int intvalue(O)) ...</k>
 
   //TODO: string conversion
   rule invokeBuiltin(obj("new_int",_), ListItem(O), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(0, O)
-  rule invokeBuiltin(obj("new_int",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(intvalue(O . #id "__int__" ()), O)
+  rule invokeBuiltin(obj("new_int",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(intvalue(O . String2Id("__int__") ()), O)
   context immutable(intvalue(HOLE), _)
 
   rule invokeBuiltin(obj("int_int",_), ListItem(O), .) => O

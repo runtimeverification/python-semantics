@@ -1,67 +1,67 @@
 module PYTHON-SEMANTICS-ENVIRONMENT
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= "envLookup" "(" #Id "," Expression "," Expression ")" [:strict(2 3):]
-  syntax K ::= "doBind" "(" #Id "," Builtin "," Expression ")" [:strict(3):]
-  syntax K ::= "doBind2" "(" #Id "," Builtin "," Expression "," Expression ")" [:strict(3 4):]
+  syntax ObjRef ::= "envLookup" "(" String "," Expression "," Expression ")" [:strict(2 3):]
+  syntax K ::= "doBind" "(" String "," Builtin "," Expression ")" [:strict(3):]
+  syntax K ::= "doBind2" "(" String "," Builtin "," Expression "," Expression ")" [:strict(3 4):]
 
   macro unbind(X) = bind(X, 0)
-  rule <k> bind(X:#Id, B:Builtin) => doBind(X, B, ref(N)) ...</k>
+  rule <k> bind(X:Id, B:Builtin) => doBind(Id2String(X), B, ref(N)) ...</k>
        <currentFrame> N </currentFrame>
 
-  rule <k> X => envLookup(X,ref(N),ref(N) . #id "f_code") ...</k>
-       <currentFrame> N:#Nat </currentFrame>
+  rule <k> X => envLookup(Id2String(X),ref(N),ref(N) . String2Id("f_code")) ...</k>
+       <currentFrame> N:Nat </currentFrame>
 
-  rule envLookup(#id S:#String, Frame:Object, Code:Object) =>
-       (Frame . #id "f_locals" [S]
+  rule envLookup(S:String, Frame:Object, Code:Object) =>
+       (Frame . String2Id("f_locals") [S]
        if
-            S in Frame . #id "f_locals"
+            S in Frame . String2Id("f_locals")
        else 
             raiseInternal("NameError", "free variable '" +String S +String "' referenced before assignment in enclosing scope")
             if
-                 S in Code . #id "co_cellvars" or
-                 S in Code . #id "co_freevars"
+                 S in Code . String2Id("co_cellvars") or
+                 S in Code . String2Id("co_freevars")
             else 
                  raiseInternal("UnboundLocalError", "local variable '" +String S +String "' referenced before assignment"))
        if
-            S in Code . #id "co_varnames" or
-            S in Code . #id "co_cellvars" or
-            S in Code . #id "co_freevars"
+            S in Code . String2Id("co_varnames") or
+            S in Code . String2Id("co_cellvars") or
+            S in Code . String2Id("co_freevars")
        else
-            Frame . #id "f_globals" [S]
+            Frame . String2Id("f_globals") [S]
             if
-                 S in Frame . #id "f_globals"
+                 S in Frame . String2Id("f_globals")
             else
-                 Frame . #id "f_builtins" [S]
+                 Frame . String2Id("f_builtins") [S]
                  if
-                      S in Frame . #id "f_builtins"
+                      S in Frame . String2Id("f_builtins")
                  else
                       raiseInternal("NameError", "name '" +String S +String "' is not defined")
 
-  rule doBind(X, B, Frame) => doBind2(X, B, Frame, Frame . #id "f_code")
-  rule doBind2(#id S, B, Frame, Code) => if S in Code . #id "co_varnames" or
-                                            S in Code . #id "co_cellvars" or
-                                            S in Code . #id "co_freevars" :
-                                              test(B ==Bool 0,
-                                                   (del Frame . #id "f_locals" [S], .Expressions),
-                                                   Frame . #id "f_locals" [S], .Expressions := ref(B))
+  rule doBind(S, B, Frame) => doBind2(S, B, Frame, Frame . String2Id("f_code"))
+  rule doBind2(S, B, Frame, Code) => if S in Code . String2Id("co_varnames") or
+                                            S in Code . String2Id("co_cellvars") or
+                                            S in Code . String2Id("co_freevars") :
+                                              test(B ==K 0,
+                                                   (del Frame . String2Id("f_locals") [S], .Expressions),
+                                                   Frame . String2Id("f_locals") [S], .Expressions := ref(B))
                                          else: pass ~>
-                                         if S in Code . #id "co_cellvars" or 
-                                            S in Code . #id "co_freevars" :
-                                              test(B ==Bool 0,
+                                         if S in Code . String2Id("co_cellvars") or 
+                                            S in Code . String2Id("co_freevars") :
+                                              test(B ==K 0,
                                                    setattr(id(getref(Frame, "f_cells")[S]), "cell_contents", .Obj),
                                                    setattr(id(getref(Frame, "f_cells")[S]), "cell_contents", B))
                                          else: pass ~>
-                                         if S in Code . #id "co_freevars" :
-                                              doBind(#id S, B, getref(getref(Frame, "f_cells")[S], "cell_frame"))
+                                         if S in Code . String2Id("co_freevars") :
+                                              doBind(S, B, getref(getref(Frame, "f_cells")[S], "cell_frame"))
                                          else: pass ~>
-                                         if S in Code . #id "co_names" :
-                                              test(B ==Bool 0,
-                                                   (del ((Frame . #id "f_globals" [S]), .Expressions)),
-                                                   (((Frame . #id "f_globals" [S]), .Expressions) := ref(B)))
+                                         if S in Code . String2Id("co_names") :
+                                              test(B ==K 0,
+                                                   (del ((Frame . String2Id("f_globals") [S]), .Expressions)),
+                                                   (((Frame . String2Id("f_globals") [S]), .Expressions) := ref(B)))
                                          else: pass
 
-  rule <k> invokeBuiltin(obj("call_globals",_), ., .) => ref(N) . #id "f_globals" ...</k>
+  rule <k> invokeBuiltin(obj("call_globals",_), ., .) => ref(N) . String2Id("f_globals") ...</k>
        <currentFrame> N </currentFrame>
     
 end module

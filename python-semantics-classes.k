@@ -1,12 +1,12 @@
 module PYTHON-SEMANTICS-CLASSES
   imports PYTHON-SEMANTICS-CALLS
 
-  syntax K ::= "restoreContext" "(" List "," List "," #Nat ")"
-             | "invokeClass" "(" Expression "," #Id "," List "," Map "," Map ")" [:strict(1):]
+  syntax K ::= "restoreContext" "(" List "," List "," Nat ")"
+             | "invokeClass" "(" Expression "," Id "," List "," Map "," Map ")" [:strict(1):]
 
-  rule <k> class X:#Id ( Args:K ) : Ss:K => bindLocals(Ss, false) ~> #id "__module__" := #id "__name__" ~> #id "__doc__" := docString(Ss) ~> Ss ~> restoreContext(LL, FL, N2) ~> sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeClass(getMetaclass(Args), X, ., ., .) ...</k>
-       <nextLoc> N:#Nat => sNat(N) </nextLoc>
-       <currentBlock> N2:#Nat => N </currentBlock>
+  rule <k> class X:Id ( Args:K ) : Ss:K => bindLocals(Ss, false) ~> String2Id("__module__") := String2Id("__name__") ~> String2Id("__doc__") := docString(Ss) ~> Ss ~> restoreContext(LL, FL, N2) ~> sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeClass(getMetaclass(Args), X, ., ., .) ...</k>
+       <nextLoc> N:Nat => N +Int 1 </nextLoc>
+       <currentBlock> N2:Nat => N </currentBlock>
        <fstack> FL:List => . </fstack>
        <lstack> LL:List => . </lstack>
        (. => <block>...
@@ -24,16 +24,16 @@ module PYTHON-SEMANTICS-CLASSES
 
   rule (processArgs(L:List, M:Map, .Obj, .Obj) => .) ~> invokeClass(_, _, (. => L), (. => M))
 
-  declare getMetaclass : Arguments -> Expression
-  define getMetaclass(#id "metaclass" = E:Expression, _) => E
+  syntax Expression ::= "getMetaClass" "(" Arguments ")" [:function:]
+  define getMetaclass(X = E:Expression, _) => E when Id2String(X) ==String "metaclass"
   define getMetaclass(_, K:K) => getMetaclass(K)
   define getMetaclass(.Expressions) => ref("type")
 
   //TODO: use result of __prepare__
   rule invokeClass(O:Object, X, L, M, Env) => doCall(O, ListItem(Id2String(X)) ListItem(immutable(list(Idify(L)), ref("tuple"))) ListItem({DeMapify(Env2Dict(Env))}), stripMetaclass(M))
 
-  declare stripMetaclass : Map -> Map
-  declare stripMetaclass("metaclass" |-> K M) => stripMetaclass(M)
-  declare stripMetaclass(K |-> K2 M) => K |-> K2 stripMetaclass(M)
+  syntax Map ::= "stripMetaclass" "(" Map ")" [:function:]
+  define stripMetaclass("metaclass" |-> K M) => stripMetaclass(M)
+  define stripMetaclass(K |-> K2 M) => K |-> K2 stripMetaclass(M)
 
 end module

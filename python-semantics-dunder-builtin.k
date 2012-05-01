@@ -139,10 +139,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__getattribute__" |-> def "getattribute_module" (1, 1, true)
            ,.) ~>
          object "__dict__"("reference",.,., "__get__" |-> "__dict__") ~>
-         object "object"("type",root,
+         object "object"("type",.,
            "__class__" |-> ref("__class__")
            "__getattribute__" |-> def "getattribute_object" (1, 1, true)
-           "__eq__" |-> def "eq_object" (0, 1, true)
+           "__eq__" |-> def "eq_object" (1, 1, true)
            "__init__" |-> def "init_object" (0, -1, true)
            "__ne__" |-> def "ne_object" (1, 1, true)
            "__new__" |-> def "new_object" (1, -1, false)
@@ -165,7 +165,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "str"("type",ListItem("object"),
            "__add__" |-> def "add_str" (1, 1, true)
            "__eq__" |-> def "eq_str" (1, 1, true)
-           "__hash__" |-> def "hash_str" (1, 1, true)
+           "__hash__" |-> def "hash_str" (0, 0, true)
            "__ne__" |-> def "ne_str" (1, 1, true)
            ,.) ~>
          object "tuple"("type",ListItem("object"),
@@ -177,7 +177,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "new_tuple" (1, 2, false)
            ,.) ~>
          object "type"("type",ListItem("object"),
-           "__call__" |-> def "call_type" (1, -1, true)
+           "__call__" |-> def "call_type" (0, -1, true)
            "__name__" |-> ref("__name__type") ,.) ~>
          object "__name__type" ("attribute",.,., "__get__" |-> "__name__") ~>
 
@@ -289,7 +289,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , ("UnboundLocalError" : ref("UnboundLocalError"))
          , ("ValueError" : ref("ValueError"))
            //TODO: parametrize
-         , ("__debug__" : if T then ref("True") else ref("False") fi)
+         , ("__debug__" : #if T #then ref("True") #else ref("False") #fi)
          , ("__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices.")
          , ("bool" : ref("bool"))
          , ("complex" : ref("complex"))
@@ -311,7 +311,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          }) ~>
          module "sys"({
            //TODO: parametrize
-           ("hash_info" : tuple(N1, N2, N3, N4, N5))
+           ("hash_info" : tuple(N1, N2, N3, N4, N5, .Expressions))
          , .KeyData
          }) ~>
          module "types"({
@@ -328,7 +328,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , .KeyData
          })
        ) ...</k>
-       <debug> T:#Bool </debug>
-       <hashInfo> ListItem(N1:#Nat) ListItem(N2:#Nat) ListItem(N3:#Nat) ListItem(N4:#Nat) ListItem(N5:#Nat) </hashInfo>
+       <debug> T:Bool </debug>
+       <hashInfo> ListItem(N1:Nat) ListItem(N2:Nat) ListItem(N3:Nat) ListItem(N4:Nat) ListItem(N5:Nat) </hashInfo>
 
 end module

@@ -4,9 +4,9 @@ module PYTHON-TOKENS
 
   //TODO: redo with hooks
 
-  syntax NAME ::= #Id
-  syntax NUMBER ::= #Int | #Float | Imaginary
-  syntax STRING ::= #String | Bytes
+  syntax NAME ::= Id
+  syntax NUMBER ::= Int | Float | Imaginary
+  syntax STRING ::= String | Bytes
   syntax NAMES ::= List{NAME,","} [:seqstrict prec 59:]
 end module
 
