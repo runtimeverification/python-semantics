@@ -76,7 +76,11 @@ module PYTHON-SEMANTICS-COMMON
   syntax String ::= "docString" "(" K ")" [:function:]
   define docString(S ;) => S
   define docString(S ; newline _) => S
-  define docString(_) => ref("None")
+  define docString(Lbl:KLabel(_)) => ref("None") when Lbl =/=KLabel '_newline_ andBool Lbl =/=KLabel '_;
+  define docString(Lbl:KLabel(Lbl2:KLabel(_),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 =/=KLabel '_;
+  define docString(Lbl:KLabel(Lbl2:KLabel(K),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 ==KLabel '_; andBool 'isString(K) =/=K true
+  define docString(Lbl:KLabel(K,,_)) => ref("None") when Lbl ==KLabel '_; andBool 'isString(K) =/=K true
+  define docString(.) => ref("None")
 
   syntax Map ::= "Env2Dict" "(" Map ")" [:function:]
   define Env2Dict((X |-> K M)) => Id2String(X) |-> K Env2Dict(M)

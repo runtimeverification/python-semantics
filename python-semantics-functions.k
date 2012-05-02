@@ -6,18 +6,14 @@ module PYTHON-SEMANTICS-FUNCTIONS
              | "makeCodeObject" "(" Nat "," List "," K "," Bool ")"
   syntax String ::= "paramName" "(" Argument ")"
 
-  rule paramName(X) => Id2String(X)
+  rule paramName(X:Id) => Id2String(X)
   rule paramName(X = _) => Id2String(X)
   rule paramName(* X) => Id2String(X)
   rule paramName(** X) => Id2String(X)
 
-  syntax ObjRef ::= "function" "(" Parameters "," Expression "," K ")" [:strict(3):]
+  syntax ObjRef ::= "function" "(" Parameters "," Expression "," K ")" [:strict(2):]
 
-  rule def X:Id ( Ps:K ) : Ss:K => X := function(Ps, codeObject(X, Ps, Ss), .Obj)
-  rule def X ( Ps ) -> Return:K : Ss => X := function(Ps, codeObject(X, Ps, Ss), Return)
-  rule lambda Ps : E:Expression => function(Ps, codeObject(String2Id("<lambda>"), Ps, return E), .Obj)
-
-  rule <k> function(Ps, O:Object, Return) =>
+  rule <k> function(Ps:K, O:Object, Return:K) =>
            setref(N, "__doc__", (O . String2Id("co_consts") [0])) ~> 
            setref(N, "__name__", O . String2Id("co_name")) ~> 
            setref(N, "__module__", (ref("globals")()["__name__"])) ~> 
@@ -37,7 +33,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
        ...</object>)
        <symbols>... "function" |-> Function:Nat ...</symbols>
 
-  rule <k> codeObject(X, Ps, Ss) =>
+  rule <k> codeObject(X, Ps, Ss:K) =>
            setref(N, "co_varnames", tuple()) ~>
            setref(N, "co_consts", tuple(docString(Ss))) ~>
            makescope(N) ~>
@@ -265,6 +261,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule compileVisitor(Lbl, N, K) => visit(K, 'compileVisitor) when notBool ((Lbl ==KLabel 'def_`(_`)->_:_ andBool N =/=Int 2) orElseBool (Lbl ==KLabel 'class_`(_`):_ andBool N =/=Int 1) orElseBool (N ==Int 0 andBool (Lbl ==KLabel '_:=_ orElseBool Lbl ==KLabel '_+=_ orElseBool Lbl ==KLabel '_-=_ orElseBool Lbl ==KLabel '_*=_ orElseBool Lbl ==KLabel '_/=_ orElseBool Lbl ==KLabel '_floor/=_ orElseBool Lbl ==KLabel '_%=_ orElseBool Lbl ==KLabel '_**=_ orElseBool Lbl ==KLabel '_>>=_ orElseBool Lbl ==KLabel '_<<=_ orElseBool Lbl ==KLabel '_&=_ orElseBool Lbl ==KLabel '_^=_ orElseBool Lbl ==KLabel '_|=_)) orElseBool (Lbl ==KLabel 'for_in_:_ andBool N ==Int 0) orElseBool (Lbl ==KLabel 'with_as_:_ andBool N ==Int 1) orElseBool (Lbl ==KLabel 'except_as_:_ andBool N ==Int 1) orElseBool Lbl ==KLabel 'del_ orElseBool Lbl ==KLabel 'global_ orElseBool Lbl ==KLabel 'nonlocal_ orElseBool (Lbl ==KLabel '_=_ andBool N ==Int 0) orElseBool Lbl ==KLabel 'import_ orElseBool Lbl ==KLabel 'from_import_ orElseBool Lbl ==KLabel 'def_`(_`):_ orElseBool Lbl ==KLabel 'lambda_:_)
 
-  rule compileReturner(K) => visited(K) when 'isFuncDef(K) =/=K true andBool 'isClassDef(K) =/=K true andBool 'isId(K) =/=K true
+  rule compileReturner(K) => visited(K) when getKLabel K =/=KLabel 'def_`(_`)->_:_ andBool getKLabel K =/=KLabel 'def_`(_`):_ andBool getKLabel K =/=KLabel 'class_`(_`):_ andBool 'isId(K) =/=K true
+  rule compileReturner(.) => visited(.)
 
 end module
