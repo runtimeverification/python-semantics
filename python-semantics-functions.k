@@ -54,7 +54,6 @@ module PYTHON-SEMANTICS-FUNCTIONS
   context makeFunction(_, (_:List ListItem((** _) : HOLE) _:List), _, _) 
   context makeFunction(_, _, HOLE, _)
 
-  //TODO: fix these two rules once we have hooks
   rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X) L:List => L), _, false) ...</k>
        <object>...
          <id>N</id>
@@ -73,7 +72,6 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule (. => test(plbool(getref(ref(N), "__kwdefaults__") is ref("None")), {Id2String(X) : O}, (getref(ref(N), "__kwdefaults__")[Id2String(X)] := O))) ~> makeFunction(N, ((ListItem(X = O) => ListItem(X)) _), _, true)
   rule makeFunction(_, ((ListItem(X) => .) _), _, _)
 
-  //TODO: co_flags and undefinedness (needs hooks)
   rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 4)) ~> addParam(* X)) ~> makeCodeObject(N, ((ListItem(* X) => ListItem(*)) L), _, false) 
   context setattr(_, _, (getattr(HOLE, _) |Int _:Int))
   rule makeFunction(N, ((ListItem(* X) => ListItem(*)) L), _, _)

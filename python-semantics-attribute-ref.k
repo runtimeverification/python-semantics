@@ -32,6 +32,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
          <oenv>Env:Map</oenv>
        ...</object> when notBool(S in keys(Env))
 
+  //TODO: MRO
   rule basesLookup(O, S) => (mapLookup(O, S) -> basesLookup(getbases(O), S))
 
   rule descriptor(.Obj,_,_,_) => .Obj
