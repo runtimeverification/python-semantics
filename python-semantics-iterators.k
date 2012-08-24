@@ -25,11 +25,11 @@ module PYTHON-SEMANTICS-ITERATORS
        ...</object>
 
 
-  syntax ObjRef ::= "checkIter" "(" Expression ")" [:strict:]
+  syntax ObjRef ::= "checkIter" "(" Expression ")" [strict]
 
   rule <k> invokeBuiltin(obj("call_iter",_), ListItem(O), .) => checkIter(getmember(O, String2Id("__iter__"), true, false, false) () -> test(equals(getmember(O, String2Id("__getitem__"), true, false, false), .Obj), (ref("getitem_iter") (O)), .Obj) -> (raiseInternal("TypeError", "object is not iterable"))) ...</k>
 
   rule <k> checkIter(O) => test(O . String2Id("__next__") ==K .Obj, raiseInternal("TypeError", "iter() returned non-iterator"), O) ...</k>
   //TODO: sentinels
 
-end module
+endmodule

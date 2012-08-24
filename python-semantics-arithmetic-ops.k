@@ -19,4 +19,4 @@ module PYTHON-SEMANTICS-ARITHMETIC-OPS
 
   rule <k> O [ O2 ] => (getmember(O, String2Id("__getitem__"), true, false, false) (O2)) -> raiseInternal("TypeError", "object is not subscriptable") ...</k>
 
-end module
+endmodule

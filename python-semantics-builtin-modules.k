@@ -9,11 +9,11 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
              | "incref" "(" List "," Nat ")"
              | "incref" "(" String "," Nat ")"
              | "genv" "(" String "," String ")"
-             | "module" K "(" Expression ")" [:strict(2):]
+             | "module" K "(" Expression ")" [strict(2)]
 
   syntax ListItem ::= "refs" "(" List ")"
 
-  macro incref(S,N) = incref(ListItem(S),N)
+  rule incref(S,N) => incref(ListItem(S),N) [macro, anywhere]
   rule refs(ListItem(S) L) => ListItem(ref(S)) refs(L)
   rule refs(.List) => .List
 
@@ -144,4 +144,4 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        ...</object>)
        <symbols>... (. => S |-> N) "module" |-> Module:Nat ...</symbols>
 
-end module
+endmodule

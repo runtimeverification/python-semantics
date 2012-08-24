@@ -1,40 +1,41 @@
-in bytes
-in complex-numbers
-in machine-integers
-in python-visitor
-in python-syntax
-in python-semantics-syntax
-in python-semantics-logic
-in python-semantics-common
-in python-semantics-ops
-in python-semantics-boolean-ops
-in python-semantics-literals
-in python-semantics-try
-in python-semantics-slicing
-in python-semantics-arithmetic-ops
-in python-semantics-assignment
-in python-semantics-attribute-ref
-in python-semantics-augmented-assignment
-in python-semantics-builtin-modules
-in python-semantics-calls
-in python-semantics-dicts
-in python-semantics-dunder-builtin
-in python-semantics-environment
-in python-semantics-exceptions
-in python-semantics-functions
-in python-semantics-integers
-in python-semantics-iterators
-in python-semantics-lists
-in python-semantics-macros
-in python-semantics-methods
-in python-semantics-objects
-in python-semantics-statements
-in python-semantics-strings
-in python-semantics-tuples
+require "bytes.k"
+require "complex-numbers.k"
+require "machine-integers.k"
+require "python-visitor.k"
+require "python-syntax.k"
+require "python-semantics-syntax.k"
+require "python-semantics-logic.k"
+require "python-semantics-common.k"
+require "python-semantics-ops.k"
+require "python-semantics-boolean-ops.k"
+require "python-semantics-literals.k"
+require "python-semantics-try.k"
+require "python-semantics-slicing.k"
+require "python-semantics-arithmetic-ops.k"
+/* require "python-semantics-assignment.k"
+require "python-semantics-attribute-ref.k"
+require "python-semantics-augmented-assignment.k"
+require "python-semantics-builtin-modules.k"
+require "python-semantics-calls.k"
+require "python-semantics-dicts.k"
+require "python-semantics-dunder-builtin.k"
+require "python-semantics-environment.k"
+require "python-semantics-exceptions.k"
+require "python-semantics-functions.k"
+require "python-semantics-integers.k"
+require "python-semantics-iterators.k"
+require "python-semantics-lists.k"
+require "python-semantics-macros.k"
+require "python-semantics-methods.k"
+require "python-semantics-objects.k"
+require "python-semantics-statements.k"
+require "python-semantics-strings.k"
+require "python-semantics-tuples.k" */
 
 module PYTHON
+  imports PYTHON-SYNTAX
   imports PYTHON-SEMANTICS-ARITHMETIC-OPS
-  imports PYTHON-SEMANTICS-ASSIGNMENT
+/*  imports PYTHON-SEMANTICS-ASSIGNMENT
   imports PYTHON-SEMANTICS-AUGMENTED-ASSIGNMENT
   imports PYTHON-SEMANTICS-ATTRIBUTE-REF
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
@@ -52,5 +53,5 @@ module PYTHON
   imports PYTHON-SEMANTICS-OBJECTS
   imports PYTHON-SEMANTICS-STATEMENTS
   imports PYTHON-SEMANTICS-STRINGS
-  imports PYTHON-SEMANTICS-TUPLES
-end module
+  imports PYTHON-SEMANTICS-TUPLES */
+endmodule

@@ -2,7 +2,7 @@ module PYTHON-SEMANTICS-CLASSES
   imports PYTHON-SEMANTICS-CALLS
 
   syntax K ::= "restoreContext" "(" List "," List "," Nat ")"
-             | "invokeClass" "(" Expression "," Id "," List "," Map "," Map ")" [:strict(1):]
+             | "invokeClass" "(" Expression "," Id "," List "," Map "," Map ")" [strict(1)]
 
   rule <k> class X:Id ( Args:K ) : Ss:K => bindLocals(Ss, false) ~> String2Id("__module__") := String2Id("__name__") ~> String2Id("__doc__") := docString(Ss) ~> Ss ~> restoreContext(LL, FL, N2) ~> sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeClass(getMetaclass(Args), X, ., ., .) ...</k>
        <nextLoc> N:Nat => N +Int 1 </nextLoc>
@@ -24,16 +24,16 @@ module PYTHON-SEMANTICS-CLASSES
 
   rule (processArgs(L:List, M:Map, .Obj, .Obj) => .) ~> invokeClass(_, _, (. => L), (. => M))
 
-  syntax Expression ::= "getMetaClass" "(" Arguments ")" [:function:]
-  define getMetaclass(X = E:Expression, _) => E when Id2String(X) ==String "metaclass"
-  define getMetaclass(_, K:K) => getMetaclass(K)
-  define getMetaclass(.Expressions) => ref("type")
+  syntax Expression ::= "getMetaClass" "(" Arguments ")" [function]
+  rule getMetaclass(X = E:Expression, _) => E when Id2String(X) ==String "metaclass" [function, anywhere]
+  rule getMetaclass(_, K:K) => getMetaclass(K) [function, anywhere]
+  rule getMetaclass(.Expressions) => ref("type") [function, anywhere]
 
   //TODO: use result of __prepare__
   rule invokeClass(O:Object, X, L, M, Env) => doCall(O, ListItem(Id2String(X)) ListItem(immutable(list(Idify(L)), ref("tuple"))) ListItem({DeMapify(Env2Dict(Env))}), stripMetaclass(M))
 
-  syntax Map ::= "stripMetaclass" "(" Map ")" [:function:]
-  define stripMetaclass("metaclass" |-> K M) => stripMetaclass(M)
-  define stripMetaclass(K |-> K2 M) => K |-> K2 stripMetaclass(M)
+  syntax Map ::= "stripMetaclass" "(" Map ")" [function]
+  rule stripMetaclass("metaclass" |-> K M) => stripMetaclass(M) [function, anywhere]
+  rule stripMetaclass(K |-> K2 M) => K |-> K2 stripMetaclass(M) [function, anywhere]
 
-end module
+endmodule

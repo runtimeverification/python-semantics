@@ -1,7 +1,7 @@
 module PYTHON-SEMANTICS-METHODS
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= "method" "(" Expression "," Expression "," Expression ")" [:strict:]
+  syntax ObjRef ::= "method" "(" Expression "," Expression "," Expression ")" [strict]
 
   rule <k> invokeBuiltin(obj("get_builtin_method",_), ListItem(Self:Object) ListItem(Instance:Object) ListItem(Owner:Object), .) => method(Self, Instance, Owner) ...</k>
 
@@ -38,4 +38,4 @@ module PYTHON-SEMANTICS-METHODS
 
   rule <k> invokeBuiltin(obj("call_builtin_function",_), ListItem(obj(B:Builtin,<oattrs>... "__call__" |-> S:String ...</oattrs>)) L, M) => doCall(ref(S), L, M) ...</k>
 
-end module
+endmodule

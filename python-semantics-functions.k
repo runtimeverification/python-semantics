@@ -11,7 +11,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule paramName(* X) => Id2String(X)
   rule paramName(** X) => Id2String(X)
 
-  syntax ObjRef ::= "function" "(" Parameters "," Expression "," K ")" [:strict(2):]
+  syntax ObjRef ::= "function" "(" Parameters "," Expression "," K ")" [strict(2)]
 
   rule <k> function(Ps:K, O:Object, Return:K) =>
            setref(N, "__doc__", (O . String2Id("co_consts") [0])) ~> 
@@ -83,8 +83,8 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule (. => getref(ref(N), "__annotations__")["return"] := O) ~> makeFunction(N, _, (O => .Obj), _) 
   rule makeCodeObject(N, ((ListItem(Arg : _) => ListItem(Arg)) _), _, _)
 
-  syntax ObjRef ::= "makeClosure" "(" Expression ")" [:strict:]
-                  | "cellNum" "(" Expression "," Expression "," Expression ")" [:strict:]
+  syntax ObjRef ::= "makeClosure" "(" Expression ")" [strict]
+                  | "cellNum" "(" Expression "," Expression "," Expression ")" [strict]
 
   rule makeFunction(N, ., .Obj, _) => setref(N, "__closure__", makeClosure(ref(N) . String2Id("__code__") . String2Id("co_freevars")))
   rule makeClosure(O) => makeClosure(list(listvalue(O)))
@@ -92,8 +92,8 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule <k> makeClosure(list(ListItem(N) L)) => tuple((getref(ref(Frame), "f_cells")[ref(N)]), .Expressions) + makeClosure(list(L)) ...</k>
        <currentFrame> Frame:Nat </currentFrame>
 
-  syntax K ::= "createFunction" "(" Id "," K "," K "," Expression ")" [:strict(4):]
-             | "createLambda" "(" K "," Expression ")" [:strict(2):]
+  syntax K ::= "createFunction" "(" Id "," K "," K "," Expression ")" [strict(4)]
+             | "createLambda" "(" K "," Expression ")" [strict(2)]
              | "makescope" "(" K ")"
              | "storescope"
              | "propscope"
@@ -133,36 +133,36 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule <k> delscope => . ...</k>
        <scope> LI:ListItem => . ...</scope>
 
-  syntax Set ::= "FREE" "(" Set "," Set "," Set "," Set "," Set "," List ")" [:function:]
-  syntax Set ::= "LOCAL" "(" Set "," Set "," Set "," List ")" [:function:]
-  syntax Set ::= "BOUND" "(" Set "," Set "," List ")" [:function:]
-  syntax List ::= "PARAMS" "(" List ")" [:function:]
-  define LOCAL(Defs, Globals, Nonlocals, Params) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set .
-  define FREE(_, _, _, Nonlocals, ChildFree, .) => Nonlocals ChildFree
-  define FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L (_, Defs2, _, _, _, _, .)) => FREE(Defs, Uses, Globals, Nonlocals, ChildFree, .) (((Uses Defs) &Set BOUND(.,Defs2,L)) -Set Globals)
-  define BOUND(Bound:Set, Globals, L (_, Defs, _, Nonlocals, Globals2, _, Params)) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals, (Globals -Set LOCAL(Defs, Globals2, Nonlocals, Params)) Globals2, L)
-  define BOUND(Bound, _, .) => Bound
-  define PARAMS(ListItem(X) Params) => ListItem(Id2String(X)) PARAMS(Params)
-  define PARAMS(ListItem(* X) Params) => PARAMS(Params ListItem(* X))
-  define PARAMS(ListItem(** X) ListItem(* Y:Id)) => ListItem(Id2String(Y)) ListItem(Id2String(X))
-  define PARAMS(ListItem(* X)) => ListItem(Id2String(X))
-  define PARAMS(ListItem(** X)) => ListItem(Id2String(X))
-  define PARAMS(ListItem(* X) ListItem(** Y)) => ListItem(Id2String(X)) ListItem(Id2String(Y))
-  define PARAMS(.) => .
+  syntax Set ::= "FREE" "(" Set "," Set "," Set "," Set "," Set "," List ")" [function]
+  syntax Set ::= "LOCAL" "(" Set "," Set "," Set "," List ")" [function]
+  syntax Set ::= "BOUND" "(" Set "," Set "," List ")" [function]
+  syntax List ::= "PARAMS" "(" List ")" [function]
+  rule LOCAL(Defs, Globals, Nonlocals, Params) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set . [function, anywhere]
+  rule FREE(_, _, _, Nonlocals, ChildFree, .) => Nonlocals ChildFree [function, anywhere]
+  rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L (_, Defs2, _, _, _, _, .)) => FREE(Defs, Uses, Globals, Nonlocals, ChildFree, .) (((Uses Defs) &Set BOUND(.,Defs2,L)) -Set Globals) [function, anywhere]
+  rule BOUND(Bound:Set, Globals, L (_, Defs, _, Nonlocals, Globals2, _, Params)) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals, (Globals -Set LOCAL(Defs, Globals2, Nonlocals, Params)) Globals2, L) [function, anywhere]
+  rule BOUND(Bound, _, .) => Bound [function, anywhere]
+  rule PARAMS(ListItem(X) Params) => ListItem(Id2String(X)) PARAMS(Params) [function, anywhere]
+  rule PARAMS(ListItem(* X) Params) => PARAMS(Params ListItem(* X)) [function, anywhere]
+  rule PARAMS(ListItem(** X) ListItem(* Y:Id)) => ListItem(Id2String(Y)) ListItem(Id2String(X)) [function, anywhere]
+  rule PARAMS(ListItem(* X)) => ListItem(Id2String(X)) [function, anywhere]
+  rule PARAMS(ListItem(** X)) => ListItem(Id2String(X)) [function, anywhere]
+  rule PARAMS(ListItem(* X) ListItem(** Y)) => ListItem(Id2String(X)) ListItem(Id2String(Y)) [function, anywhere]
+  rule PARAMS(.) => . [function, anywhere]
 
   rule createFunction(X, Ps, K:K, O) => visited((X, .Expressions) := function(Ps, O, K))
   rule createLambda(Ps, O) => visited(function(Ps, O, .Obj))
 
   rule makeCodeObject(N, ., Ss, _) => visit(Ss, 'compileVisitor) ~> storescope ~> propscope ~> delscope
 
-  syntax K ::= "compileVisitor" "(" KLabel "," Nat "," K ")" [:klabel(compileVisitor):]
-             | "compileReturner" "(" K ")" [:klabel(compileReturner):]
-             | "parameterVisitor" "(" KLabel "," Nat "," K ")" [:klabel(parameterVisitor):]
-             | "parameterReturner" "(" K ")" [:klabel(parameterReturner):]
-             | "bindVisitor" "(" KLabel "," Nat "," K ")" [:klabel(bindVisitor):]
-             | "bindReturner" "(" K ")" [:klabel(bindReturner):]
-             | "importVisitor" "(" KLabel "," Nat "," K ")" [:klabel(importVisitor):]
-             | "importReturner" "(" K ")" [:klabel(importReturner):] 
+  syntax K ::= "compileVisitor" "(" KLabel "," Nat "," K ")" [klabel(compileVisitor)]
+             | "compileReturner" "(" K ")" [klabel(compileReturner)]
+             | "parameterVisitor" "(" KLabel "," Nat "," K ")" [klabel(parameterVisitor)]
+             | "parameterReturner" "(" K ")" [klabel(parameterReturner)]
+             | "bindVisitor" "(" KLabel "," Nat "," K ")" [klabel(bindVisitor)]
+             | "bindReturner" "(" K ")" [klabel(bindReturner)]
+             | "importVisitor" "(" KLabel "," Nat "," K ")" [klabel(importVisitor)]
+             | "importReturner" "(" K ")" [klabel(importReturner)] 
 
   syntax K ::= "addDef" "(" Id ")"
              | "addUse" "(" Id ")"
@@ -188,10 +188,10 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule addGlobals(.NAMES) => .
   rule addNonlocals(.NAMES) => .
 
-  define returner('compileVisitor) => 'compileReturner
-  define returner('parameterVisitor) => 'parameterReturner
-  define returner('bindVisitor) => 'bindReturner
-  define returner('importVisitor) => 'importReturner
+  rule returner('compileVisitor) => 'compileReturner [function, anywhere]
+  rule returner('parameterVisitor) => 'parameterReturner [function, anywhere]
+  rule returner('bindVisitor) => 'bindReturner [function, anywhere]
+  rule returner('importVisitor) => 'importReturner [function, anywhere]
 
   rule compileVisitor('import_, 0, K) => visit(K, 'importVisitor)
   rule compileVisitor('from_import_, 0, K) => visited(K)
@@ -262,4 +262,4 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule compileReturner(K) => visited(K) when getKLabel K =/=KLabel 'def_`(_`)->_:_ andBool getKLabel K =/=KLabel 'def_`(_`):_ andBool getKLabel K =/=KLabel 'class_`(_`):_ andBool 'isId(K) =/=K true
   rule compileReturner(.) => visited(.)
 
-end module
+endmodule

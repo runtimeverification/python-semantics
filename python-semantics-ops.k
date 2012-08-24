@@ -1,10 +1,10 @@
 module PYTHON-SEMANTICS-OPS
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= "coerceBinaryBase" "(" Expression "," Expression "," Id "," Id ")" [:strict(1 2):]
-                  | "coerceBinary" "(" Expression "," Expression "," Id "," Id "," String ")" [:strict(1 2):]
-                  | "coerceUnary" "(" Expression "," Id "," String ")" [:strict(1):]
-                  | "coercion" "(" Expression ")" [:strict:]
+  syntax ObjRef ::= "coerceBinaryBase" "(" Expression "," Expression "," Id "," Id ")" [strict(1 2)]
+                  | "coerceBinary" "(" Expression "," Expression "," Id "," Id "," String ")" [strict(1 2)]
+                  | "coerceUnary" "(" Expression "," Id "," String ")" [strict(1)]
+                  | "coercion" "(" Expression ")" [strict]
 
   rule <k> coerceBinary(O:Object, O2:Object, X:Id, RX:Id, S:String) => coerceBinaryBase(O, O2, X, RX) -> (raiseInternal("TypeError", "unsupported operand type(s) for " +String S)) ...</k>
 
@@ -16,4 +16,4 @@ module PYTHON-SEMANTICS-OPS
        <symbols>... "None" |-> NoneId "NotImplemented" |-> NotImplementedId ...</symbols>
   rule coercion(.Obj) => .Obj
 
-end module
+endmodule

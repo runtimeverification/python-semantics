@@ -1,7 +1,7 @@
 module PYTHON-SEMANTICS-OBJECTS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
-  syntax ObjRef ::= "init" "(" Expression "," Expression "," List "," Map ")" [:strict(1 2):] 
+  syntax ObjRef ::= "init" "(" Expression "," Expression "," List "," Map ")" [strict(1 2)] 
 
   rule <k> invokeBuiltin(obj("call_type",_), ListItem(Type:Object) L:List, M:Map) => init(doCall(Type . String2Id("__new__"), ListItem(Type) L, M), Type, L, M) ...</k>
 
@@ -21,4 +21,4 @@ module PYTHON-SEMANTICS-OBJECTS
  
   rule <k> invokeBuiltin(obj("new_raise",_), ListItem(O:Object) _, _) => raiseInternal("TypeError", "cannot create instances of this type") ...</k>
 
-end module
+endmodule

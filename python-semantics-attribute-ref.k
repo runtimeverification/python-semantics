@@ -1,10 +1,10 @@
 module PYTHON-SEMANTICS-ATTRIBUTE-REF
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= "mapLookup" "(" Expression "," String ")" [:strict(1):]
-                  | "basesLookup" "(" Expression "," String ")" [:strict(1):]
-                  | "basesLookup" "(" ListRef "," String ")" [:strict(1):]
-                  | "descriptor" "(" Expression "," Expression "," Expression "," Test ")" [:strict:]
+  syntax ObjRef ::= "mapLookup" "(" Expression "," String ")" [strict(1)]
+                  | "basesLookup" "(" Expression "," String ")" [strict(1)]
+                  | "basesLookup" "(" ListRef "," String ")" [strict(1)]
+                  | "descriptor" "(" Expression "," Expression "," Expression "," Test ")" [strict]
 
   rule basesLookup(list(ListItem(B:Builtin) L:List), S:String) => (basesLookup(ref(B), S) -> basesLookup(list(L), S))
   rule basesLookup(list(.List), _) => .Obj
@@ -44,4 +44,4 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule <k> descriptor(O, O2, Type, false) => (getmember(O, String2Id("__get__"), false, false, false) (O, O2, O2)) -> O ...</k>
        <symbols>... "None" |-> None:Nat ...</symbols> when id(O2) ==Int None
  
-end module
+endmodule

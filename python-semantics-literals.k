@@ -2,25 +2,25 @@ module PYTHON-SEMANTICS-LITERALS
   imports PYTHON-SEMANTICS-COMMON
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
-  syntax ObjRef ::= "hash" "(" Expression ")" [:strict:]
+  syntax ObjRef ::= "hash" "(" Expression ")" [strict]
 
-  syntax K ::= "processDict" "(" Expression "," Map ")" [:strict(1):]
-             | "processDictElement" "(" Expression "," Expression "," Expression "," Expression ")" [:strict:]
-             | "processSet" "(" Expression "," List ")" [:strict(1):]
-             | "processSetElement" "(" Expression "," Expression "," Expression ")" [:strict:]
-             | "tableInsert" "(" Builtin "," Int "," Expression "," K ")" [:strict(3):]
-             | "tableLookup" "(" Builtin "," Int "," Expression ")" [:strict(3):]
-             | "tableDelete" "(" Builtin "," Int "," Expression ")" [:strict(3):]
-             | "bucketInsert" "(" Builtin "," Int "," Expression "," Expression "," List "," List ")" [:strict(3 4):]
-             | "bucketLookup" "(" Expression "," List ")" [:strict(1):]
-             | "bucketDelete" "(" Builtin "," Int "," Expression "," List "," List ")" [:strict(3):]
+  syntax K ::= "processDict" "(" Expression "," Map ")" [strict(1)]
+             | "processDictElement" "(" Expression "," Expression "," Expression "," Expression ")" [strict]
+             | "processSet" "(" Expression "," List ")" [strict(1)]
+             | "processSetElement" "(" Expression "," Expression "," Expression ")" [strict]
+             | "tableInsert" "(" Builtin "," Int "," Expression "," K ")" [strict(3)]
+             | "tableLookup" "(" Builtin "," Int "," Expression ")" [strict(3)]
+             | "tableDelete" "(" Builtin "," Int "," Expression ")" [strict(3)]
+             | "bucketInsert" "(" Builtin "," Int "," Expression "," Expression "," List "," List ")" [strict(3 4)]
+             | "bucketLookup" "(" Expression "," List ")" [strict(1)]
+             | "bucketDelete" "(" Builtin "," Int "," Expression "," List "," List ")" [strict(3)]
              | "setBucket" "(" Builtin "," Int "," List ")"
  
-  syntax Builtin ::= "key" "(" KeyDatum ")" [:function:]
-  define key(B : _) => B
+  syntax Builtin ::= "key" "(" KeyDatum ")" [function]
+  rule key(B : _) => B [function, anywhere]
 
-  syntax Builtin ::= "value" "(" KeyDatum ")" [:function:]
-  define value(_ : B) => B
+  syntax Builtin ::= "value" "(" KeyDatum ")" [function]
+  rule value(_ : B) => B [function, anywhere]
 
   rule <k> I:Int => immutable(I,ref("int")) ...</k>
   rule <k> S:String => immutable(S,ref("str")) ...</k>
@@ -38,7 +38,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule <k> processSet(Set, .) => ref(id(Set)) ...</k>
 
-  syntax K ::= "checkHash" "(" Expression ")" [:strict:]
+  syntax K ::= "checkHash" "(" Expression ")" [strict]
 
   rule <k> invokeBuiltin(obj("call_hash",_), ListItem(O:Object), .) => checkHash(getmember(O, String2Id("__hash__"), true, false, false) () -> (raiseInternal("TypeError", "unhashable type"))) ...</k>
 
@@ -140,4 +140,4 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs> "__class__" |-> B M </oattrs>
        ...</object>)
 
-end module
+endmodule

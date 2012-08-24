@@ -36,4 +36,4 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   rule (. => del (T, .Expressions)) ~> unbindList((ListItem(T) => .) _)
   rule unbindList(.) => .
 
-end module
+endmodule

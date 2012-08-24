@@ -1,30 +1,30 @@
 module PYTHON-SEMANTICS-MACROS
   imports PYTHON-SEMANTICS-COMMON
 
-  macro assert E:K , Es:K = if String2Id("__debug__") :
+  rule assert E:K , Es:K => if String2Id("__debug__") : [macro, anywhere]
                                                (if not E :
                                                   raise String2Id("AssertionError") (Es)
                                                 else: pass)
                                               else: pass
-  macro pass = .K
+  rule pass => .K [macro, anywhere]
 
-  macro return = return ref("None")
+  rule return => return ref("None") [macro, anywhere]
 
-  macro : : = (ref("slice") (ref("None"), ref("None"), ref("None"), .Expressions))
-  macro E : : = (ref("slice") (E, ref("None"), ref("None"), .Expressions))
-  macro : E : = (ref("slice") (ref("None"), E, ref("None"), .Expressions))
-  macro : : E = (ref("slice") (ref("None"), ref("None"), E, .Expressions))
-  macro E : E2:Expression : = (ref("slice") (E, E2, ref("None"), .Expressions))
-  macro E : : E2 = (ref("slice") (E, ref("None"), E2, .Expressions))
-  macro : E : E2 = (ref("slice") (ref("None"), E, E, .Expressions))
-  macro E : E2 : E3:Expression = (ref("slice") (E, E2, E3, .Expressions))
+  rule : : => (ref("slice") (ref("None"), ref("None"), ref("None"), .Expressions)) [macro, anywhere]
+  rule E : : => (ref("slice") (E, ref("None"), ref("None"), .Expressions)) [macro, anywhere]
+  rule : E : => (ref("slice") (ref("None"), E, ref("None"), .Expressions)) [macro, anywhere]
+  rule : : E => (ref("slice") (ref("None"), ref("None"), E, .Expressions)) [macro, anywhere]
+  rule E : E2:Expression : => (ref("slice") (E, E2, ref("None"), .Expressions)) [macro, anywhere]
+  rule E : : E2 => (ref("slice") (E, ref("None"), E2, .Expressions)) [macro, anywhere]
+  rule : E : E2 => (ref("slice") (ref("None"), E, E, .Expressions)) [macro, anywhere]
+  rule E : E2 : E3:Expression => (ref("slice") (E, E2, E3, .Expressions)) [macro, anywhere]
 
-  syntax Id ::= "declName" "(" K ")" [:function:]
-  define declName(def X:Id ( _ ) -> _ : _) => X
-  define declName(def X ( _ ) : _) => X
-  define declName(class X ( _ ) : _) => X
-  define declName(K newline _) => declName(K)
+  syntax Id ::= "declName" "(" K ")" [function]
+  rule declName(def X:Id ( _ ) -> _ : _) => X [function, anywhere]
+  rule declName(def X ( _ ) : _) => X [function, anywhere]
+  rule declName(class X ( _ ) : _) => X [function, anywhere]
+  rule declName(K newline _) => declName(K) [function, anywhere]
 
-  macro @ K:K newline K2:K = (K2 newline (declName(K2), .Expressions) := K(declName(K2), .Expressions))
+  rule @ K:K newline K2:K => (K2 newline (declName(K2), .Expressions) := K(declName(K2), .Expressions)) [macro, anywhere]
 
-end module
+endmodule

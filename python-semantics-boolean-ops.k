@@ -1,14 +1,14 @@
 module PYTHON-SEMANTICS-BOOLEAN-OPS
   imports PYTHON-SEMANTICS-OPS
 
-  syntax ObjRef ::= "bool" "(" Test ")" [:strict:]
-                  | "bool" "(" Expression ")" [:strict:]
-                  | "coerceBoolean" "(" Expression "," Expression "," Id "," Id "," String ")" [:strict(1 2):]
-                  | "len" "(" Expression ")" [:strict:]
-                  | "checkBool" "(" Expression ")" [:strict:]
-                  | "checkInt" "(" Expression ")" [:strict:]
-                  | "checkLen" "(" Expression ")" [:strict:]
-                  | "contains" "(" ListRef "," Expression ")" [:strict:]
+  syntax ObjRef ::= "bool" "(" Test ")" [strict]
+                  | "bool" "(" Expression ")" [strict]
+                  | "coerceBoolean" "(" Expression "," Expression "," Id "," Id "," String ")" [strict(1 2)]
+                  | "len" "(" Expression ")" [strict]
+                  | "checkBool" "(" Expression ")" [strict]
+                  | "checkInt" "(" Expression ")" [strict]
+                  | "checkLen" "(" Expression ")" [strict]
+                  | "contains" "(" ListRef "," Expression ")" [strict]
 
   rule bool(true) => ref("True")
   rule bool(false) => ref("False")
@@ -25,8 +25,8 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule checkLen(.Obj) => .Obj
   rule invokeBuiltin(obj("call_len",_), ListItem(O), .) => len(O) -> raiseInternal("TypeError", "object has no len()")
 
-  syntax Test ::= "plbool" "(" Expression ")" [:function:]
-  define plbool(obj(_, <oattrs>... "__value__" |-> I:Int ...</oattrs>)) => I =/=Int 0
+  syntax Test ::= "plbool" "(" Expression ")" [function]
+  rule plbool(obj(_, <oattrs>... "__value__" |-> I:Int ...</oattrs>)) => I =/=Int 0 [function, anywhere]
   context plbool(HOLE)  
 
   rule not O => bool(negate(plbool(bool(O))))
@@ -48,8 +48,8 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule contains(list(ListItem(B) L:List), O2) => ref("True") if ref(B) == O2 else contains(list(L), O2)
   rule contains(list(.), O2) => ref("False")
 
-  syntax Bool ::= "isComparison" "(" KLabel ")" [:function:]
-  define isComparison(Lbl) => Lbl ==KLabel '_<_ orElseBool Lbl ==KLabel '_>_ orElseBool Lbl ==KLabel '_==_ orElseBool Lbl ==KLabel '_>=_ orElseBool Lbl ==KLabel '_<=_
+  syntax Bool ::= "isComparison" "(" KLabel ")" [function]
+  rule isComparison(Lbl) => Lbl ==KLabel '_<_ orElseBool Lbl ==KLabel '_>_ orElseBool Lbl ==KLabel '_==_ orElseBool Lbl ==KLabel '_>=_ orElseBool Lbl ==KLabel '_<=_ [function, anywhere]
   orElseBool Lbl ==KLabel '_!=_ orElseBool Lbl ==KLabel '_is_ orElseBool Lbl ==KLabel '_is`not_ orElseBool Lbl ==KLabel '_in_ orElseBool Lbl ==KLabel '_not`in_
 
   rule <k> Lbl(O,,(Lbl2(O2,,Cmp))) => '_and_(Lbl(O,,O2),,Lbl2(O2,,Cmp)) ...</k>
@@ -63,5 +63,5 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
 
   rule <k> coerceBoolean(O, O2, X:Id, RX:Id, S:String) => coerceBinaryBase(O, O2, X, RX) -> (raiseInternal("TypeError", "unorderable types: " +String S)) ...</k>
 
-end module
+endmodule
 

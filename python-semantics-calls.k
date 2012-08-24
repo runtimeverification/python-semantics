@@ -1,24 +1,24 @@
 module PYTHON-SEMANTICS-CALLS
   imports PYTHON-SEMANTICS-LITERALS
 
-  syntax K ::= "processArgs" "(" List "," Map "," Expression "," Expression ")" [:strict(3 4):]
+  syntax K ::= "processArgs" "(" List "," Map "," Expression "," Expression ")" [strict(3 4)]
              | "sortArgs" "(" List ")"
-             | "matchArgs" "(" Expression "," Expression "," List "," Map "," Map "," Nat ")" [:strict(1 2):]
-             | "addArg" "(" Expression "," Expression ")" [:strict:]
-             | "addKwArg" "(" String "," Expression "," Expression ")" [:strict(2):]
-             | "addDefaults" "(" Nat "," Expression ")" [:strict(2):]
-             | "addDefault" "(" Expression ")" [:strict:]
-             | "addKwDefaults" "(" Nat "," Expression ")" [:strict(2):]
-             | "addKwDefault" "(" Expression ")" [:strict:]
+             | "matchArgs" "(" Expression "," Expression "," List "," Map "," Map "," Nat ")" [strict(1 2)]
+             | "addArg" "(" Expression "," Expression ")" [strict]
+             | "addKwArg" "(" String "," Expression "," Expression ")" [strict(2)]
+             | "addDefaults" "(" Nat "," Expression ")" [strict(2)]
+             | "addDefault" "(" Expression ")" [strict]
+             | "addKwDefaults" "(" Nat "," Expression ")" [strict(2)]
+             | "addKwDefault" "(" Expression ")" [strict]
 
-  syntax Nat ::= "numArgs" "(" Object ")" [:function:]
-  define numArgs(O) => getattr(O, "co_argcount") +Int getattr(O, "co_kwonlyargcount") +Int ((getattr(O, "co_flags") &Int 4) >>Int 2) +Int ((getattr(O, "co_flags") &Int 8) >>Int 3)
+  syntax Nat ::= "numArgs" "(" Object ")" [function]
+  rule numArgs(O) => getattr(O, "co_argcount") +Int getattr(O, "co_kwonlyargcount") +Int ((getattr(O, "co_flags") &Int 4) >>Int 2) +Int ((getattr(O, "co_flags") &Int 8) >>Int 3) [function, anywhere]
 
   rule <k> obj(S:String,ObjState:Bag) (Args:K) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeBuiltin(obj(S,ObjState), ., .) ...</k> when 'isKResult(Args)
   rule <k> invokeBuiltin(obj("call_function",_), ListItem(O:Object) L:List, M:Map) => invokeFunction(O, L, M) ...</k>
   rule <k> invokeFunction(O, L, M) => matchArgs(O, O . String2Id("__code__"), L, M, ., 0) ...</k>
 
-  define 'isKResult(_ = K) => true when 'isKResult(K)
+  rule 'isKResult(_ = K) => true when 'isKResult(K) [function, anywhere]
 
   rule sortArgs((ListItem(O) => .) _) ~> processArgs(_ (. => ListItem(O)),.,_,_)
   rule sortArgs((ListItem(X:Id = O) => .) _) ~> processArgs(_,M (. => Id2String(X) |-> O),_,_) when notBool(Id2String(X) in keys(M))
@@ -72,10 +72,10 @@ module PYTHON-SEMANTICS-CALLS
   rule <k> matchArgs(obj(B:Builtin,_),Code,.,.,M,_) => invoke(ref(B), M) ...</k> when lengthMap M ==Int numArgs(Code)
 
   syntax ListItem ::= "(" K "," Bag "," Nat "," List ")"
-  syntax ObjRef ::= "makeLocals" "(" Expression "," Expression ")" [:strict(1 2):]
-                  | "makeLocals" "(" List "," List "," Expression ")" [:strict(3):]
-                  | "makeCells" "(" Expression "," Expression "," Expression "," Nat ")" [:strict(1 2 3):]
-                  | "makeCells" "(" List "," List "," List "," Expression "," Nat ")" [:strict(4):]
+  syntax ObjRef ::= "makeLocals" "(" Expression "," Expression ")" [strict(1 2)]
+                  | "makeLocals" "(" List "," List "," Expression ")" [strict(3)]
+                  | "makeCells" "(" Expression "," Expression "," Expression "," Nat ")" [strict(1 2 3)]
+                  | "makeCells" "(" List "," List "," List "," Expression "," Nat ")" [strict(4)]
 
   rule <k> invoke(obj(_:Nat,<oattrs>... "__closure__" |-> Closure:Nat "__code__" |-> CodeId:Nat "__globals__" |-> Globals:Nat ...</oattrs>), M) ~> K:K => executeFrame(N, ref(CodeId), ref(N2), makeLocals(ref(CodeId) . String2Id("co_freevars"), ref(Closure)), ref(Globals), ref(Globals) ["__builtins__"], makeCells(ref(CodeId) . String2Id("co_freevars"), ref(CodeId) . String2Id("co_cellvars"), ref(Closure), N), M) ~> return </k>
        <nextLoc> N => N +Int 1 </nextLoc>
@@ -119,4 +119,4 @@ module PYTHON-SEMANTICS-CALLS
          (_ => C)
        </control>
 
-end module
+endmodule

@@ -31,4 +31,4 @@ module PYTHON-SEMANTICS-SYNTAX
   syntax ListRef ::= KList
   syntax KList ::= "list" "(" List ")"
   syntax KMap ::= "map" "(" Map ")"
-end module
+endmodule

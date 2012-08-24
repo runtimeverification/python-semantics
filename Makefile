@@ -29,3 +29,4 @@ clean:
 	rm -f out
 	rm -f programs/*.out programs/*.ref
 	rm -f IN.maude
+	rm -f *.k~

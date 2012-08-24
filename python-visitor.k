@@ -2,14 +2,15 @@ module PYTHON-VISITOR
 
   syntax K ::= "visit" "(" K "," KLabel ")"
              | "visited" "(" List{K} ")"
-             | "visiting" "(" KLabel "," List{K} "," Nat "," KLabel ")"
+             | "visiting" "(" KLabel "," List{K} "," Int "," KLabel ")"
+             | "KLabel2K" KLabel
 
-  syntax KLabel ::= "returner" "(" KLabel ")" [:function:]
+  syntax KLabel ::= "returner" "(" KLabel ")" [function]
 
   rule visit(Lbl:KLabel(Kl:List{K}), Visitor:KLabel) => visited(.List{K}) ~> visiting(Lbl, Kl, 0, Visitor)
-  rule visit(., Visitor) => returner(Visitor)(.)
-  rule (. => Visitor((KLabel2K Lbl),, N,, K:K)) ~> visited(_) ~> visiting(Lbl, (K,,Kl => Kl), (N:Nat => N +Int 1), Visitor)
+  rule visit(., Visitor:KLabel) => returner(Visitor)(.)
+  rule (. => Visitor:KLabel((KLabel2K(Lbl:KLabel)),, N,, K)) ~> visited(_) ~> visiting(Lbl, (K,,Kl:List{K} => Kl), (N:Int => N +Int 1), Visitor)
   rule (visited(K) => .) ~> visited(_,,(.List{K} => K))
-  rule visited(Kl) ~> visiting(Lbl, .List{K}, _, Visitor) => returner(Visitor)(Lbl(Kl))
+  rule visited(Kl:List{K}) ~> visiting(Lbl:KLabel, .List{K}, _, Visitor:KLabel) => returner(Visitor)(Lbl(Kl))
 
-end module
+endmodule

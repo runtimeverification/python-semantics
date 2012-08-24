@@ -31,160 +31,159 @@ module PYTHON-SEMANTICS-COMMON
   syntax K ::= "initialize" "(" K ")"
              | "bind" "(" NAME "," Builtin ")" 
              | "unbind" "(" NAME ")"
-             | "mapping" "(" Expression "," K ")" [:strict(1):]
-             | "addItem" "(" Expression ")" [:strict:]
-             | "addPair" "(" Builtin "," Expression ")" [:strict(2):]
+             | "mapping" "(" Expression "," K ")" [strict(1)]
+             | "addItem" "(" Expression ")" [strict]
+             | "addPair" "(" Builtin "," Expression ")" [strict(2)]
              | "popx"
              | "setx" "(" K ")"
-             | "newHelper" "(" Expression "," Expression "," Set ")" [:strict(1 2):]
-             | "raiseInternal" "(" String "," Expression ")" [:strict(2):]
+             | "newHelper" "(" Expression "," Expression "," Set ")" [strict(1 2)]
+             | "raiseInternal" "(" String "," Expression ")" [strict(2)]
              | "setattr" "(" Builtin "," String "," K ")"
-             | "setref" "(" Builtin "," String "," Expression ")" [:strict(3):]
-             | "executeModule" "(" Expression "," Expression "," Expression ")" [:strict:]
-             | "executeFrame" "(" Nat "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression "," Map ")" [:strict(2 3 4 5 6 7):]
+             | "setref" "(" Builtin "," String "," Expression ")" [strict(3)]
+             | "executeModule" "(" Expression "," Expression "," Expression ")" [strict]
+             | "executeFrame" "(" Nat "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression "," Map ")" [strict(2 3 4 5 6 7)]
              | "setArgs" "(" Map ")"
 
-  syntax Test ::= "istype" "(" Expression "," Expression ")" [:strict:]
-                | "hasbase" "(" Expression "," Expression ")" [:strict:]
+  syntax Test ::= "istype" "(" Expression "," Expression ")" [strict]
+                | "hasbase" "(" Expression "," Expression ")" [strict]
                 | "hasbase" "(" ListRef "," Expression ")"
 
-  syntax ObjRef ::= "ref" "(" String ")"
-                  | "ref" "(" K ")"
+  syntax ObjRef ::= "ref" "(" K ")"
                   | "builtin" "(" Id ")"
                   | "gettype" "(" Expression ")"
                   | "getbases" "(" Expression ")"
-                  | "getmember" "(" Expression "," Id "," Bool "," Bool "," Bool ")" [:strict(1):] 
-                  | "binaryOp" "(" Expression "," Expression "," String "," String "," K ")" [:strict(1 2):]
-                  | "unaryOp" "(" Expression "," String "," K ")" [:strict(1):]
-                  | "invoke" "(" Expression "," Map ")" [:strict(1):]
-                  | "invokeBuiltin" "(" Expression "," List "," Map ")" [:strict(1):]
-                  | "invokeFunction" "(" Expression "," List "," Map ")" [:strict(1):]
+                  | "getmember" "(" Expression "," Id "," Bool "," Bool "," Bool ")" [strict(1)] 
+                  | "binaryOp" "(" Expression "," Expression "," String "," String "," K ")" [strict(1 2)]
+                  | "unaryOp" "(" Expression "," String "," K ")" [strict(1)]
+                  | "invoke" "(" Expression "," Map ")" [strict(1)]
+                  | "invokeBuiltin" "(" Expression "," List "," Map ")" [strict(1)]
+                  | "invokeFunction" "(" Expression "," List "," Map ")" [strict(1)]
                   | "doCall" "(" Expression "," List "," Map ")"
-                  | "mutable" "(" Value "," Expression ")" [:strict(2):]
-                  | "mutable" "(" Map "," Expression ")" [:strict(2):]
-                  | "immutable" "(" Value "," Expression ")" [:strict(2):]
-                  | "copy" "(" Expression "," Expression ")" [:strict:]
+                  | "mutable" "(" Value "," Expression ")" [strict(2)]
+                  | "mutable" "(" Map "," Expression ")" [strict(2)]
+                  | "immutable" "(" Value "," Expression ")" [strict(2)]
+                  | "copy" "(" Expression "," Expression ")" [strict]
                   | "name" "(" Expression ")"
                   | "codeObject" "(" Id "," Parameters "," K ")"
 
-  syntax ListRef ::= "iterate" "(" Expression "," K ")" [:strict(1):]
+  syntax ListRef ::= "iterate" "(" Expression "," K ")" [strict(1)]
 
-  macro name(E) = getmember(E, String2Id("__name__"), true, false, true)
+  rule name(E) => getmember(E, String2Id("__name__"), true, false, true) [macro, anywhere]
 
   context doCall(HOLE, _, _) when HOLE =/=K .
 
-  syntax String ::= "docString" "(" K ")" [:function:]
-  define docString(S ;) => S
-  define docString(S ; newline _) => S
-  define docString(Lbl:KLabel(_)) => ref("None") when Lbl =/=KLabel '_newline_ andBool Lbl =/=KLabel '_;
-  define docString(Lbl:KLabel(Lbl2:KLabel(_),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 =/=KLabel '_;
-  define docString(Lbl:KLabel(Lbl2:KLabel(K),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 ==KLabel '_; andBool 'isString(K) =/=K true
-  define docString(Lbl:KLabel(K,,_)) => ref("None") when Lbl ==KLabel '_; andBool 'isString(K) =/=K true
-  define docString(.) => ref("None")
+  syntax String ::= "docString" "(" K ")" [function]
+  rule docString(S ;) => S [function, anywhere]
+  rule docString(S ; newline _) => S [function, anywhere]
+  rule docString(Lbl:KLabel(_)) => ref("None") when Lbl =/=KLabel '_newline_ andBool Lbl =/=KLabel '_; [function, anywhere]
+  rule docString(Lbl:KLabel(Lbl2:KLabel(_),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 =/=KLabel '_; [function, anywhere]
+  rule docString(Lbl:KLabel(Lbl2:KLabel(K),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 ==KLabel '_; andBool 'isString(K) =/=K true [function, anywhere]
+  rule docString(Lbl:KLabel(K,,_)) => ref("None") when Lbl ==KLabel '_; andBool 'isString(K) =/=K true [function, anywhere]
+  rule docString(.) => ref("None") [function, anywhere]
 
-  syntax Map ::= "Env2Dict" "(" Map ")" [:function:]
-  define Env2Dict((X |-> K M)) => Id2String(X) |-> K Env2Dict(M)
-  define Env2Dict(.) => .
+  syntax Map ::= "Env2Dict" "(" Map ")" [function]
+  rule Env2Dict((X |-> K M)) => Id2String(X) |-> K Env2Dict(M) [function, anywhere]
+  rule Env2Dict(.) => . [function, anywhere]
 
-  syntax Nat ::= "lengthMap" Map [:function:]
-  define lengthMap(_ |-> _ M:Map) => 1 +Int lengthMap M
-  define lengthMap . => 0
+  syntax Nat ::= "lengthMap" Map [function]
+  rule lengthMap(_ |-> _ M:Map) => 1 +Int lengthMap M [function, anywhere]
+  rule lengthMap . => 0 [function, anywhere]
 
-  syntax Set ::= "Ids2Strings" "(" Set ")" [:function:]
-  define Ids2Strings(SetItem(X) St) => SetItem(Id2String(X)) Ids2Strings(St)
-  define Ids2Strings(.) => .
+  syntax Set ::= "Ids2Strings" "(" Set ")" [function]
+  rule Ids2Strings(SetItem(X) St) => SetItem(Id2String(X)) Ids2Strings(St) [function, anywhere]
+  rule Ids2Strings(.) => . [function, anywhere]
 
-  syntax List ::= "Listify" "(" K ")" [:function:]
-  define Listify((P:Parameter , Ps:Parameters)) => ListItem(P) Listify(Ps)
-  define Listify(.Parameters) => .
+  syntax List ::= "Listify" "(" K ")" [function]
+  rule Listify((P:Parameter , Ps:Parameters)) => ListItem(P) Listify(Ps) [function, anywhere]
+  rule Listify(.Parameters) => . [function, anywhere]
 
-  syntax Parameters ::= "DeListify" "(" List ")" [:function:]
-  define DeListify(ListItem(P) L) => P , DeListify(L)
-  define DeListify(.) => .Parameters
+  syntax Parameters ::= "DeListify" "(" List ")" [function]
+  rule DeListify(ListItem(P) L) => P , DeListify(L) [function, anywhere]
+  rule DeListify(.) => .Parameters [function, anywhere]
 
-  syntax List ::= "Idify" "(" List ")" [:function:]
-  define Idify(ListItem(O) L) => ListItem(id(O)) Idify(L)
-  define Idify(.) => .
+  syntax List ::= "Idify" "(" List ")" [function]
+  rule Idify(ListItem(O) L) => ListItem(id(O)) Idify(L) [function, anywhere]
+  rule Idify(.) => . [function, anywhere]
 
-  syntax Set ::= "Setify" "(" List ")" [:function:]
-  define Setify(ListItem(K) L) => SetItem(K) Setify(L)
-  define Setify(.) => .
+  syntax Set ::= "Setify" "(" List ")" [function]
+  rule Setify(ListItem(K) L) => SetItem(K) Setify(L) [function, anywhere]
+  rule Setify(.) => . [function, anywhere]
 
-  syntax List ::= "DeSetify" "(" Set ")" [:function:]
-  define DeSetify(SetItem(K) St) => ListItem(K) DeSetify(St)
-  define DeSetify(.) => .
+  syntax List ::= "DeSetify" "(" Set ")" [function]
+  rule DeSetify(SetItem(K) St) => ListItem(K) DeSetify(St) [function, anywhere]
+  rule DeSetify(.) => . [function, anywhere]
 
-  syntax List ::= "sorted" "(" List ")" [:function:]
-  define sorted(ListItem(K) L) => sorted(less(L, K)) ListItem(K) sorted(more(L, K))
-  define sorted(.) => .
+  syntax List ::= "sorted" "(" List ")" [function]
+  rule sorted(ListItem(K) L) => sorted(less(L, K)) ListItem(K) sorted(more(L, K)) [function, anywhere]
+  rule sorted(.) => . [function, anywhere]
 
-  syntax List ::= "less" "(" List "," K ")" [:function:]
-  define less((ListItem(K) L), K2:K) => ListItem(K) less(L, K2) when lt(K, K2)
-  define less((ListItem(K) L), K2) => less(L, K2) when notBool lt(K, K2)
-  define less(.,_) => .
+  syntax List ::= "less" "(" List "," K ")" [function]
+  rule less((ListItem(K) L), K2:K) => ListItem(K) less(L, K2) when lt(K, K2) [function, anywhere]
+  rule less((ListItem(K) L), K2) => less(L, K2) when notBool lt(K, K2) [function, anywhere]
+  rule less(.,_) => . [function, anywhere]
 
-  syntax List ::= "more" "(" List "," K ")" [:function:]
-  define more((ListItem(K) L), K2) => ListItem(K) more(L, K2) when notBool lt(K, K2)
-  define more((ListItem(K) L), K2) => more(L, K2) when lt(K, K2)
-  define more(.,_) => .
+  syntax List ::= "more" "(" List "," K ")" [function]
+  rule more((ListItem(K) L), K2) => ListItem(K) more(L, K2) when notBool lt(K, K2) [function, anywhere]
+  rule more((ListItem(K) L), K2) => more(L, K2) when lt(K, K2) [function, anywhere]
+  rule more(.,_) => . [function, anywhere]
 
-  syntax Bool ::= "lt" "(" K "," K ")" [:function:]
-  define lt(S, I) => true
-  define lt(I, S) => false
-  define lt(S, S2) => S <String S2
-  define lt(I, I2:Int) => I <Int I2
+  syntax Bool ::= "lt" "(" K "," K ")" [function]
+  rule lt(S, I) => true [function, anywhere]
+  rule lt(I, S) => false [function, anywhere]
+  rule lt(S, S2) => S <String S2 [function, anywhere]
+  rule lt(I, I2:Int) => I <Int I2 [function, anywhere]
 
-  syntax Set ::= "lookup" "(" Map "," Set ")" [:function:]
-  define lookup((K |-> K2 M), (SetItem(K) St)) => SetItem(K2) lookup(M, St)
-  define lookup(_, .) => .
+  syntax Set ::= "lookup" "(" Map "," Set ")" [function]
+  rule lookup((K |-> K2 M), (SetItem(K) St)) => SetItem(K2) lookup(M, St) [function, anywhere]
+  rule lookup(_, .) => . [function, anywhere]
 
-  syntax Map ::= "Mapify" "(" KeyData ")" [:function:]
-  define Mapify((K : K2 , KD:KeyData)) => K |-> K2 Mapify(KD)
-  define Mapify(.KeyData) => .
+  syntax Map ::= "Mapify" "(" KeyData ")" [function]
+  rule Mapify((K : K2 , KD:KeyData)) => K |-> K2 Mapify(KD) [function, anywhere]
+  rule Mapify(.KeyData) => . [function, anywhere]
 
-  syntax KeyData ::= "DeMapify" "(" Map ")" [:function:]
-  define DeMapify((K |-> K2 M)) => (K : K2) , DeMapify(M)
-  define DeMapify(.) => .List{","}
+  syntax KeyData ::= "DeMapify" "(" Map ")" [function]
+  rule DeMapify((K |-> K2 M)) => (K : K2) , DeMapify(M) [function, anywhere]
+  rule DeMapify(.) => .NAMES [function, anywhere]
 
-  syntax Builtin ::= "id" "(" Expression ")" [:function:]
-  define id(obj(B,_)) => B
-  define id(undefined(S)) => undefined(S)
+  syntax Builtin ::= "id" "(" Expression ")" [function]
+  rule id(obj(B,_)) => B [function, anywhere]
+  rule id(undefined(S)) => undefined(S) [function, anywhere]
 
-  syntax Int ::= "intvalue" "(" Expression ")" [:function:]
-  define intvalue(obj(_,<oattrs>... "__value__" |-> I:Int ...</oattrs>)) => I
+  syntax Int ::= "intvalue" "(" Expression ")" [function]
+  rule intvalue(obj(_,<oattrs>... "__value__" |-> I:Int ...</oattrs>)) => I [function, anywhere]
 
-  syntax String ::= "strvalue" "(" Object ")" [:function:]
-  define strvalue(obj(_,<oattrs>... "__value__" |-> S:String ...</oattrs>)) => S
+  syntax String ::= "strvalue" "(" Object ")" [function]
+  rule strvalue(obj(_,<oattrs>... "__value__" |-> S:String ...</oattrs>)) => S [function, anywhere]
 
-  syntax List ::= "listvalue" "(" Object ")" [:function:]
-  define listvalue(obj(_,<oattrs>... "__value__" |-> list(L:List) ...</oattrs>)) => L
+  syntax List ::= "listvalue" "(" Object ")" [function]
+  rule listvalue(obj(_,<oattrs>... "__value__" |-> list(L:List) ...</oattrs>)) => L [function, anywhere]
 
-  syntax Map ::= "mapvalue" "(" Object ")" [:function:]
-  define mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ _ |-> list(_ (ListItem(K : K2) => .) _)) ...</oattrs>)) (. => K |-> K2)
-  define mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ (_ |-> list(.) => .)) ...</oattrs>))
-  define mapvalue(obj(_,<oattrs>... "__value__" |-> map(.) ...</oattrs>)) => .
+  syntax Map ::= "mapvalue" "(" Object ")" [function]
+  rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ _ |-> list(_ (ListItem(K : K2) => .) _)) ...</oattrs>)) (. => K |-> K2) [function, anywhere]
+  rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ (_ |-> list(.) => .)) ...</oattrs>)) [function, anywhere]
+  rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(.) ...</oattrs>)) => . [function, anywhere]
 
-  syntax K ::= "get" "(" List "," Int ")" [:function:]
-  define get(ListItem(K) _, 0) => K
-  define get(ListItem(_) L, N) => get(L, N -Int 1)
+  syntax K ::= "get" "(" List "," Int ")" [function]
+  rule get(ListItem(K) _, 0) => K [function, anywhere]
+  rule get(ListItem(_) L, N) => get(L, N -Int 1) [function, anywhere]
 
-  syntax List ::= "getl" "(" K ")" [:function:]
-  define getl(list(L)) => L
+  syntax List ::= "getl" "(" K ")" [function]
+  rule getl(list(L)) => L [function, anywhere]
 
-  syntax K ::= "getattr" "(" Expression "," String ")" [:function:]
-  define getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs(S)
+  syntax K ::= "getattr" "(" Expression "," String ")" [function]
+  rule getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs(S) [function, anywhere]
   context getattr(HOLE,_)
 
-  syntax K ::= "getref" "(" Expression "," String ")" [:function:]
-  define getref(obj(_,<oattrs> Attrs </oattrs>), S) => ref(Attrs(S))
+  syntax K ::= "getref" "(" Expression "," String ")" [function]
+  rule getref(obj(_,<oattrs> Attrs </oattrs>), S) => ref(Attrs(S)) [function, anywhere]
   context getref(HOLE,_)
 
-  syntax Set ::= Set "&Set" Set [:function:]
-  define St1:Set &Set St2:Set => St1 -Set (St1 -Set St2)
+  syntax Set ::= Set "&Set" Set [function]
+  rule St1:Set &Set St2:Set => St1 -Set (St1 -Set St2) [function, anywhere]
 
-  syntax Set ::= "values" Map [:function:]
-  define values (K |-> K2 M) => SetItem(K2) values M
-  define values . => .
+  syntax Set ::= "values" Map [function]
+  rule values (K |-> K2 M) => SetItem(K2) values M [function, anywhere]
+  rule values . => . [function, anywhere]
 
   rule <k> setattr(B, S, K) => . ...</k>
        <object>...
@@ -205,8 +204,8 @@ module PYTHON-SEMANTICS-COMMON
   rule binaryOp(O, O2:Object, S, S2, K:K) => test(and(istype(O, ref(S)), istype(O2, ref(S2))), K, ref("NotImplemented"))
   rule unaryOp(O, S, K) => test(istype(O, ref(S)), K, ref("NotImplemented"))
 
-  macro gettype(E:Expression) = getref(E, "__class__")
-  macro getbases(E) = getattr(E, "__bases__")
+  rule gettype(E:Expression) => getref(E, "__class__") [macro, anywhere]
+  rule getbases(E) => getattr(E, "__bases__") [macro, anywhere]
 
   //TODO: subclasshook
   rule istype(O:Object, Type:Object) => hasbase(gettype(O), Type)
@@ -245,12 +244,12 @@ module PYTHON-SEMANTICS-COMMON
   context list(.) ~> iterate(HOLE,_)
 
   rule iterate(O, K) => try: (list(.) ~> iterate(ref("iter") (O), K)) except ref("TypeError") : test(K ==K ., raise, K) else: pass
-  rule list(L) ~> iterate(O, K) => try: addItem(getmember(O,  String2Id("__next__"), true, false, false) ()) except ref("StopIteration") : list(L) else: (list(L) ~> iterate(O, K))
+  rule list(L) ~> iterate(O, K) => try: addItem(getmember(O,  String2Id("__next__"), true, false, false) (.Arguments)) except ref("StopIteration") : list(L) else: (list(L) ~> iterate(O, K))
   rule (addItem(O) => .) ~> popx ~> list(_ (. => ListItem(O)))
   rule K ~> setx(K2) => setx(K2) ~> K when 'isKResult(K)
   rule K ~> popx => popx ~> K when 'isKResult(K)
 
-  rule <k> mapping(O, K) => iterate(getmember(O, String2Id("keys"), true, false, false) () -> K, raiseInternal("TypeError", "o.keys() are not iterable")) ~> map(.) ~> mapping(O, K) ...</k>
+  rule <k> mapping(O, K) => iterate(getmember(O, String2Id("keys"), true, false, false) (.Arguments) -> K, raiseInternal("TypeError", "o.keys() are not iterable")) ~> map(.) ~> mapping(O, K) ...</k>
   rule <k> list((ListItem(B:Builtin) => .) _) ~> (. => addPair(B, (O [ ref(B) ]))) ~> map(_) ~> mapping(O,_) ...</k>
   rule <k> list(_) ~> (addPair(B, O) => .) ~> map(_ (. => B |-> O)) ...</k>
   rule <k> (list(.) => .) ~> map(_) ~> (mapping(_,_) => .) ...</k>
@@ -260,7 +259,7 @@ module PYTHON-SEMANTICS-COMMON
 
   rule raiseInternal(S, O) => raise mutable("args" |-> undefined(strvalue(O)),ref(S))
 
-  rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => ((Dict [ "__name__"]) , .Expressions) := CO . String2Id("co_name") ~> ((Dict [ "__doc__" ]) , .Expressions) := CO . String2Id("co_consts") [0] ~> ((Dict [ "__builtins__" ]) , .Expressions) := Builtins ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple()) ~> setref(id(CO), "co_cellvars", tuple()) ~> executeFrame(N +Int 1, ref(id(CO)), ref("None"), Dict, Dict, Builtins, {}, .) ...</k>
+  rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => ((Dict [ "__name__"]) , .Expressions) := CO . String2Id("co_name") ~> ((Dict [ "__doc__" ]) , .Expressions) := CO . String2Id("co_consts") [0] ~> ((Dict [ "__builtins__" ]) , .Expressions) := Builtins ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple(.Expressions)) ~> setref(id(CO), "co_cellvars", tuple(.Expressions)) ~> executeFrame(N +Int 1, ref(id(CO)), ref("None"), Dict, Dict, Builtins, {.KeyData}, .) ...</k>
        <nextLoc> N => N +Int 2 </nextLoc>
        (. => <object>...
          <id>N</id>
@@ -280,4 +279,4 @@ module PYTHON-SEMANTICS-COMMON
   rule (. => (X:Id, .Expressions) := ref(B)) ~> setArgs((X |-> B => .) _)
   rule setArgs(.) => .
 
-end module
+endmodule

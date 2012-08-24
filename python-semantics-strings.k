@@ -16,4 +16,4 @@ module PYTHON-SEMANTICS-STRINGS
 
   rule <k> accumulate("", I, Len:Nat) => test((I xorInt Len) ==Int -1, -2, (I xorInt Len)) ...</k>
 
-end module
+endmodule

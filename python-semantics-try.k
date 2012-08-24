@@ -3,11 +3,11 @@ module PYTHON-SEMANTICS-TRY
 
   syntax ListItem ::= "(" K "," K "," Bag "," K "," Bool ")"
 
-  syntax K ::= "savex" "(" Expression ")" [:strict:]
-             | "setcause" "(" Builtin "," Expression ")" [:strict(2):]
-             | "doExcept" "(" Expression "," K "," NAME ")" [:strict(1):]
+  syntax K ::= "savex" "(" Expression ")" [strict]
+             | "setcause" "(" Builtin "," Expression ")" [strict(2)]
+             | "doExcept" "(" Expression "," K "," NAME ")" [strict(1)]
              | "doExcepts" "(" List "," K "," NAME ")"
-             | "doRaise" "(" Expression "," Expression "," Bool ")" [:strict(1 2):]
+             | "doRaise" "(" Expression "," Expression "," Bool ")" [strict(1 2)]
              | "popfinally"
  
   rule <k> (try: Try:K ECs:K else: Else:K => Try ~> popx ~> Else) ~> K:K </k>
@@ -104,4 +104,4 @@ module PYTHON-SEMANTICS-TRY
   rule <k> doExcept(Type:Object, Except, X) => test(istype(ref(B), Type), test(X ==K .Obj, except: Except, (bind(X, B) ~> except: (try: Except finally: unbind(X)))), .) ...</k>
        <xcontext> B:Builtin </xcontext>
 
-end module
+endmodule

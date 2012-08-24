@@ -13,4 +13,4 @@ module PYTHON-SEMANTICS-TUPLES
   rule invokeBuiltin(obj("new_tuple",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("tuple"), .) ~> iterate(O2, .) ~> immutable(list(.), O)
   rule (list(L:List) => .) ~> immutable(list(_ => L), _)
 
-end module
+endmodule

@@ -2,7 +2,7 @@ module PYTHON-SEMANTICS-AUGMENTED-ASSIGNMENT
   imports PYTHON-SEMANTICS-COMMON
 
   syntax K ::= "augAssign" "(" Target "," Object "," KLabel "," Id ")"
-  syntax K ::= "augAssign2" "(" Target "," Expression "," Object "," KLabel "," Id ")" [:strict(2):]
+  syntax K ::= "augAssign2" "(" Target "," Expression "," Object "," KLabel "," Id ")" [strict(2)]
 
   rule T:Target += O:Object => augAssign(T, O, '_+_, String2Id("__iadd__"))
   rule T -= O => augAssign(T, O, '_-_, String2Id("__isub__"))
@@ -24,4 +24,4 @@ module PYTHON-SEMANTICS-AUGMENTED-ASSIGNMENT
   rule augAssign(T, O, Lbl:KLabel, IX:Id) => augAssign2(T, T, O, Lbl, IX)
   rule augAssign2(T, O, O2:Object, Lbl, IX) => (getmember(O, IX, true, false, false) (O2)) -> ((T, .Expressions) := Lbl(O,,O2))
 
-end module
+endmodule

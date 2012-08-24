@@ -67,4 +67,4 @@ module PYTHON-SEMANTICS-DICTS
   rule <k> list(L) ~> list(_) ~> map(_) ~> makeDict(N) => raiseInternal("ValueError", "dictionary update sequence element #" +String Int2String(N) +String " has length " +String Int2String(lengthList L) +String "; 2 is required") ...</k>
   rule <k> (list(.) => .) ~> map(_) ~> makeDict(_) ...</k>
 
-end module
+endmodule

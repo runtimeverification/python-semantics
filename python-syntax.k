@@ -7,127 +7,128 @@ module PYTHON-TOKENS
   syntax NAME ::= Id
   syntax NUMBER ::= Int | Float | Imaginary
   syntax STRING ::= String | Bytes
-  syntax NAMES ::= List{NAME,","} [:seqstrict prec 59:]
-end module
+  syntax NAMES ::= List{NAME,","} [seqstrict]
+endmodule
 
 module PYTHON-SYNTAX imports PYTHON-TOKENS
 
   syntax Atom ::= NAME
                 | NUMBER
                 | STRING
-                | "tuple" "(" Expressions ")"        [:seqstrict required:]
+                | "tuple" "(" Expressions ")" [strict]
                 | "[" Expression CompIter "]"
                 | "generator" "(" Expression CompIter ")"
                 | "{" Expression CompIter "}"
                 | "{" Expression ":" Expression CompIter "}"
-                | "[" Expressions "]"        [:strict:]
-                | "{" KeyData "}"        [:seqstrict:]
-                | "{" Expressions "}"        [:seqstrict required:]
+                | "[" Expressions "]" [strict]
+                | "{" KeyData "}" [strict]
+                | "{" Expressions "}" [strict]
                 | YieldExpression
                 | "..."
   
-  syntax CompFor ::= "for" Targets "in" Expressions [:required:]
+  syntax CompFor ::= "for" Targets "in" Expressions
   syntax CompIf ::= "if" "(" Expression ")"
   syntax CompIter ::= CompFor
                     | CompIf
-                    | CompIter "@" CompIter [:strict(1):]
+                    | CompIter "@" CompIter
 
-  syntax YieldExpression ::= "yield" Expression        [:strict:] 
+  syntax YieldExpression ::= "yield" Expression [strict] 
                            | "yield"
-  syntax KeyData ::= List{KeyDatum,","} [:seqstrict:]
-  syntax KeyDatum ::= Expression ":" Expression [:prec 40 gather(e e) seqstrict hybrid:]
+  syntax KeyData ::= List{KeyDatum,","} [seqstrict]
+  syntax KeyDatum ::= Expression ":" Expression [seqstrict, hybrid]
 
-  syntax Primary ::= Atom
-                   | AttributeRef
+  syntax Primary ::= AttributeRef
                    | Subscription
-                   | Expression "(" Arguments ")" [:seqstrict prec 41:]
+                   | Expression "(" Arguments ")" [seqstrict]
 
-  syntax Arguments ::= List{Argument,","} [:seqstrict:]
+  syntax Arguments ::= List{Argument,","}
   syntax Argument ::= Expression
-                    | NAME "=" Expression [:strict(2):]
+                    | NAME "=" Expression [strict(2)]
                     // "*" Expression is implicit
-                    | "**" Expression [:strict hybrid:]
+                    | "**" Expression [strict, hybrid]
 
-  syntax AttributeRef ::= Expression "." NAME [:strict(1) gather(E e):]
+  syntax AttributeRef ::= Expression "." NAME [strict(1), left]
 
-  syntax Subscription ::= Expression "[" Expression "]" [:seqstrict required:]
-  syntax Expression ::= ":" ":"
-                      | Expression ":" ":"
-                      | ":" Expression ":"
-                      | ":" ":" Expression
-                      | Expression ":" Expression ":"
-                      | Expression ":" ":" Expression
-                      | ":" Expression ":" Expression
-                      | Expression ":" Expression ":" Expression
+  syntax Subscription ::= Expression "[" Expression "]" [seqstrict]
+  syntax Slice ::= ":" ":"
+                 | Expression ":" ":"
+                 | ":" Expression ":"
+                 | ":" ":" Expression
+                 | Expression ":" Expression ":" [seqstrict]
+                 | Expression ":" ":" Expression [seqstrict]
+                 | ":" Expression ":" Expression [seqstrict]
+                 | Expression ":" Expression ":" Expression [seqstrict]
 
-  syntax Expression ::= Primary
+  syntax AExp ::= Expression "**" Expression     [seqstrict, right]
+                > "-" Expression                 [strict]
+                | "+" Expression                 [strict]
+                | "~" Expression                 [strict]
+                > Expression "*" Expression      [seqstrict, left]
+                | Expression "floor/" Expression [seqstrict, left]
+                | Expression "/" Expression      [seqstrict, left]
+                | Expression "%" Expression      [seqstrict, left]
+                > Expression "+" Expression      [seqstrict, left]
+                | Expression "-" Expression      [seqstrict, left]
+                > Expression "<<" Expression     [seqstrict, left]
+                | Expression ">>" Expression     [seqstrict, left]
+                > Expression "&" Expression      [seqstrict, left]
+                > Expression "^" Expression      [seqstrict, left]
+                > Expression "|" Expression      [seqstrict, left]
 
-  syntax Expression ::= Expression "**" Expression     [:seqstrict prec 43 gather(e E):]
-                      | "-" Expression                 [:strict prec 44:]
-                      | "+" Expression                 [:strict prec 44:]
-                      | "~" Expression                 [:strict prec 44:]
-                      | Expression "*" Expression      [:seqstrict prec 45 gather(E e):]
-                      | Expression "floor/" Expression [:seqstrict prec 45 gather(E e):]
-                      | Expression "/" Expression      [:seqstrict prec 45 gather(E e):]
-                      | Expression "%" Expression      [:seqstrict prec 45 gather(E e):]
-                      | Expression "+" Expression      [:seqstrict prec 46 gather(E e):]
-                      | Expression "-" Expression      [:seqstrict prec 46 gather(E e):]
-                      | Expression "<<" Expression     [:seqstrict prec 47 gather(E e):]
-                      | Expression ">>" Expression     [:seqstrict prec 47 gather(E e):]
-                      | Expression "&" Expression      [:seqstrict prec 48 gather(E e):]
-                      | Expression "^" Expression      [:seqstrict prec 49 gather(E e):]
-                      | Expression "|" Expression      [:seqstrict prec 50 gather(E e):]
+  syntax BExp ::= Expression "<" Expression      [strict(1), right]
+                | Expression ">" Expression      [strict(1), right]
+                | Expression "==" Expression     [strict(1), right]
+                | Expression ">=" Expression     [strict(1), right]
+                | Expression "<=" Expression     [strict(1), right]
+                | Expression "!=" Expression     [strict(1), right]
+                | Expression "is" Expression     [strict(1), right]
+                | Expression "is not" Expression [strict(1), right]
+                | Expression "in" Expression     [strict(1), right]
+                | Expression "not in" Expression [strict(1), right]
+                > "not" Expression               [strict]
+                > Expression "and" Expression    [strict(1), left]
+                > Expression "or" Expression     [strict(1), left]
+                > Expression "if" Expression "else" Expression [strict(2)]
 
-  syntax Expression ::= Expression "<" Expression      [:strict(1) prec 51 gather(e E):]
-                      | Expression ">" Expression      [:strict(1) prec 51 gather(e E):]
-                      | Expression "==" Expression     [:strict(1) prec 51 gather(e E):]
-                      | Expression ">=" Expression     [:strict(1) prec 51 gather(e E):]
-                      | Expression "<=" Expression     [:strict(1) prec 51 gather(e E):]
-                      | Expression "!=" Expression     [:strict(1) prec 51 gather(e E):]
-                      | Expression "is" Expression     [:strict(1) prec 51 gather(e E):]
-                      | Expression "is not" Expression [:strict(1) prec 51 gather(e E):]
-                      | Expression "in" Expression     [:strict(1) prec 51 gather(e E):]
-                      | Expression "not in" Expression [:strict(1) prec 51 gather(e E):]
-
-  syntax Expression ::= "not" Expression               [:strict prec 52:]
-                      | Expression "and" Expression    [:strict(1) prec 53 gather(E e):]
-                      | Expression "or" Expression     [:strict(1) prec 54 gather(E e):]
-                      | Expression "if" Expression "else" Expression [:strict(2) prec 55 gather(e e E):]
-
-  syntax Expression ::= "lambda" Parameters ":" Expression [:prec 56:]
-                      | "*" Expression [:prec 56 strict hybrid:]
+  syntax Expression ::= Atom
+                      > Primary
+                      > AExp
+                      > BExp
+                      > "lambda" Parameters ":" Expression
+                      | "*" Expression [strict, hybrid]
+                      | "(" Expression ")" [bracket]
 
   syntax Expressions ::= List{Expression,","}
 
-  syntax SimpleStmt ::= Expression ";" [:prec 60 gather(e) strict:]
-                      | Targets ":=" Expression [:strict(2) required prec 60:]
-                      | Target "+=" Expression        [:strict(2) required:]
-                      | Target "-=" Expression        [:strict(2) required:]
-                      | Target "*=" Expression        [:strict(2) required:]
-                      | Target "/=" Expression        [:strict(2) required:]
-                      | Target "floor/=" Expression   [:strict(2) required:]
-                      | Target "%=" Expression        [:strict(2) required:]
-                      | Target "**=" Expression       [:strict(2) required:]
-                      | Target ">>=" Expression       [:strict(2) required:]
-                      | Target "<<=" Expression       [:strict(2) required:]
-                      | Target "&=" Expression        [:strict(2) required:]
-                      | Target "^=" Expression        [:strict(2) required:]
-                      | Target "|=" Expression        [:strict(2) required:]
-                      | "assert" Expressions [:prec 60:]
+  syntax SimpleStmt ::= Expression ";" [strict]
+                      | Targets ":=" Expression     [strict(2)]
+                      | Target "+=" Expression      [strict(2)]
+                      | Target "-=" Expression      [strict(2)]
+                      | Target "*=" Expression      [strict(2)]
+                      | Target "/=" Expression      [strict(2)]
+                      | Target "floor/=" Expression [strict(2)]
+                      | Target "%=" Expression      [strict(2)]
+                      | Target "**=" Expression     [strict(2)]
+                      | Target ">>=" Expression     [strict(2)]
+                      | Target "<<=" Expression     [strict(2)]
+                      | Target "&=" Expression      [strict(2)]
+                      | Target "^=" Expression      [strict(2)]
+                      | Target "|=" Expression      [strict(2)]
+                      | "assert" Expressions
                       | "pass"
-                      | "del" Targets       [:required prec 60:]
-                      | "return" Expression        [:strict(1):]
+                      | "del" Targets
+                      | "return" Expression [strict]
                       | "return"
                       | "raise"
-                      | "raise" Expression [:strict prec 60:]
-                      | "raise" Expression "from" Expression [:seqstrict:]
+                      | "raise" Expression [strict]
+                      | "raise" Expression "from" Expression [seqstrict]
                       | "break"
                       | "continue"
-                      | "import" ModuleAliases        [:seqstrict required:]
-                      | "from" RelativeModule "import" ModuleAliases        [:strict(1) required:]
-                      | "from" Primary "import" "*"        [:strict:]
-                      | "global" NAMES        [:required:]
-                      | "nonlocal" NAMES      [:required:]
+                      | "import" ModuleAliases [seqstrict]
+                      | "from" RelativeModule "import" ModuleAliases [strict(1)]
+                      | "from" Primary "import" "*" [strict]
+                      | "global" NAMES
+                      | "nonlocal" NAMES
 
   syntax Targets ::= Expressions 
   syntax Target ::= Expression
@@ -136,41 +137,44 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax ModuleAlias ::= Expression
                        | Expression "as" NAME
   syntax RelativeModule ::= ".dir"
-                          | Expression [:required:]
-                          | "." RelativeModule        [:strict:]
+                          | Expression
+                          | "." RelativeModule
 
-  syntax ExceptClauses ::= List{ExceptClause,"except"}
+  syntax ExceptClauses ::= ExceptClause
+                         | ExceptClause ExceptClauses
 
-  syntax CompoundStmt ::= "if" Expression ":" Statements "else" ":" Statements        [:strict(1):]
+  syntax CompoundStmt ::= "if" Expression ":" Statements "else" ":" Statements [strict(1)]
                         | "while" Expression ":" Statements "else" ":" Statements
-                        | "for" Targets "in" Expressions ":" Statements "else" ":" Statements        [:required:]
+                        | "for" Targets "in" Expressions ":" Statements "else" ":" Statements
                         | "try" ":" Statements ExceptClauses "else" ":" Statements //"finally" ":" Statements
                         | "try" ":" Statements "finally" ":" Statements
                         | "with" Expression "as" Target ":" Statements
                         | Decorated
-  syntax Statement ::=        SimpleStmt
-                     |        CompoundStmt
+
+  syntax Statement ::= SimpleStmt
+                     > CompoundStmt
+
   syntax Statements ::= Statement
-                      | Statement "newline" Statements [:prec 65:]
+                      > Statement "newline" Statements 
 
-  syntax ExceptClause ::=        "except" ":" Statements
-                        |        "except" Expression ":" Statements [:strict(1) gather(e E):]
-                        |        "except" Expression "as" NAME ":" Statements [:strict(1):]
+  syntax ExceptClause ::= "except" ":" Statements
+                        | "except" Expression ":" Statements [strict(1)]
+                        | "except" Expression "as" NAME ":" Statements [strict(1)]
 
-  syntax Decorated ::=        ClassDef
-                     |        FuncDef
-                     |        "@" Primary "newline" Decorated [:strict(1):]
+  syntax Decorated ::= ClassDef
+                     | FuncDef
+                     | "@" Primary Decorated [strict(1)]
 
-  syntax Parameters ::= List{Parameter,","} [:seqstrict:]
+  syntax Parameters ::= List{Parameter,","} [seqstrict]
   syntax Parameter ::= Argument
                      | KeyDatum
-                     | Argument ":" Expression [:ditto:]
+                     | Argument ":" Expression
                      | "*"
 
-  syntax FuncDef ::= "def" NAME "(" Parameters ")" "->" Expression ":" Statements [:required:]
-                   | "def" NAME "(" Parameters ")" ":" Statements [:required:]
+  syntax FuncDef ::= "def" NAME "(" Parameters ")" "->" Expression ":" Statements
+                   | "def" NAME "(" Parameters ")" ":" Statements
 
 
-  syntax ClassDef ::=        "class" NAME "(" Arguments ")" ":" Statements        [:seqstrict(2):]
+  syntax ClassDef ::= "class" NAME "(" Arguments ")" ":" Statements
 
-end module
+endmodule

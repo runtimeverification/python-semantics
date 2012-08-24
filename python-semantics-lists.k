@@ -29,4 +29,4 @@ module PYTHON-SEMANTICS-LISTS
   rule equalList(., ListItem(_) _) => ref("False")
   rule equalList(.,.) => ref("True")
 
-end module
+endmodule

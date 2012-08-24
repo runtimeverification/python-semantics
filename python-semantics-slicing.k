@@ -1,19 +1,19 @@
 module PYTHON-SEMANTICS-SLICING
   imports PYTHON-SEMANTICS-LITERALS
 
-  syntax ObjRef ::= "slice" "(" Expression "," Expression ")" [:strict:]
-                  | "slice2" "(" Expression "," Expression "," Expression ")" [:strict:]
-                  | "slicepart" "(" Expression ")" [:strict:] 
-                  | "indices" "(" Expression "," Expression "," Expression "," Expression ")" [:strict:]
-                  | "indices2" "(" Expression "," Expression "," Int "," Int ")" [:strict(1 2):]
+  syntax ObjRef ::= "slice" "(" Expression "," Expression ")" [strict]
+                  | "slice2" "(" Expression "," Expression "," Expression ")" [strict]
+                  | "slicepart" "(" Expression ")" [strict] 
+                  | "indices" "(" Expression "," Expression "," Expression "," Expression ")" [strict]
+                  | "indices2" "(" Expression "," Expression "," Int "," Int ")" [strict(1 2)]
                   | "indices3" "(" Int "," Int "," Int "," Int ")"
                   | "indices4" "(" Int "," Int "," Int "," Int ")"
                   | "indices5" "(" Int "," Int "," Int ")"
-                  | "index" "(" Expression ")" [:strict:]
+                  | "index" "(" Expression ")" [strict]
                   | "iters" "(" List ")"
-                  | "makeMap" "(" Expression "," Expression "," List ")" [:strict(1 2):]
+                  | "makeMap" "(" Expression "," Expression "," List ")" [strict(1 2)]
                   | "nexts" "(" List ")"
-                  | "range" "(" Expression "," Expression "," Expression "," Expression ")" [:strict:]
+                  | "range" "(" Expression "," Expression "," Expression "," Expression ")" [strict]
 
   rule slice(O:Object, Slice:Object) => slice2(O, Slice, Slice . String2Id("indices") ( ref("len") (O)))
   rule slice2(O, Slice, Indices:Object) => ref("map")(O . String2Id("__getitem__"), ref("range")(* Indices))
@@ -74,4 +74,4 @@ module PYTHON-SEMANTICS-SLICING
 
   rule indices5(Start, Stop, Step) => tuple(Start, Stop, Step)
 
-end module
+endmodule

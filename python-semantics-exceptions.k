@@ -7,4 +7,4 @@ module PYTHON-SEMANTICS-EXCEPTIONS
          <oattrs> OAttrs:Map => OAttrs[list(Idify(L)) / "args"] </oattrs>
        ...</object>
 
-end module
+endmodule
