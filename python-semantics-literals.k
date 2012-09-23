@@ -26,25 +26,25 @@ module PYTHON-SEMANTICS-LITERALS
   rule <k> S:String => immutable(S,ref("str")) ...</k>
   rule <k> F:Float => immutable(F,ref("float")) ...</k>
   rule <k> tuple(Osc:Expressions) => immutable(list(Idify(Listify(Osc))), ref("tuple")) ...</k>
-  rule <k> [ Osc ] => mutable(list(Idify(Listify(Osc))), ref("list")) ...</k>
-  rule <k> { Osc } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k>
+  rule <k> [ Osc:Expressions ] => mutable(list(Idify(Listify(Osc))), ref("list")) ...</k>
+  rule <k> { Osc:Expressions } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k>
   rule <k> { OPs:KeyData } => processDict(mutable(map(.),ref("dict")), Mapify(OPs)) ...</k>
 
-  rule <k> (. => processDictElement(Dict:Object, Key:Object, (ref("hash")(Key)), Value:K)) ~> processDict(Dict, _ (Key |-> Value => .)) ...</k>
+  rule <k> (. => processDictElement(Dict:Object, Key:Object, (ref("hash")(Key, .Arguments)), Value:K)) ~> processDict(Dict, _ (Key |-> Value => .)) ...</k>
 
-  rule <k> processDict(Dict, .) => ref(id(Dict)) ...</k>
+  rule <k> processDict(Dict:Object, .) => ref(id(Dict)) ...</k>
 
-  rule <k> (. => processSetElement(Set:Object, Element:Object, (ref("hash")(Element)))) ~> processSet(Set, (ListItem(Element) => .) _) ...</k>
+  rule <k> (. => processSetElement(SetObj:Object, Element:Object, (ref("hash")(Element, .Arguments)))) ~> processSet(SetObj, (ListItem(Element) => .) _) ...</k>
 
-  rule <k> processSet(Set, .) => ref(id(Set)) ...</k>
+  rule <k> processSet(SetObj:Object, .) => ref(id(SetObj)) ...</k>
 
   syntax K ::= "checkHash" "(" Expression ")" [strict]
 
-  rule <k> invokeBuiltin(obj("call_hash",_), ListItem(O:Object), .) => checkHash(getmember(O, String2Id("__hash__"), true, false, false) () -> (raiseInternal("TypeError", "unhashable type"))) ...</k>
+  rule <k> invokeBuiltin(obj("call_hash",_), ListItem(O:Object), .) => checkHash(getmember(O, String2Id("__hash__"), true, false, false) (.Arguments) -> (raiseInternal("TypeError", "unhashable type"))) ...</k>
 
   rule <k> checkHash(O) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__hash__ method should return an integer")) ...</k>
 
-  rule <k> processDictElement(obj(B:Builtin,_), Key, Hash:Object, Value) => tableInsert(B, intvalue(Hash), Key, id(Key) : id(Value)) ...</k>
+  rule <k> processDictElement(obj(B:Builtin,_), Key:Object, Hash:Object, Value:K) => tableInsert(B, intvalue(Hash), Key, id(Key) : id(Value)) ...</k>
 
   rule <k> processSetElement(obj(B,_), Element, Hash) => tableInsert(B, intvalue(Hash), Element, id(Element)) ...</k>
 
@@ -86,14 +86,14 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(_ H |-> list(Values)) ...</oattrs>
        ...</object>
 
-  rule <k> tableLookup(B, H, Key) => raise ref("KeyError") (Key) ...</k>
+  rule <k> tableLookup(B, H:Int, Key) => raise ref("KeyError") (Key, .Arguments) ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
   rule bucketLookup(Key, ListItem(Key2 : Value2) Suffix) => test(plbool(Key == ref(Key2)), ref(Value2), bucketLookup(Key, Suffix))
-  rule bucketLookup(Key, .) => raise ref("KeyError") (Key)
+  rule bucketLookup(Key, .) => raise ref("KeyError") (Key, .Arguments)
 
   rule <k> tableDelete(B, H, Key) => bucketDelete(B, H, Key, Values, .) ...</k>
        <object>...
@@ -101,36 +101,36 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(_ H |-> list(Values)) ...</oattrs>
        ...</object>
 
-  rule <k> tableDelete(B, H, Key) => raise ref("KeyError") (Key) ...</k>
+  rule <k> tableDelete(B, H:Int, Key) => raise ref("KeyError") (Key, .Arguments) ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
   rule bucketDelete(B, H, Key, ListItem(Key2 : Value2) Suffix, Prefix) => test(plbool(Key == ref(Key2)), setBucket(B, H, Prefix Suffix), bucketDelete(B, H, Key, Suffix, Prefix ListItem(Key2 : Value2)))
-  rule bucketDelete(_, _, Key, ., _) => raise ref("KeyError") (Key)
+  rule bucketDelete(_, _, Key, ., _) => raise ref("KeyError") (Key, .Arguments)
 
   syntax K ::= "pair" "(" Value "," Builtin ")"
  
-  rule <k> copy(obj(B,_), O) => immutable(V, O) ...</k>
+  rule <k> copy(obj(B,_), O) => immutable(V:Value, O) ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> V ...</oattrs>
        ...</object>
 
-  rule <k> immutable(V:Value,obj(B:Builtin,_)) => ref(N:Nat) ...</k>
+  rule <k> immutable(V:Value,obj(B:Builtin,_)) => ref(N:Int) ...</k>
        <literals>... pair(V,B) |-> N ...</literals>
 
-  rule <k> immutable(V,obj(B,_)) => ref(N) ...</k>
+  rule <k> immutable(V:Value,obj(B:Builtin,_)) => ref(N:Int) ...</k>
        <literals> Ref:Map (. => pair(V,B) |-> N) </literals>
        <nextLoc> N => N +Int 1 </nextLoc>
        (. =>
        <object>...
          <id>N</id>
          <oattrs> "__class__" |-> B "__value__" |-> V </oattrs>
-       ...</object>) when notBool((V,B) in keys(Ref))
+       ...</object>) when notBool(pair(V,B) in keys(Ref))
 
-  rule <k> mutable(V,O) => mutable("__value__" |-> V "__revision__" |-> 0, O) ...</k>
+  rule <k> mutable(V:Value,O) => mutable("__value__" |-> V "__revision__" |-> 0, O) ...</k>
 
   rule <k> mutable(M:Map,obj(B,_)) => ref(N) ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>

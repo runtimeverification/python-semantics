@@ -1,11 +1,13 @@
+require "python-semantics-common.k"
+
 module PYTHON-SEMANTICS-MACROS
   imports PYTHON-SEMANTICS-COMMON
 
-  rule assert E:K , Es:K => if String2Id("__debug__") : [macro, anywhere]
+  rule assert E:K , Es:K => if String2Id("__debug__") :
                                                (if not E :
                                                   raise String2Id("AssertionError") (Es)
                                                 else: pass)
-                                              else: pass
+                                              else: pass [macro, anywhere]
   rule pass => .K [macro, anywhere]
 
   rule return => return ref("None") [macro, anywhere]
@@ -25,6 +27,6 @@ module PYTHON-SEMANTICS-MACROS
   rule declName(class X ( _ ) : _) => X [function, anywhere]
   rule declName(K newline _) => declName(K) [function, anywhere]
 
-  rule @ K:K newline K2:K => (K2 newline (declName(K2), .Expressions) := K(declName(K2), .Expressions)) [macro, anywhere]
+  rule @ K:K newline K2:K => K2 newline declName(K2) , .Expressions := K(declName(K2)) [macro, anywhere]
 
 endmodule

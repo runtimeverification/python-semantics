@@ -1,3 +1,5 @@
+require "python-semantics-slicing.k"
+
 module PYTHON-SEMANTICS-LISTS
   imports PYTHON-SEMANTICS-SLICING
 

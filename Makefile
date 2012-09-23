@@ -10,8 +10,8 @@ ref: ${TEST_REFERENCE}
 
 %.out: %.py python-compiled.maude
 	./kpython $< > /dev/null 2>&1
-	@ cp .k/krun_tmp/maude_out $@
-	@ test "`grep "< k > (.).K </ k >" .k/krun_tmp/maude_out`"
+	@ test "`grep "< k > (.).K </ k >" \`ls .k/krun/maude_out*\``"
+	@ cp `ls .k/krun/maude_out*` $@
 
 %.ref: %.py
 	python3.2 $< > /dev/null 2>&1

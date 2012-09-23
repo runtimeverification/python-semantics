@@ -1,3 +1,5 @@
+require "python-semantics-boolean-ops.k"
+
 module PYTHON-SEMANTICS-OBJECTS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 

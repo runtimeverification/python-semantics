@@ -1,3 +1,5 @@
+require "python-semantics-common.k"
+
 module PYTHON-SEMANTICS-EXCEPTIONS
   imports PYTHON-SEMANTICS-COMMON
 

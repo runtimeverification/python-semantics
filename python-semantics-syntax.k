@@ -1,3 +1,5 @@
+require "python-syntax.k"
+
 module PYTHON-SEMANTICS-SYNTAX
   imports PYTHON-SYNTAX
 
@@ -8,12 +10,15 @@ module PYTHON-SEMANTICS-SYNTAX
 
   syntax Object ::= "obj" "(" Builtin "," Bag ")"
 
-  syntax Builtin ::= Nat
+  syntax Builtin ::= Int
                    | String
 
-  syntax NAME ::= ObjRef
+  syntax Expression ::= ObjRef
                 | Null
                 | Undefined
+                | Builtin
+                | KList
+                | KMap
 
   syntax Null ::= ".Obj"
 
@@ -21,14 +26,16 @@ module PYTHON-SEMANTICS-SYNTAX
 
   syntax KResult ::= Object
                    | Bool
-                   | KList
-                   | KMap
                    | Null
                    | Undefined
+                   | KList
+                   | KMap
+
+  syntax Statement ::= Expression
 
   syntax Test ::= Bool
   syntax ObjRef ::= Object
-  syntax ListRef ::= KList
   syntax KList ::= "list" "(" List ")"
   syntax KMap ::= "map" "(" Map ")"
+
 endmodule

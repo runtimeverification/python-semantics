@@ -1,3 +1,5 @@
+require "python-semantics-builtin-modules.k"
+
 module PYTHON-SEMANTICS-DUNDER-BUILTIN
   imports PYTHON-SEMANTICS-BUILTIN-MODULES
 
@@ -270,65 +272,63 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
 
          // module declarations
          module "builtins"({
-           ("AssertionError" : ref("AssertionError"))
-         , ("AttributeError" : ref("AttributeError"))
-         , ("BaseException" : ref("BaseException"))
-         , ("Exception" : ref("Exception"))
-         , ("False" : ref("False"))
-         , ("IndexError" : ref("IndexError"))
-         , ("KeyError" : ref("KeyError"))
-         , ("LookupError" : ref("LookupError"))
-         , ("NameError" : ref("NameError"))
-         , ("None" : ref("None"))
-         , ("NotImplemented" : ref("NotImplemented"))
-         , ("RuntimeError" : ref("RuntimeError"))
-         , ("StopIteration" : ref("StopIteration"))
-         , ("SyntaxError" : ref("SyntaxError"))
-         , ("True" : ref("True"))
-         , ("TypeError" : ref("TypeError"))
-         , ("UnboundLocalError" : ref("UnboundLocalError"))
-         , ("ValueError" : ref("ValueError"))
-           //TODO: parametrize
-         , ("__debug__" : #if T #then ref("True") #else ref("False") #fi)
-         , ("__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices.")
-         , ("bool" : ref("bool"))
-         , ("complex" : ref("complex"))
-         , ("dict" : ref("dict"))
-         , ("hash" : ref("hash"))
-         , ("int" : ref("int"))
-         , ("iter" : ref("iter"))
-         , ("float" : ref("float"))
-         , ("len" : ref("len"))
-         , ("list" : ref("list"))
-         , ("map" : ref("map"))
-         , ("object" : ref("object"))
-         , ("range" : ref("range"))
-         , ("slice" : ref("slice"))
-         , ("str" : ref("str"))
-         , ("tuple" : ref("tuple"))
-         , ("type" : ref("type"))
+           "AssertionError" : ref("AssertionError")
+         , "AttributeError" : ref("AttributeError")
+         , "BaseException" : ref("BaseException")
+         , "Exception" : ref("Exception")
+         , "False" : ref("False")
+         , "IndexError" : ref("IndexError")
+         , "KeyError" : ref("KeyError")
+         , "LookupError" : ref("LookupError")
+         , "NameError" : ref("NameError")
+         , "None" : ref("None")
+         , "NotImplemented" : ref("NotImplemented")
+         , "RuntimeError" : ref("RuntimeError")
+         , "StopIteration" : ref("StopIteration")
+         , "SyntaxError" : ref("SyntaxError")
+         , "True" : ref("True")
+         , "TypeError" : ref("TypeError")
+         , "UnboundLocalError" : ref("UnboundLocalError")
+         , "ValueError" : ref("ValueError")
+         , "__debug__" : #if T #then ref("True") #else ref("False") #fi
+         , "__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."
+         , "bool" : ref("bool")
+         , "complex" : ref("complex")
+         , "dict" : ref("dict")
+         , "hash" : ref("hash")
+         , "int" : ref("int")
+         , "iter" : ref("iter")
+         , "float" : ref("float")
+         , "len" : ref("len")
+         , "list" : ref("list")
+         , "map" : ref("map")
+         , "object" : ref("object")
+         , "range" : ref("range")
+         , "slice" : ref("slice")
+         , "str" : ref("str")
+         , "tuple" : ref("tuple")
+         , "type" : ref("type")
          , .KeyData
          }) ~>
          module "sys"({
-           //TODO: parametrize
-           ("hash_info" : tuple(N1, N2, N3, N4, N5, .Expressions))
+           "hash_info" : tuple(N1, N2, N3, N4, N5, .Expressions)
          , .KeyData
          }) ~>
          module "types"({
-           ("BuiltinFunctionType" : ref("builtin-function"))
-         , ("BuiltinMethodType" : ref("builtin-method"))
-         , ("CodeType" : ref("code"))
-         , ("FrameType" : ref("frame"))
-         , ("FunctionType" : ref("function"))
-         , ("GetSetDescriptorType" : undefined("cpython implementation type"))
-         , ("LambdaType" : ref("function"))
-         , ("MemberDescriptorType" : undefined("cpython implementation type"))
-         , ("MethodType" : ref("method"))
-         , ("ModuleType" : ref("module"))
+           "BuiltinFunctionType" : ref("builtin-function")
+         , "BuiltinMethodType" : ref("builtin-method")
+         , "CodeType" : ref("code")
+         , "FrameType" : ref("frame")
+         , "FunctionType" : ref("function")
+         , "GetSetDescriptorType" : undefined("cpython implementation type")
+         , "LambdaType" : ref("function")
+         , "MemberDescriptorType" : undefined("cpython implementation type")
+         , "MethodType" : ref("method")
+         , "ModuleType" : ref("module")
          , .KeyData
          })
        ) ...</k>
        <debug> T:Bool </debug>
-       <hashInfo> ListItem(N1:Nat) ListItem(N2:Nat) ListItem(N3:Nat) ListItem(N4:Nat) ListItem(N5:Nat) </hashInfo>
+       <hashInfo> ListItem(N1:Int) ListItem(N2:Int) ListItem(N3:Int) ListItem(N4:Int) ListItem(N5:Int) </hashInfo>
 
 endmodule

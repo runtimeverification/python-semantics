@@ -1,3 +1,5 @@
+require "python-semantics-ops.k"
+
 module PYTHON-SEMANTICS-ARITHMETIC-OPS
   imports PYTHON-SEMANTICS-OPS
 
@@ -17,6 +19,6 @@ module PYTHON-SEMANTICS-ARITHMETIC-OPS
   rule <k> O ^ O2 => coerceBinary(O, O2, String2Id("__xor__"), String2Id("__rxor__"), "^") ...</k>
   rule <k> O | O2 => coerceBinary(O, O2, String2Id("__or__"), String2Id("__ror__"), "|") ...</k>
 
-  rule <k> O [ O2 ] => (getmember(O, String2Id("__getitem__"), true, false, false) (O2)) -> raiseInternal("TypeError", "object is not subscriptable") ...</k>
+  rule <k> O [ O2 ] => (getmember(O, String2Id("__getitem__"), true, false, false) (O2, .Arguments)) -> raiseInternal("TypeError", "object is not subscriptable") ...</k>
 
 endmodule

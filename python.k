@@ -12,7 +12,7 @@ require "python-semantics-literals.k"
 require "python-semantics-try.k"
 require "python-semantics-slicing.k"
 require "python-semantics-arithmetic-ops.k"
-/* require "python-semantics-assignment.k"
+require "python-semantics-assignment.k"
 require "python-semantics-attribute-ref.k"
 require "python-semantics-augmented-assignment.k"
 require "python-semantics-builtin-modules.k"
@@ -30,12 +30,12 @@ require "python-semantics-methods.k"
 require "python-semantics-objects.k"
 require "python-semantics-statements.k"
 require "python-semantics-strings.k"
-require "python-semantics-tuples.k" */
+require "python-semantics-tuples.k"
 
 module PYTHON
   imports PYTHON-SYNTAX
   imports PYTHON-SEMANTICS-ARITHMETIC-OPS
-/*  imports PYTHON-SEMANTICS-ASSIGNMENT
+  imports PYTHON-SEMANTICS-ASSIGNMENT
   imports PYTHON-SEMANTICS-AUGMENTED-ASSIGNMENT
   imports PYTHON-SEMANTICS-ATTRIBUTE-REF
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
@@ -53,5 +53,5 @@ module PYTHON
   imports PYTHON-SEMANTICS-OBJECTS
   imports PYTHON-SEMANTICS-STATEMENTS
   imports PYTHON-SEMANTICS-STRINGS
-  imports PYTHON-SEMANTICS-TUPLES */
+  imports PYTHON-SEMANTICS-TUPLES
 endmodule

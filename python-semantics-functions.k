@@ -1,9 +1,12 @@
+require "python-visitor.k"
+require "python-semantics-boolean-ops.k"
+
 module PYTHON-SEMANTICS-FUNCTIONS
   imports PYTHON-VISITOR
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
-  syntax K ::= "makeFunction" "(" Nat "," List "," K "," Bool ")"
-             | "makeCodeObject" "(" Nat "," List "," K "," Bool ")"
+  syntax K ::= "makeFunction" "(" Int "," List "," K "," Bool ")"
+             | "makeCodeObject" "(" Int "," List "," K "," Bool ")"
   syntax String ::= "paramName" "(" Argument ")"
 
   rule paramName(X:Id) => Id2String(X)
@@ -16,25 +19,25 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule <k> function(Ps:K, O:Object, Return:K) =>
            setref(N, "__doc__", (O . String2Id("co_consts") [0])) ~> 
            setref(N, "__name__", O . String2Id("co_name")) ~> 
-           setref(N, "__module__", (ref("globals")()["__name__"])) ~> 
+           setref(N, "__module__", (ref("globals")(.Arguments)["__name__"])) ~> 
            setref(N, "__defaults__", ref("None")) ~>
-           setref(N, "__globals__", (ref("globals")())) ~> 
-           setref(N, "__dict__", {}) ~> 
+           setref(N, "__globals__", (ref("globals")(.Arguments))) ~> 
+           setref(N, "__dict__", {.KeyData}) ~> 
            setref(N, "__closure__", ref("None")) ~>
-           setref(N, "__annotations__", {}) ~> 
+           setref(N, "__annotations__", {.KeyData}) ~> 
            setref(N, "__kwdefaults__", ref("None")) ~>
            setattr(N, "__frame__", N2) ~>
            makeFunction(N, Listify(Ps), Return, false) ~> ref(N) ...</k>
-       <nextLoc> N:Nat => N +Int 1 </nextLoc>
+       <nextLoc> N:Int => N +Int 1 </nextLoc>
        <currentFrame> N2 </currentFrame>
        (. => <object>...
          <id>N</id>
          <oattrs> "__code__" |-> id(O) "__class__" |-> Function </oattrs>
        ...</object>)
-       <symbols>... "function" |-> Function:Nat ...</symbols>
+       <symbols>... "function" |-> Function:Int ...</symbols>
 
   rule <k> codeObject(X, Ps, Ss:K) =>
-           setref(N, "co_varnames", tuple()) ~>
+           setref(N, "co_varnames", tuple(.Expressions)) ~>
            setref(N, "co_consts", tuple(docString(Ss))) ~>
            makescope(N) ~>
            makeCodeObject(N, Listify(Ps), Ss, false) ~> ref(N) ...</k>
@@ -43,21 +46,21 @@ module PYTHON-SEMANTICS-FUNCTIONS
          <id>N</id>
          <oattrs> "co_name" |-> Id2String(X) "co_argcount" |-> 0 "co_kwonlyargcount" |-> 0 "co_nlocals" |-> 0 "__class__" |-> Code "co_flags" |-> 0 </oattrs>
        ...</object>)
-       <symbols>... "code" |-> Code:Nat ...</symbols>
+       <symbols>... "code" |-> Code:Int ...</symbols>
        
 
   context makeFunction(_, (ListItem(X = HOLE) _:List), _, _)
   context makeFunction(_, (_:List ListItem(X : HOLE) _:List), _, _)
   context makeFunction(_, (ListItem((X = HOLE) : _) _:List), _, _)
   context makeFunction(_, (_:List ListItem((X = _) : HOLE) _:List), _, _)
-  context makeFunction(_, (_:List ListItem((*_(_)) : HOLE) _:List), _, _)
+  context makeFunction(_, (_:List ListItem((* _) : HOLE) _:List), _, _)
   context makeFunction(_, (_:List ListItem((** _) : HOLE) _:List), _, _) 
   context makeFunction(_, _, HOLE, _)
 
   rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X) L:List => L), _, false) ...</k>
        <object>...
          <id>N</id>
-         <oattrs>... "co_argcount" |-> (N2:Nat => N2 +Int 1) "co_nlocals" |-> (N3:Nat => N3 +Int 1) ...</oattrs>
+         <oattrs>... "co_argcount" |-> (N2:Int => N2 +Int 1) "co_nlocals" |-> (N3:Int => N3 +Int 1) ...</oattrs>
        ...</object>
 
   rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X) L:List => L), _, true) ...</k>
@@ -68,29 +71,29 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule makeCodeObject(_, ((ListItem(X = _) => ListItem(X)) _), _, _)
 
-  rule (. => setref(N, "__defaults__", test(plbool(getref(ref(N), "__defaults__") is ref("None")), tuple(O), (getref(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(X = O) => ListItem(X)) _), _, false)
-  rule (. => test(plbool(getref(ref(N), "__kwdefaults__") is ref("None")), {Id2String(X) : O}, (getref(ref(N), "__kwdefaults__")[Id2String(X)] := O))) ~> makeFunction(N, ((ListItem(X = O) => ListItem(X)) _), _, true)
-  rule makeFunction(_, ((ListItem(X) => .) _), _, _)
+  rule (. => setref(N, "__defaults__", test(plbool(getref2(ref(N), "__defaults__") is ref("None")), tuple(O), (getref2(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, false)
+  rule (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), {Id2String(X) : O}, (getref2(ref(N), "__kwdefaults__")[Id2String(X)] := O))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, true)
+  rule makeFunction(_, ((ListItem(X:Id) => .) _), _, _)
 
-  rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 4)) ~> addParam(* X)) ~> makeCodeObject(N, ((ListItem(* X) => ListItem(*)) L), _, false) 
+  rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 4)) ~> addParam(* X)) ~> makeCodeObject(N, ((ListItem(* X:Id) => ListItem(*)) L), _, false) 
   context setattr(_, _, (getattr(HOLE, _) |Int _:Int))
-  rule makeFunction(N, ((ListItem(* X) => ListItem(*)) L), _, _)
+  rule makeFunction(N, ((ListItem(* X:Id) => ListItem(*)) L), _, _)
   rule makeFunction(_, ((ListItem(*) => .) L), _, (false => true))
   rule makeCodeObject(_, ((ListItem(*) => .) L), _, (false => true))
-  rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 8)) ~> addParam(** X)) ~> makeCodeObject(N, ((ListItem(** X) => .) L), _, _)
+  rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 8)) ~> addParam(** X)) ~> makeCodeObject(N, ((ListItem(** X:Id) => .) L), _, _)
   rule makeFunction(N, ((ListItem(** X) => .) L), _, _)
-  rule (. => getref(ref(N), "__annotations__")[paramName(Arg)] := O) ~> makeFunction(N, ((ListItem(Arg:K : O) => ListItem(Arg)) _), _, _) 
-  rule (. => getref(ref(N), "__annotations__")["return"] := O) ~> makeFunction(N, _, (O => .Obj), _) 
+  rule (. => getref2(ref(N), "__annotations__")[paramName(Arg)] := O) ~> makeFunction(N, ((ListItem(Arg:K : O:Object) => ListItem(Arg)) _), _, _) 
+  rule (. => getref2(ref(N), "__annotations__")["return"] := O) ~> makeFunction(N, _, (O:Object => .Obj), _) 
   rule makeCodeObject(N, ((ListItem(Arg : _) => ListItem(Arg)) _), _, _)
 
   syntax ObjRef ::= "makeClosure" "(" Expression ")" [strict]
                   | "cellNum" "(" Expression "," Expression "," Expression ")" [strict]
 
   rule makeFunction(N, ., .Obj, _) => setref(N, "__closure__", makeClosure(ref(N) . String2Id("__code__") . String2Id("co_freevars")))
-  rule makeClosure(O) => makeClosure(list(listvalue(O)))
-  rule makeClosure(list(.)) => tuple()
-  rule <k> makeClosure(list(ListItem(N) L)) => tuple((getref(ref(Frame), "f_cells")[ref(N)]), .Expressions) + makeClosure(list(L)) ...</k>
-       <currentFrame> Frame:Nat </currentFrame>
+  rule makeClosure(O:Object) => makeClosure(list(listvalue(O)))
+  rule makeClosure(list(.)) => tuple(.Expressions)
+  rule <k> makeClosure(list(ListItem(N) L)) => tuple((getref2(ref(Frame), "f_cells")[ref(N)]), .Expressions) + makeClosure(list(L)) ...</k>
+       <currentFrame> Frame:Int </currentFrame>
 
   syntax K ::= "createFunction" "(" Id "," K "," K "," Expression ")" [strict(4)]
              | "createLambda" "(" K "," Expression ")" [strict(2)]
@@ -150,19 +153,15 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule PARAMS(ListItem(* X) ListItem(** Y)) => ListItem(Id2String(X)) ListItem(Id2String(Y)) [function, anywhere]
   rule PARAMS(.) => . [function, anywhere]
 
-  rule createFunction(X, Ps, K:K, O) => visited((X, .Expressions) := function(Ps, O, K))
-  rule createLambda(Ps, O) => visited(function(Ps, O, .Obj))
+  rule createFunction(X, Ps, K:K, O:Object) => visited((X, .Expressions) := function(Ps, O, K))
+  rule createLambda(Ps, O:Object) => visited(function(Ps, O, .Obj))
 
   rule makeCodeObject(N, ., Ss, _) => visit(Ss, 'compileVisitor) ~> storescope ~> propscope ~> delscope
 
-  syntax K ::= "compileVisitor" "(" KLabel "," Nat "," K ")" [klabel(compileVisitor)]
-             | "compileReturner" "(" K ")" [klabel(compileReturner)]
-             | "parameterVisitor" "(" KLabel "," Nat "," K ")" [klabel(parameterVisitor)]
-             | "parameterReturner" "(" K ")" [klabel(parameterReturner)]
-             | "bindVisitor" "(" KLabel "," Nat "," K ")" [klabel(bindVisitor)]
-             | "bindReturner" "(" K ")" [klabel(bindReturner)]
-             | "importVisitor" "(" KLabel "," Nat "," K ")" [klabel(importVisitor)]
-             | "importReturner" "(" K ")" [klabel(importReturner)] 
+  syntax K ::= "compileVisitor" "(" KLabel "," Int "," K ")" [klabel(compileVisitor)]
+             | "parameterVisitor" "(" KLabel "," Int "," K ")" [klabel(parameterVisitor)]
+             | "bindVisitor" "(" KLabel "," Int "," K ")" [klabel(bindVisitor)]
+             | "importVisitor" "(" KLabel "," Int "," K ")" [klabel(importVisitor)]
 
   syntax K ::= "addDef" "(" Id ")"
              | "addUse" "(" Id ")"
@@ -188,41 +187,36 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule addGlobals(.NAMES) => .
   rule addNonlocals(.NAMES) => .
 
-  rule returner('compileVisitor) => 'compileReturner [function, anywhere]
-  rule returner('parameterVisitor) => 'parameterReturner [function, anywhere]
-  rule returner('bindVisitor) => 'bindReturner [function, anywhere]
-  rule returner('importVisitor) => 'importReturner [function, anywhere]
-
   rule compileVisitor('import_, 0, K) => visit(K, 'importVisitor)
   rule compileVisitor('from_import_, 0, K) => visited(K)
   rule compileVisitor('from_import_, 1, K) => visit(K, 'importVisitor)
   rule importVisitor('_._, 1, K) => visited(K)
   rule importVisitor('_as_, 0, K) => visited(K)
-  rule importVisitor(Lbl:KLabel, N, K) => visit(K, 'importVisitor) when notBool((N ==Int 1 andBool Lbl ==KLabel '_._) orBool (N ==Int 0 andBool Lbl ==KLabel '_as_))
-  rule importReturner(X) => visit(X, 'bindVisitor)
-  rule importReturner(K) => visited(K) when 'isId(K) =/=K true
+  rule importVisitor(Lbl:KLabel, N, K) => visit(K, 'importVisitor) when notBool((N ==Int 1 andBool Lbl ==KLabel '_._) orBool (N ==Int 0 andBool Lbl ==KLabel '_as_)) andBool N =/=Int -1
+  rule importVisitor(returner, -1, X:Id) => visit(X, 'bindVisitor)
+  rule importVisitor(returner, -1, K) => visited(K) when isId(K) =/=K true
 
   rule compileVisitor('def_`(_`):_, 0, X) => visit(X, 'bindVisitor)
   rule compileVisitor('def_`(_`):_, 1, Ps) => visit(Ps, 'parameterVisitor)
   rule compileVisitor('def_`(_`):_, 2, Ss) => visited(Ss)
-  rule compileReturner(def X (Ps): Ss) => createFunction(X, Ps, .Obj, codeObject(X, Ps, Ss))
+  rule compileVisitor(returner, -1, (def X (Ps): Ss)) => createFunction(X, Ps, .Obj, codeObject(X, Ps, Ss))
   rule compileVisitor('def_`(_`)->_:_, 0, X) => visit(X, 'bindVisitor)
   rule compileVisitor('def_`(_`)->_:_, 1, Ps) => visit(Ps, 'parameterVisitor)
   rule compileVisitor('def_`(_`)->_:_, 3, Ss) => visited(Ss)
-  rule compileReturner(def X (Ps)-> K : Ss) => createFunction(X, Ps, K, codeObject(X, Ps, Ss))
+  rule compileVisitor(returner, -1, (def X (Ps)-> K : Ss)) => createFunction(X, Ps, K, codeObject(X, Ps, Ss))
 
   rule compileVisitor('lambda_:_, 0, Ps) => visit(Ps, 'parameterVisitor)
   rule compileVisitor('lambda_:_, 1, K) => visited(K)
-  rule compileReturner(lambda Ps : K) => createLambda(Ps, codeObject(String2Id("<lambda>"), Ps, return K))
+  rule compileVisitor(returner, -1, (lambda Ps : K)) => createLambda(Ps, codeObject(String2Id("<lambda>"), Ps, return K))
 
   rule parameterVisitor('_=_,1,K) => visit(K, 'compileVisitor)
   rule parameterVisitor('_:_,1,K) => visit(K, 'compileVisitor)
-  rule parameterVisitor(Lbl, N, K) => visit(K, 'parameterVisitor) when notBool(N ==Int 1 andBool (Lbl ==KLabel '_=_ orBool Lbl ==KLabel '_:_))
-  rule parameterReturner(K) => visited(K)
+  rule parameterVisitor(Lbl, N, K) => visit(K, 'parameterVisitor) when notBool(N ==Int 1 andBool (Lbl ==KLabel '_=_ orBool Lbl ==KLabel '_:_)) andBool N =/=Int -1
+  rule parameterVisitor(returner, -1, K) => visited(K)
 
   rule compileVisitor('class_`(_`):_, 0, X) => visit(X, 'bindVisitor)
   rule compileVisitor('class_`(_`):_, 2, Ss) => visited(Ss)
-  rule compileReturner(class X (As:K): Ss) => makescope(.) ~> visit(Ss, 'compileVisitor) ~> propscope ~> delscope
+  rule compileVisitor(returner, -1, (class X (As:K): Ss)) => makescope(.) ~> visit(Ss, 'compileVisitor) ~> propscope ~> delscope
 
   rule compileVisitor('_:=_,0,K) => visit(K, 'bindVisitor)
   rule compileVisitor('_+=_,0,K) => visit(K, 'bindVisitor)
@@ -244,22 +238,22 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule compileVisitor('del_,0,K) => visit(K, 'bindVisitor)
 
   rule compileVisitor('global_,0,Xs:NAMES) => addGlobals(Xs) ~> visited(Xs)
-  rule compileVisitor('nonlocal_,0,Xs) => addNonlocals(Xs) ~> visited(Xs)
+  rule compileVisitor('nonlocal_,0,Xs:NAMES) => addNonlocals(Xs) ~> visited(Xs)
 
-  rule compileReturner(X) => addUse(X) ~> visited(X)
+  rule compileVisitor(returner, -1, X:Id) => addUse(X) ~> visited(X)
   rule compileVisitor('_=_, 0, K) => visited(K)
 
   rule bindVisitor('_._, 0, K) => visit(K, 'compileVisitor)
   rule bindVisitor('_._, 1, K) => visited(K)
   rule bindVisitor('_`[_`], 0, K) => visit(K, 'compileVisitor)
   rule bindVisitor('_`[_`], 1, K) => visited(K)
-  rule bindVisitor(Lbl, _, K) => visit(K, 'bindVisitor) when notBool(Lbl ==KLabel '_._ orBool Lbl ==KLabel '_`[_`])
-  rule bindReturner(X) => addDef(X) ~> visited(X)
-  rule bindReturner(K) => visited(K) when 'isId(K) =/=K true
+  rule bindVisitor(Lbl, N, K) => visit(K, 'bindVisitor) when notBool(Lbl ==KLabel '_._ orBool Lbl ==KLabel '_`[_`]) andBool N =/=Int -1
+  rule bindVisitor(returner, -1, X:Id) => addDef(X) ~> visited(X)
+  rule bindVisitor(returner, -1, K) => visited(K) when isId(K) =/=K true
 
-  rule compileVisitor(Lbl, N, K) => visit(K, 'compileVisitor) when notBool ((Lbl ==KLabel 'def_`(_`)->_:_ andBool N =/=Int 2) orElseBool (Lbl ==KLabel 'class_`(_`):_ andBool N =/=Int 1) orElseBool (N ==Int 0 andBool (Lbl ==KLabel '_:=_ orElseBool Lbl ==KLabel '_+=_ orElseBool Lbl ==KLabel '_-=_ orElseBool Lbl ==KLabel '_*=_ orElseBool Lbl ==KLabel '_/=_ orElseBool Lbl ==KLabel '_floor/=_ orElseBool Lbl ==KLabel '_%=_ orElseBool Lbl ==KLabel '_**=_ orElseBool Lbl ==KLabel '_>>=_ orElseBool Lbl ==KLabel '_<<=_ orElseBool Lbl ==KLabel '_&=_ orElseBool Lbl ==KLabel '_^=_ orElseBool Lbl ==KLabel '_|=_)) orElseBool (Lbl ==KLabel 'for_in_:_ andBool N ==Int 0) orElseBool (Lbl ==KLabel 'with_as_:_ andBool N ==Int 1) orElseBool (Lbl ==KLabel 'except_as_:_ andBool N ==Int 1) orElseBool Lbl ==KLabel 'del_ orElseBool Lbl ==KLabel 'global_ orElseBool Lbl ==KLabel 'nonlocal_ orElseBool (Lbl ==KLabel '_=_ andBool N ==Int 0) orElseBool Lbl ==KLabel 'import_ orElseBool Lbl ==KLabel 'from_import_ orElseBool Lbl ==KLabel 'def_`(_`):_ orElseBool Lbl ==KLabel 'lambda_:_)
+  rule compileVisitor(Lbl, N, K) => visit(K, 'compileVisitor) when notBool ((Lbl ==KLabel 'def_`(_`)->_:_ andBool N =/=Int 2) orElseBool (Lbl ==KLabel 'class_`(_`):_ andBool N =/=Int 1) orElseBool (N ==Int 0 andBool (Lbl ==KLabel '_:=_ orElseBool Lbl ==KLabel '_+=_ orElseBool Lbl ==KLabel '_-=_ orElseBool Lbl ==KLabel '_*=_ orElseBool Lbl ==KLabel '_/=_ orElseBool Lbl ==KLabel '_floor/=_ orElseBool Lbl ==KLabel '_%=_ orElseBool Lbl ==KLabel '_**=_ orElseBool Lbl ==KLabel '_>>=_ orElseBool Lbl ==KLabel '_<<=_ orElseBool Lbl ==KLabel '_&=_ orElseBool Lbl ==KLabel '_^=_ orElseBool Lbl ==KLabel '_|=_)) orElseBool (Lbl ==KLabel 'for_in_:_ andBool N ==Int 0) orElseBool (Lbl ==KLabel 'with_as_:_ andBool N ==Int 1) orElseBool (Lbl ==KLabel 'except_as_:_ andBool N ==Int 1) orElseBool Lbl ==KLabel 'del_ orElseBool Lbl ==KLabel 'global_ orElseBool Lbl ==KLabel 'nonlocal_ orElseBool (Lbl ==KLabel '_=_ andBool N ==Int 0) orElseBool Lbl ==KLabel 'import_ orElseBool Lbl ==KLabel 'from_import_ orElseBool Lbl ==KLabel 'def_`(_`):_ orElseBool Lbl ==KLabel 'lambda_:_) andBool N =/=Int -1
 
-  rule compileReturner(K) => visited(K) when getKLabel K =/=KLabel 'def_`(_`)->_:_ andBool getKLabel K =/=KLabel 'def_`(_`):_ andBool getKLabel K =/=KLabel 'class_`(_`):_ andBool 'isId(K) =/=K true
-  rule compileReturner(.) => visited(.)
+  rule compileVisitor(returner, -1, K) => visited(K) when getKLabel K =/=KLabel 'def_`(_`)->_:_ andBool getKLabel K =/=KLabel 'def_`(_`):_ andBool getKLabel K =/=KLabel 'class_`(_`):_ andBool isId(K) =/=K true
+  rule compileVisitor(returner, -1, .) => visited(.)
 
 endmodule

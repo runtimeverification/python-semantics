@@ -1,3 +1,5 @@
+require "python-semantics-boolean-ops.k"
+
 module PYTHON-SEMANTICS-STATEMENTS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
@@ -12,7 +14,7 @@ module PYTHON-SEMANTICS-STATEMENTS
   rule if O:Object : Ss:K else : Ss2:K => test(plbool(bool(O)), Ss, Ss2)
   rule E:K if O else E2:K => test(plbool(bool(O)), E, E2)
 
-  rule <k> (. => lmark) ~> while Condition:K : Ss else: Ss2 ~> (K:K => popl) </k>
+  rule <k> (. => lmark) ~> (while Condition:K : Ss else: Ss2) ~> (K:K => popl) </k>
        <control>
          <lstack> . => (K, while Condition : Ss else: Ss2, C) ...</lstack>
          C:Bag
@@ -49,17 +51,17 @@ module PYTHON-SEMANTICS-STATEMENTS
          (_ => C)
        </control>
 
-  context for _ in (HOLE => ref("iter") (HOLE, .List{","})) : _ else: _
+  context for _ in (HOLE => ref("iter") (HOLE, .Arguments)) : _ else: _
 
-  rule <k> (. => lmark) ~> for Targets:K in O : Ss else: Ss2 ~> (K => popl) </k>
+  rule <k> (. => lmark) ~> (for Targets:K in O : Ss else: Ss2) ~> (K => popl) </k>
        <control>
          <lstack> . => (K, for Targets in O : Ss else: Ss2, C) ...</lstack>
          C:Bag
        </control>
 
-  rule lmark ~> for Targets in O : Ss else: Ss2 => try: ((Targets, .Expressions) := getmember(O, String2Id("__next__"), true, false, true) () ~> Ss ~> lmark ~> for Targets in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
+  rule lmark ~> for Targets in O : Ss else: Ss2 => try: (((Targets, .Expressions) := getmember(O, String2Id("__next__"), true, false, true) (.Arguments)) ~> Ss ~> lmark ~> for Targets in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
 
-  rule O ; => .
+  rule O:Object ; => .
 
   rule Stmt:K newline Ss => Stmt ~> Ss
 

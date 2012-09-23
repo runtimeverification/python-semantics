@@ -1,10 +1,12 @@
+require "python-semantics-common.k"
+
 module PYTHON-SEMANTICS-TRY
   imports PYTHON-SEMANTICS-COMMON
 
   syntax ListItem ::= "(" K "," K "," Bag "," K "," Bool ")"
 
   syntax K ::= "savex" "(" Expression ")" [strict]
-             | "setcause" "(" Builtin "," Expression ")" [strict(2)]
+             | "setcause" "(" Expression "," Expression ")" [strict]
              | "doExcept" "(" Expression "," K "," NAME ")" [strict(1)]
              | "doExcepts" "(" List "," K "," NAME ")"
              | "doRaise" "(" Expression "," Expression "," Bool ")" [strict(1 2)]
@@ -61,12 +63,12 @@ module PYTHON-SEMANTICS-TRY
          <xstack> (_, _, _:Bag, _, false) => . ...</xstack>
        ...</control>
 
-  rule <k> EC:K except ECs => EC ~> ECs ...</k> when notBool(getKLabel EC ==KLabel 'except`:_ andBool ECs =/=K .ExceptClauses)
+  rule <k> EC:K except ECs => EC ~> ECs ...</k> when notBool(getKLabel EC ==KLabel 'except:_ andBool ECs =/=K .ExceptClauses)
   rule <k> .ExceptClauses => . ...</k>
 
-  rule <k> raise O:Object => doRaise(test(istype(O, ref("type")), O(), O), ref("None"), true) ...</k>
+  rule <k> raise O:Object => doRaise(test(istype(O, ref("type")), O(.Arguments), O), ref("None"), true) ...</k>
 
-  rule <k> raise O from O2:Object => doRaise(test(istype(O, ref("type")), O(), O), test(istype(O2, ref("type")), O2(), O2), false) ...</k>
+  rule <k> raise O:Object from O2:Object => doRaise(test(istype(O, ref("type")), O(.Arguments), O), test(istype(O2, ref("type")), O2(.Arguments), O2), false) ...</k>
 
   rule <k> doRaise(O, O2, T:Bool) => test(istype(O, ref("BaseException")), test(or(T,istype(O2, ref("BaseException"))), (setcause(O, O2) ~> savex(O) ~> raise) , raiseInternal("TypeError", "exception causes must derive from BaseException")), raiseInternal("TypeError", "exceptions must derive from BaseException")) ...</k>
 
@@ -93,15 +95,15 @@ module PYTHON-SEMANTICS-TRY
          <xstack> (_, K, _:Bag, Ex, false) => . ...</xstack>
        ...</control>
 
-  rule <k> except O: Except => except O as .Obj: Except ...</k>
+  rule except O: Except => except O as String2Id(""): Except
 
-  rule <k> except O as X:NAME : Except => test(hasbase(O, ref("BaseException")), doExcept(O, Except, X), test(istype(O, ref("tuple")), doExcepts(listvalue(O), Except, X), raiseInternal("TypeError", "catching classes that do not inherit from BaseException is not allowed"))) ...</k>
+  rule <k> except O:Object as X:NAME : Except:K => test(hasbase(O, ref("BaseException")), doExcept(O, Except, X), test(istype(O, ref("tuple")), doExcepts(listvalue(O), Except, X), raiseInternal("TypeError", "catching classes that do not inherit from BaseException is not allowed"))) ...</k>
 
   rule <k> doExcepts(., Except, X) => . ...</k>
   rule <k> doExcepts(ListItem(B:Builtin) L:List, Except, X) => doExcept(ref(B), Except, X) ~> doExcepts(L, Except, X) ...</k>
 
   //TODO: sys.exc_info
-  rule <k> doExcept(Type:Object, Except, X) => test(istype(ref(B), Type), test(X ==K .Obj, except: Except, (bind(X, B) ~> except: (try: Except finally: unbind(X)))), .) ...</k>
+  rule <k> doExcept(Type:Object, Except, X) => test(istype(ref(B), Type), test(Id2String(X) ==String "", except: Except, (bind(X, B) ~> except: (try: Except finally: unbind(X)))), .) ...</k>
        <xcontext> B:Builtin </xcontext>
 
 endmodule

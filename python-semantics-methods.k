@@ -1,3 +1,5 @@
+require "python-semantics-common.k"
+
 module PYTHON-SEMANTICS-METHODS
   imports PYTHON-SEMANTICS-COMMON
 
@@ -25,13 +27,13 @@ module PYTHON-SEMANTICS-METHODS
        <symbols>... "None" |-> NoneId ...</symbols> when OwnerId =/=Int NoneId
 
   //can't use descriptors because method descriptors use it
-  rule <k> obj(N,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), String2Id("__call__"), false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable")) ...</k>
+  rule <k> obj(N:Nat,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), String2Id("__call__"), false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable")) ...</k>
 
   //TODO: MRO
   rule <k> invokeBuiltin(obj("call_method",_), ListItem(obj(N, <oattrs>... "__func__" |-> FuncId:Builtin "__self__" |-> SelfId:Builtin ...</oattrs>)) L:List, M:Map) => doCall(ref(FuncId), ListItem(ref(SelfId)) L, M) ...</k>
        <symbols>... "None" |-> NoneId:Nat ...</symbols>
 
-  rule <k> doCall((O => .), _, _) ~> (. => O ()) ...</k>
+  rule <k> doCall((O:Object => .), _, _) ~> (. => O (.Arguments)) ...</k>
   rule <k> doCall(., _ (ListItem(K:K) => .), .) ~> _:Object (Args:K => (K , Args)) ...</k>
   rule <k> doCall(., _, _ (X:Id |-> K => .)) ~> _:Object (Args:K => (X = K, Args)) ...</k>
   rule <k> doCall(., ., .) => . ...</k>

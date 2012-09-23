@@ -1,3 +1,5 @@
+require "python-semantics-common.k"
+
 module PYTHON-SEMANTICS-ENVIRONMENT
   imports PYTHON-SEMANTICS-COMMON
 
@@ -9,8 +11,8 @@ module PYTHON-SEMANTICS-ENVIRONMENT
   rule <k> bind(X:Id, B:Builtin) => doBind(Id2String(X), B, ref(N)) ...</k>
        <currentFrame> N </currentFrame>
 
-  rule <k> X => envLookup(Id2String(X),ref(N),ref(N) . String2Id("f_code")) ...</k>
-       <currentFrame> N:Nat </currentFrame>
+  rule <k> X:Id => envLookup(Id2String(X),ref(N),ref(N) . String2Id("f_code")) ...</k>
+       <currentFrame> N:Int </currentFrame>
 
   rule envLookup(S:String, Frame:Object, Code:Object) =>
        (Frame . String2Id("f_locals") [S]
@@ -39,7 +41,7 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                       raiseInternal("NameError", "name '" +String S +String "' is not defined")
 
   rule doBind(S, B, Frame) => doBind2(S, B, Frame, Frame . String2Id("f_code"))
-  rule doBind2(S, B, Frame, Code) => if S in Code . String2Id("co_varnames") or
+  rule doBind2(S:String, B:Builtin, Frame:Object, Code:Object) => if S in Code . String2Id("co_varnames") or
                                             S in Code . String2Id("co_cellvars") or
                                             S in Code . String2Id("co_freevars") :
                                               test(B ==K 0,
@@ -53,7 +55,7 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                                    setattr(id(getref(Frame, "f_cells")[S]), "cell_contents", B))
                                          else: pass ~>
                                          if S in Code . String2Id("co_freevars") :
-                                              doBind(S, B, getref(getref(Frame, "f_cells")[S], "cell_frame"))
+                                              doBind(S, B, getref2(getref(Frame, "f_cells")[S], "cell_frame"))
                                          else: pass ~>
                                          if S in Code . String2Id("co_names") :
                                               test(B ==K 0,

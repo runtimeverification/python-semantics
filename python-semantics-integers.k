@@ -1,3 +1,5 @@
+require "python-semantics-boolean-ops.k"
+
 module PYTHON-SEMANTICS-INTEGERS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
@@ -28,17 +30,17 @@ module PYTHON-SEMANTICS-INTEGERS
   rule <k> invokeBuiltin(obj("mod_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", intvalue(O) %Int intvalue(O2)) ...</k>
   rule <k> invokeBuiltin(obj("rmod_int",_), ListItem(O) ListItem(O2), .) => invokeBuiltin(ref("mod_int"), ListItem(O2) ListItem(O), .) ...</k>
 
-  rule <k> invokeBuiltin(obj("pow_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", intvalue(O) ^Int absInt(intvalue(O2))) ...</k> when intvalue(O2) >=Int 0
-  rule <k> invokeBuiltin(obj("pow_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", 1.0 /Float Int2Float(intvalue(O) ^Int absInt(intvalue(O2)))) ...</k> when intvalue(O2) <Int 0
+  rule <k> invokeBuiltin(obj("pow_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", intvalue(O) ^Int intvalue(O2)) ...</k> when intvalue(O2) >=Int 0
+  rule <k> invokeBuiltin(obj("pow_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", Int2Float(1) /Float Int2Float(intvalue(O) ^Int absInt(intvalue(O2)))) ...</k> when intvalue(O2) <Int 0
   rule <k> invokeBuiltin(obj("rpow_int",_), ListItem(O) ListItem(O2), .) => invokeBuiltin(ref("pow_int"), ListItem(O2) ListItem(O), .) ...</k>
 
   //TODO: 3-argument pow
 
-  rule <k> invokeBuiltin(obj("lshift_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", intvalue(O) <<Int absInt(intvalue(O2))) ...</k> when intvalue(O2) >=Int 0
+  rule <k> invokeBuiltin(obj("lshift_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", intvalue(O) <<Int intvalue(O2)) ...</k> when intvalue(O2) >=Int 0
   rule <k> invokeBuiltin(obj("lshift_int",_), ListItem(O) ListItem(O2), .) => raiseInternal("ValueError", "negative shift count") ...</k> when intvalue(O2) <Int 0
   rule <k> invokeBuiltin(obj("rlshift_int",_), ListItem(O) ListItem(O2), .) => invokeBuiltin(ref("lshift_int"), ListItem(O2) ListItem(O), .) ...</k>
 
-  rule <k> invokeBuiltin(obj("rshift_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", intvalue(O) >>Int absInt(intvalue(O2))) ...</k> when intvalue(O2) >=Int 0
+  rule <k> invokeBuiltin(obj("rshift_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", intvalue(O) >>Int intvalue(O2)) ...</k> when intvalue(O2) >=Int 0
   rule <k> invokeBuiltin(obj("rshift_int",_), ListItem(O) ListItem(O2), .) => raiseInternal("ValueError", "negative shift count") ...</k> when intvalue(O2) <Int 0
   rule <k> invokeBuiltin(obj("rrshift_int",_), ListItem(O) ListItem(O2), .) => invokeBuiltin(ref("rshift_int"), ListItem(O2) ListItem(O), .) ...</k>
 
@@ -58,7 +60,7 @@ module PYTHON-SEMANTICS-INTEGERS
 
   //TODO: string conversion
   rule invokeBuiltin(obj("new_int",_), ListItem(O), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(0, O)
-  rule invokeBuiltin(obj("new_int",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(intvalue(O . String2Id("__int__") ()), O)
+  rule invokeBuiltin(obj("new_int",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(intvalue(O . String2Id("__int__") (.Arguments)), O)
   context immutable(intvalue(HOLE), _)
 
   rule invokeBuiltin(obj("int_int",_), ListItem(O), .) => O

@@ -13,4 +13,4 @@ assert x == 5
 assert "5" .__class__ is str
 assert str .__class__ is type
 assert str.__name__ == "str"
-assert hash("hello world") == -1500746465, hash("hello world")
+assert hash("hello world") == -2324238377118044897, hash("hello world")

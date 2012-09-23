@@ -96,13 +96,13 @@ class KPythonVisitor(ast.NodeVisitor):
     return "'_" + self.visit(node.op) + "=_(" + self.visit(node.target) + ",," + self.visit(node.value) + ")"
 
   def visit_For(self, node):
-    return "'for_in_:_else`:_(" + self.visit(node.target) + ",," + self.visit(node.iter) + ",," + self.visit_list(node.body,"'_newline_") + ",," + (self.visit_list(node.orelse,"'_newline_") if node.orelse else "'pass(.List{K})") + ")"
+    return "'for_in_:_else:_(" + self.visit(node.target) + ",," + self.visit(node.iter) + ",," + self.visit_list(node.body,"'_newline_") + ",," + (self.visit_list(node.orelse,"'_newline_") if node.orelse else "'pass(.List{K})") + ")"
 
   def visit_While(self, node):
-    return "'while_:_else`:_(" + self.visit(node.test) + ",," + self.visit_list(node.body,"'_newline_") + ",," + (self.visit_list(node.orelse,"'_newline_") if node.orelse else "'pass(.List{K})") + ")"
+    return "'while_:_else:_(" + self.visit(node.test) + ",," + self.visit_list(node.body,"'_newline_") + ",," + (self.visit_list(node.orelse,"'_newline_") if node.orelse else "'pass(.List{K})") + ")"
 
   def visit_If(self, node):
-    return ("'if_:_else`:_(" + self.visit(node.test) + ",,"
+    return ("'if_:_else:_(" + self.visit(node.test) + ",,"
             + self.visit_list(node.body,"'_newline_") + ",," + (self.visit_list(node.orelse,"'_newline_") if node.orelse else "'pass(.List{K})") + ")")
 
   def visit_Raise(self, node):
@@ -114,18 +114,18 @@ class KPythonVisitor(ast.NodeVisitor):
       return "'raise_from_(" + self.visit(node.exc) + ",," + self.visit(node.cause) + ")"
 
   def visit_TryExcept(self, node):
-    return "'try`:__else`:_(" + self.visit_list(node.body, "'_newline_") + ",," + self.visit_list(node.handlers, "'_except_","except") + ",," + (self.visit_list(node.orelse, "'_newline_") if len(node.orelse) > 0 else "'pass(.List{K})") + ")"
+    return "'try:__else:_(" + self.visit_list(node.body, "'_newline_") + ",," + self.visit_list(node.handlers, "'_except_","except") + ",," + (self.visit_list(node.orelse, "'_newline_") if len(node.orelse) > 0 else "'pass(.List{K})") + ")"
 
   def visit_ExceptHandler(self, node):
     if not node.type:
-      return "'except`:_(" + self.visit_list(node.body, "'_newline_") + ")"
+      return "'except:_(" + self.visit_list(node.body, "'_newline_") + ")"
     elif not node.name:
       return "'except_:_(" + self.visit(node.type) + ",," + self.visit_list(node.body, "'_newline_") + ")"
     else:
       return "'except_as_:_(" + self.visit(node.type) + ",," + self.getid(node.name) + ",," + self.visit_list(node.body, "'_newline_") + ")"
 
   def visit_TryFinally(self, node):
-    return "'try`:_finally`:_(" + self.visit_list(node.body, "'_newline_") + ",," + self.visit_list(node.finalbody, "'_newline_") + ")"
+    return "'try:_finally:_(" + self.visit_list(node.body, "'_newline_") + ",," + self.visit_list(node.finalbody, "'_newline_") + ")"
 
   def visit_Assert(self, node):
     return ("'assert_('_`,_(" + self.visit(node.test)
@@ -245,12 +245,12 @@ class KPythonVisitor(ast.NodeVisitor):
       if node.upper:
         op = "'_:_:_" if node.step else "'_:_:"
       else:
-        op = "'_:`:_" if node.step else "'_:`:"
+        op = "'_::_" if node.step else "'_::"
     else:
       if node.upper:
         op = "':_:_" if node.step else "':_:"
       else:
-        op = "':`:_" if node.step else "':`:"
+        op = "'::_" if node.step else "'::"
     op += "(" + (".List{K}" if (not node.lower and not node.upper and not node.step) else ",,".join(((self.visit(node.lower),) if node.lower else ()) + ((self.visit(node.upper),) if node.upper else ()) + ((self.visit(node.step),) if node.step else ()))) + ")"
     return op
 
@@ -311,11 +311,11 @@ class KPythonVisitor(ast.NodeVisitor):
   def visit_Is(self, node):
     return "'_is_"
   def visit_IsNot(self, node):
-    return "'_is`not_"
+    return "'_isnot_"
   def visit_In(self, node):
     return "'_in_"
   def visit_NotIn(self, node):
-    return "'_not`in_"
+    return "'_notin_"
 
 input = "".join(sys.stdin.readlines())
 print(KPythonVisitor().visit(ast.parse(input)))

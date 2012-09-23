@@ -1,3 +1,6 @@
+require "python-semantics-boolean-ops.k"
+require "machine-integers.k"
+
 module PYTHON-SEMANTICS-STRINGS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
   imports MACHINE-INTEGERS
