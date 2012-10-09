@@ -36,10 +36,10 @@ module PYTHON-SEMANTICS-FUNCTIONS
        ...</object>)
        <symbols>... "function" |-> Function:Int ...</symbols>
 
-  rule <k> codeObject(X, Ps, Ss:K) =>
+  rule <k> codeObject(X, Ps, Ss:K, T:Bool) =>
            setref(N, "co_varnames", tuple(.Expressions)) ~>
            setref(N, "co_consts", tuple(docString(Ss))) ~>
-           makescope(N) ~>
+           makescope(N, T) ~>
            makeCodeObject(N, Listify(Ps), Ss, false) ~> ref(N) ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
        (. => <object>...
@@ -97,18 +97,19 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   syntax K ::= "createFunction" "(" Id "," K "," K "," Expression ")" [strict(4)]
              | "createLambda" "(" K "," Expression ")" [strict(2)]
-             | "makescope" "(" K ")"
+             | "createClass" "(" Id "," K "," Expression ")" [strict(3)]
+             | "makescope" "(" K "," Bool ")"
              | "storescope"
              | "propscope"
              | "delscope"
 
-  syntax ListItem ::= "(" K "," Set "," Set "," Set "," Set "," Set "," List ")"
+  syntax ListItem ::= "(" K "," Set "," Set "," Set "," Set "," Set "," List "," Bool ")"
 
-  rule <k> makescope (K) => . ...</k>
-       <scope> . => (K, .Set, .Set, .Set, .Set, .Set, .List) ...</scope>
+  rule <k> makescope (K, T:Bool) => . ...</k>
+       <scope> . => (K, .Set, .Set, .Set, .Set, .Set, .List, T) ...</scope>
 
   rule <k> visited(_) ~> storescope => . ...</k>
-       <scope> (.K, _:Set, _:Set, _:Set, _:Set, _:Set, _:List) ...</scope>
+       <scope> (.K, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, _) ...</scope>
 
   rule <k> visited(K) ~> storescope => 
            setattr(N, "co_code", K) ~>
@@ -123,28 +124,28 @@ module PYTHON-SEMANTICS-FUNCTIONS
              FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L)) -Set
              Setify(PARAMS(Params)))))) ~>
            setref(N, "co_names", tuple(DeListify(DeSetify(
-             (Uses -Set
+             ((Uses Globals) -Set
              FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L)) -Set
              LOCAL(Defs, Globals, Nonlocals, Params))))) ...</k>
-       <scope> (N, Defs:Set, Uses:Set, Nonlocals:Set, Globals:Set, ChildFree:Set, Params:List) L</scope>
+       <scope> (N, Defs:Set, Uses:Set, Nonlocals:Set, Globals:Set, ChildFree:Set, Params:List, _) L</scope>
 
   rule <k> propscope => . ...</k>
        <scope> LI:ListItem </scope>
   rule <k> propscope => . ...</k>
-       <scope> (_, Defs, Uses, Nonlocals, Globals, ChildFree, Params) (N, Defs2:Set, Uses2:Set, Nonlocals2:Set, Globals2:Set, ChildFree2:Set (. => (FREE(Defs, Uses, Globals, Nonlocals, ChildFree, (N, Defs2, Uses2, Nonlocals2, Globals2, ChildFree2, Params2) L)) -Set LOCAL(Defs, Globals, Nonlocals, Params)), Params2:List) L </scope>
+       <scope> (_, Defs, Uses, Nonlocals, Globals, ChildFree, Params, _) (N, Defs2:Set, Uses2:Set, Nonlocals2:Set, Globals2:Set, ChildFree2:Set (. => (FREE(Defs, Uses, Globals, Nonlocals, ChildFree, (N, Defs2, Uses2, Nonlocals2, Globals2, ChildFree2, Params2, T) L)) -Set LOCAL(Defs, Globals, Nonlocals, Params)), Params2:List, T) L </scope>
 
   rule <k> delscope => . ...</k>
        <scope> LI:ListItem => . ...</scope>
 
   syntax Set ::= "FREE" "(" Set "," Set "," Set "," Set "," Set "," List ")" [function]
   syntax Set ::= "LOCAL" "(" Set "," Set "," Set "," List ")" [function]
-  syntax Set ::= "BOUND" "(" Set "," Set "," List ")" [function]
+  syntax Set ::= "BOUND" "(" Set "," List ")" [function]
   syntax List ::= "PARAMS" "(" List ")" [function]
   rule LOCAL(Defs, Globals, Nonlocals, Params) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set . [function, anywhere]
-  rule FREE(_, _, _, Nonlocals, ChildFree, .) => Nonlocals ChildFree [function, anywhere]
-  rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L (_, Defs2, _, _, _, _, .)) => FREE(Defs, Uses, Globals, Nonlocals, ChildFree, .) (((Uses Defs) &Set BOUND(.,Defs2,L)) -Set Globals) [function, anywhere]
-  rule BOUND(Bound:Set, Globals, L (_, Defs, _, Nonlocals, Globals2, _, Params)) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals, (Globals -Set LOCAL(Defs, Globals2, Nonlocals, Params)) Globals2, L) [function, anywhere]
-  rule BOUND(Bound, _, .) => Bound [function, anywhere]
+  rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses Defs) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals [function, anywhere]
+  rule BOUND(Bound:Set, L (_, Defs, _, Nonlocals, Globals2, _, Params, false)) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals2, L) [function, anywhere]
+  rule BOUND(Bound:Set, L (_, _, _, _, _, _, _, true)) => BOUND(Bound, L)
+  rule BOUND(Bound, .) => Bound [function, anywhere]
   rule PARAMS(ListItem(X) Params) => ListItem(Id2String(X)) PARAMS(Params) [function, anywhere]
   rule PARAMS(ListItem(* X) Params) => PARAMS(Params ListItem(* X)) [function, anywhere]
   rule PARAMS(ListItem(** X) ListItem(* Y:Id)) => ListItem(Id2String(Y)) ListItem(Id2String(X)) [function, anywhere]
@@ -170,19 +171,19 @@ module PYTHON-SEMANTICS-FUNCTIONS
              | "addParam" "(" Parameter ")"
 
   rule <k> addDef(X) => . ...</k>
-       <scope> (_, _ (. => SetItem(Id2String(X))), _, _, _, _, _) ...</scope>
+       <scope> (_, _ (. => SetItem(Id2String(X))), _, _, _, _, _, _) ...</scope>
 
   rule <k> addUse(X) => . ...</k>
-       <scope> (_, _, _ (. => SetItem(Id2String(X))), _, _, _, _) ...</scope>
+       <scope> (_, _, _ (. => SetItem(Id2String(X))), _, _, _, _, _) ...</scope>
 
   rule <k> addNonlocals(X , Xs => Xs) ...</k>
-       <scope> (_, _, _, _ (. => SetItem(Id2String(X))), _, _, _) ...</scope>
+       <scope> (_, _, _, _ (. => SetItem(Id2String(X))), _, _, _, _) ...</scope>
 
   rule <k> addGlobals(X, Xs => Xs) ...</k>
-       <scope> (_, _, _, _, _ (. => SetItem(Id2String(X))), _, _) ...</scope>
+       <scope> (_, _, _, _, _ (. => SetItem(Id2String(X))), _, _, _) ...</scope>
 
   rule <k> addParam(K) => . ...</k>
-       <scope> (_, _, _, _, _, _, _ (. => ListItem(K))) ...</scope>
+       <scope> (_, _, _, _, _, _, _ (. => ListItem(K)), _) ...</scope>
 
   rule addGlobals(.NAMES) => .
   rule addNonlocals(.NAMES) => .
@@ -199,15 +200,15 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule compileVisitor('def_`(_`):_, 0, X) => visit(X, 'bindVisitor)
   rule compileVisitor('def_`(_`):_, 1, Ps) => visit(Ps, 'parameterVisitor)
   rule compileVisitor('def_`(_`):_, 2, Ss) => visited(Ss)
-  rule compileVisitor(returner, -1, (def X (Ps): Ss)) => createFunction(X, Ps, .Obj, codeObject(X, Ps, Ss))
+  rule compileVisitor(returner, -1, (def X (Ps): Ss)) => createFunction(X, Ps, .Obj, codeObject(X, Ps, Ss, false))
   rule compileVisitor('def_`(_`)->_:_, 0, X) => visit(X, 'bindVisitor)
   rule compileVisitor('def_`(_`)->_:_, 1, Ps) => visit(Ps, 'parameterVisitor)
   rule compileVisitor('def_`(_`)->_:_, 3, Ss) => visited(Ss)
-  rule compileVisitor(returner, -1, (def X (Ps)-> K : Ss)) => createFunction(X, Ps, K, codeObject(X, Ps, Ss))
+  rule compileVisitor(returner, -1, (def X (Ps)-> K : Ss)) => createFunction(X, Ps, K, codeObject(X, Ps, Ss, false))
 
   rule compileVisitor('lambda_:_, 0, Ps) => visit(Ps, 'parameterVisitor)
   rule compileVisitor('lambda_:_, 1, K) => visited(K)
-  rule compileVisitor(returner, -1, (lambda Ps : K)) => createLambda(Ps, codeObject(String2Id("<lambda>"), Ps, return K))
+  rule compileVisitor(returner, -1, (lambda Ps : K)) => createLambda(Ps, codeObject(String2Id("<lambda>"), Ps, return K, false))
 
   rule parameterVisitor('_=_,1,K) => visit(K, 'compileVisitor)
   rule parameterVisitor('_:_,1,K) => visit(K, 'compileVisitor)
@@ -216,7 +217,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule compileVisitor('class_`(_`):_, 0, X) => visit(X, 'bindVisitor)
   rule compileVisitor('class_`(_`):_, 2, Ss) => visited(Ss)
-  rule compileVisitor(returner, -1, (class X (As:K): Ss)) => makescope(.) ~> visit(Ss, 'compileVisitor) ~> propscope ~> delscope
+  rule compileVisitor(returner, -1, (class X (As:K): Ss)) => createClass(X, As, codeObject(X, ., Ss, true))
 
   rule compileVisitor('_:=_,0,K) => visit(K, 'bindVisitor)
   rule compileVisitor('_+=_,0,K) => visit(K, 'bindVisitor)

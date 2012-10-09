@@ -10,7 +10,8 @@ module PYTHON-SEMANTICS-LOGIC
   syntax Test ::= "and" "(" Test "," Test ")" [strict(1)]
   syntax Test ::= "or" "(" Test "," Test ")" [strict(1)]
   syntax Test ::= "negate" "(" Test ")" [strict]
-  syntax Test ::= "equals" "(" K "," K ")" [strict]
+  syntax Test ::= Expression "==Obj" Expression [strict]
+  syntax Test ::= Expression "=/=Obj" Expression [strict]
 
   rule and(false, _) => false
   rule and(_, false) => false
@@ -19,7 +20,8 @@ module PYTHON-SEMANTICS-LOGIC
   rule or(_, true) => true
   rule or(false, K) => K
   rule negate(T:Bool) => notBool T
-  rule equals(K, K2:K) => K ==K K2
+  rule O:KResult ==Obj O2:KResult => O ==K O2
+  rule O:KResult =/=Obj O2:KResult => O =/=K O2
 
   rule test(true, K:K, _) => K
   rule test(false, _, K) => K

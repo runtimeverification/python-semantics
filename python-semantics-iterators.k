@@ -19,8 +19,6 @@ module PYTHON-SEMANTICS-ITERATORS
          <oattrs>... "__value__" |-> list(.) ...</oattrs>
        ...</object>
 
-  rule <k> invokeBuiltin(obj("getitem_iter",_), ListItem(obj(B,_)), .) => mutable("__index__" |-> 0 "__value__" |-> B, ref("iterator")) ...</k>
-
   rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => try: (getmember(ref(B2), String2Id("__getitem__"), true, false, true) (I:Int)) except ref("IndexError"): (setx(.Obj) ~> raise ref("StopIteration")) else: pass  ...</k>
        <object>...
          <id>B</id>
@@ -30,9 +28,9 @@ module PYTHON-SEMANTICS-ITERATORS
 
   syntax ObjRef ::= "checkIter" "(" Expression ")" [strict]
 
-  rule <k> invokeBuiltin(obj("call_iter",_), ListItem(O), .) => checkIter(getmember(O, String2Id("__iter__"), true, false, false) (.Arguments) -> test(equals(getmember(O, String2Id("__getitem__"), true, false, false), .Obj), (ref("getitem_iter") (O)), .Obj) -> (raiseInternal("TypeError", "object is not iterable"))) ...</k>
+  rule <k> invokeBuiltin(obj("call_iter",_), ListItem(O), .) => checkIter(getmember(O, String2Id("__iter__"), true, false, false) (.Arguments) -> test(getmember(O, String2Id("__getitem__"), true, false, false) =/=Obj .Obj, mutable("__index__" |-> 0 "__value__" |-> id(O), ref("iterator")), .Obj) -> (raiseInternal("TypeError", "object is not iterable"))) ...</k>
 
-  rule <k> checkIter(O) => test(O . String2Id("__next__") ==K .Obj, raiseInternal("TypeError", "iter() returned non-iterator"), O) ...</k>
+  rule <k> checkIter(O) => test(getmember(O, String2Id("__next__"), true, false, false) ==Obj .Obj, raiseInternal("TypeError", "iter() returned non-iterator"), O) ...</k>
   //TODO: sentinels
 
 endmodule

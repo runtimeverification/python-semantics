@@ -65,7 +65,7 @@ module PYTHON-SEMANTICS-COMMON
                   | "immutable" "(" Value "," Expression ")" [strict(2)]
                   | "copy" "(" Expression "," Expression ")" [strict]
                   | "name" "(" Expression ")"
-                  | "codeObject" "(" Id "," Parameters "," K ")"
+                  | "codeObject" "(" Id "," Parameters "," K "," Bool ")"
 
   syntax K ::= "iterate" "(" Expression "," K ")" [strict(1)]
 
@@ -173,7 +173,9 @@ module PYTHON-SEMANTICS-COMMON
 
   syntax K ::= "getattr" "(" Expression "," String ")" [function]
   rule getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs(S) [function, anywhere]
-  context getattr(HOLE,_)
+
+  syntax K ::= "getattr2" "(" Expression "," String ")" [strict(1)]
+  rule getattr2(O:Object, S:String) => getattr(O, S)
 
   syntax ObjRef ::= "getref" "(" Expression "," String ")" [function]
   rule getref(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => ref(Attrs(S)) [function, anywhere]
@@ -208,7 +210,7 @@ module PYTHON-SEMANTICS-COMMON
   rule unaryOp(O, S, K) => test(istype(O, ref(S)), K, ref("NotImplemented"))
 
   rule gettype(E:Expression) => getref(E, "__class__") [macro, anywhere]
-  rule getbases(E) => getattr(E, "__bases__") [macro, anywhere]
+  rule getbases(E) => getattr2(E, "__bases__") [macro, anywhere]
 
   //TODO: subclasshook
   rule istype(O:Object, Type:Object) => hasbase(gettype(O), Type)

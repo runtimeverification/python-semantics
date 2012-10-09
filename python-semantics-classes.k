@@ -1,3 +1,5 @@
+require "python-semantics-calls.k"
+
 module PYTHON-SEMANTICS-CLASSES
   imports PYTHON-SEMANTICS-CALLS
 

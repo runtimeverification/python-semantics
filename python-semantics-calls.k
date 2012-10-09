@@ -89,7 +89,7 @@ module PYTHON-SEMANTICS-CALLS
        </control>
 
   rule makeLocals(Free:Object, O:Object) => makeLocals(listvalue(Free), listvalue(O), {.KeyData})
-  rule (. => test(getattr(ref(N2), "cell_contents") ==K .Obj, ., (((O[ref(N)]), .Expressions) := getref2(ref(N2), "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
+  rule (. => test(getattr2(ref(N2), "cell_contents") ==Obj .Obj, ., (((O[ref(N)]), .Expressions) := getref2(ref(N2), "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
   rule makeLocals(.List, .List, O:Object) => ref(id(O))
 
   rule makeCells(Free:Object, Cells:Object, O:Object, N) => makeCells(listvalue(Free), listvalue(Cells), listvalue(O), {.KeyData}, N)

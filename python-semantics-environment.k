@@ -15,30 +15,30 @@ module PYTHON-SEMANTICS-ENVIRONMENT
        <currentFrame> N:Int </currentFrame>
 
   rule envLookup(S:String, Frame:Object, Code:Object) =>
-       (Frame . String2Id("f_locals") [S]
-       if
-            S in Frame . String2Id("f_locals")
-       else 
-            raiseInternal("NameError", "free variable '" +String S +String "' referenced before assignment in enclosing scope")
-            if
-                 S in Code . String2Id("co_cellvars") or
-                 S in Code . String2Id("co_freevars")
-            else 
-                 raiseInternal("UnboundLocalError", "local variable '" +String S +String "' referenced before assignment"))
+                (Frame . String2Id("f_locals") [S]
+           if
+                S in Frame . String2Id("f_locals")
+           else 
+                raiseInternal("UnboundLocalError", "local variable '" +String S +String "' referenced before assignment"))
        if
             S in Code . String2Id("co_varnames") or
-            S in Code . String2Id("co_cellvars") or
-            S in Code . String2Id("co_freevars")
-       else
-            Frame . String2Id("f_globals") [S]
-            if
-                 S in Frame . String2Id("f_globals")
-            else
-                 Frame . String2Id("f_builtins") [S]
-                 if
-                      S in Frame . String2Id("f_builtins")
-                 else
-                      raiseInternal("NameError", "name '" +String S +String "' is not defined")
+            S in Code . String2Id("co_cellvars")
+       else 
+               test(getattr2(getref(Frame, "f_cells")[S], "cell_contents") ==Obj .Obj,
+                    raiseInternal("NameError", "free variable '" +String S +String "' referenced before assignment in enclosing scope"),
+                    getref2(getref(Frame, "f_cells")[S], "cell_contents"))
+           if 
+               S in Code . String2Id("co_freevars")
+           else
+                   Frame . String2Id("f_globals") [S]
+               if
+                   S in Frame . String2Id("f_globals")
+               else
+                       Frame . String2Id("f_builtins") [S]
+                   if
+                       S in Frame . String2Id("f_builtins")
+                   else
+                       raiseInternal("NameError", "name '" +String S +String "' is not defined")
 
   rule doBind(S, B, Frame) => doBind2(S, B, Frame, Frame . String2Id("f_code"))
   rule doBind2(S:String, B:Builtin, Frame:Object, Code:Object) => if S in Code . String2Id("co_varnames") or

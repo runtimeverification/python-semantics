@@ -19,7 +19,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
   rule refs(ListItem(S) L) => ListItem(ref(S)) refs(L)
   rule refs(.List) => .List
 
-  rule <k> initialize(Program:K) => builtins ~> resolve ~> modules ~> executeModule(codeObject(String2Id("__main__"), .Parameters, Program), ref("builtins"), {.KeyData}) ...</k>
+  rule <k> initialize(Program:K) => builtins ~> resolve ~> modules ~> executeModule(codeObject(String2Id("__main__"), .Parameters, Program, true), ref("builtins"), {.KeyData}) ...</k>
 
   rule <k> resolve ...</k>
        <oenv>... (_ |-> (ref(S) => B)) ...</oenv>
