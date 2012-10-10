@@ -156,6 +156,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule createFunction(X, Ps, K:K, O:Object) => visited((X, .Expressions) := function(Ps, O, K))
   rule createLambda(Ps, O:Object) => visited(function(Ps, O, .Obj))
+  rule createClass(X, As, O:Object) => visited((X, .Expressions) := class(As, O))
 
   rule makeCodeObject(N, ., Ss, _) => visit(Ss, 'compileVisitor) ~> storescope ~> propscope ~> delscope
 

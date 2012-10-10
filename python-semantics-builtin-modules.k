@@ -31,6 +31,14 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <symbols>... S |-> B ...</symbols>
        <references>... S |-> (N => N -Int 1) ...</references>
 
+  rule <k> (. => setref(B, S2, immutable(list(L), ref("tuple")))) ~> resolve ...</k>
+       <object>...
+         <id>B</id>
+         <oattrs>... S2:String |-> list(L:List) ...</oattrs>
+       ...</object>
+       <symbols>... S:String |-> B:Builtin ...</symbols>
+       <references>... S |-> (N => N -Int 1) ...</references> when all(L, isBuiltin)
+
   rule <k> resolve ...</k>
        <oattrs>... _ |-> (ref(S) => B) ...</oattrs>
        <symbols>... S |-> B ...</symbols>
@@ -41,20 +49,12 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <symbols>... S |-> B ...</symbols>
        <references>... S |-> (N => N -Int 1) ...</references>
  
-  rule <k> resolve ...</k>
-       <symbols>... _ |-> obj(_, <oattrs>... _ |-> (ref(S) => B) ...</oattrs>) S |-> B ...</symbols>
-       <references>... S |-> (N => N -Int 1) ...</references>
-
-  rule <k> resolve ...</k>
-       <symbols>... _ |-> obj(_, <oattrs>... _ |-> list(_ (ListItem(ref(S)) => ListItem(B)) _) ...</oattrs>) S |-> B ...</symbols>
-       <references>... S |-> (N => N -Int 1) ...</references>
-
   rule <references>... (_ |-> 0) => . ...</references>
 
   rule <k> resolve => . ...</k>
        <references> .Map </references>
 
-  rule <k> object (S:String => N:Int)(_,_,_,_) ...</k>
+  rule <k> (. => incref(S, 1)) ~> object (S:String => N:Int)(_,_,_,_) ...</k>
        <nextLoc>N => N +Int 1</nextLoc>
        <store>... . =>
          <object>...

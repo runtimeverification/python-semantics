@@ -66,6 +66,7 @@ module PYTHON-SEMANTICS-COMMON
                   | "copy" "(" Expression "," Expression ")" [strict]
                   | "name" "(" Expression ")"
                   | "codeObject" "(" Id "," Parameters "," K "," Bool ")"
+                  | "class" "(" Arguments "," Expression ")" [strict(2)]
 
   syntax K ::= "iterate" "(" Expression "," K ")" [strict(1)]
 
@@ -190,6 +191,10 @@ module PYTHON-SEMANTICS-COMMON
   rule values (K |-> K2 M) => SetItem(K2) values M [function, anywhere]
   rule values . => . [function, anywhere]
 
+  syntax Bool ::= "all" "(" List "," KLabel ")" [function]
+  rule all(ListItem(K) L:List, Lbl:KLabel) => Lbl(K) andBool all(L, Lbl) [function, anywhere]
+  rule all(., _) => true [function, anywhere]
+
   rule <k> setattr(B, S, K) => . ...</k>
        <object>...
          <id>B</id>
@@ -210,7 +215,7 @@ module PYTHON-SEMANTICS-COMMON
   rule unaryOp(O, S, K) => test(istype(O, ref(S)), K, ref("NotImplemented"))
 
   rule gettype(E:Expression) => getref(E, "__class__") [macro, anywhere]
-  rule getbases(E) => getattr2(E, "__bases__") [macro, anywhere]
+  rule getbases(E) => getattr2(getref2(E, "__bases__"), "__value__") [macro, anywhere]
 
   //TODO: subclasshook
   rule istype(O:Object, Type:Object) => hasbase(gettype(O), Type)

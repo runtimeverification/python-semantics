@@ -3,39 +3,32 @@ require "python-semantics-calls.k"
 module PYTHON-SEMANTICS-CLASSES
   imports PYTHON-SEMANTICS-CALLS
 
-  syntax K ::= "restoreContext" "(" List "," List "," Nat ")"
-             | "invokeClass" "(" Expression "," Id "," List "," Map "," Map ")" [strict(1)]
+  rule class(Args, CO:Object) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeClass(getMetaclass(Args), CO, .Obj, .)
 
-  rule <k> class X:Id ( Args:K ) : Ss:K => bindLocals(Ss, false) ~> String2Id("__module__") := String2Id("__name__") ~> String2Id("__doc__") := docString(Ss) ~> Ss ~> restoreContext(LL, FL, N2) ~> sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeClass(getMetaclass(Args), X, ., ., .) ...</k>
-       <nextLoc> N:Nat => N +Int 1 </nextLoc>
-       <currentBlock> N2:Nat => N </currentBlock>
-       <fstack> FL:List => . </fstack>
-       <lstack> LL:List => . </lstack>
-       (. => <block>...
-         <blockId> N </blockId>
-         <parentBlock> N2 </parentBlock>
-         <isClass> true </isClass>
-       ...</block>)
+  rule invokeClass(Metaclass:Object, CO:Object, Bases:Object, M:Map) => executeClass(Metaclass, CO, Bases, ref("builtins"), ref("globals")(.Arguments), doCall(getmember(Metaclass, String2Id("__prepare__"), false, true, true), ListItem(CO . String2Id("co_name")) ListItem(Bases), M))
 
-  rule <k> (restoreContext(LL, FL, N) => .) ~> sortArgs(_) ~> processArgs(_,_,_,_) ~> invokeClass(_, _, _, _, _ => Env) ...</k>
-       <currentBlock> N2 => N </currentBlock>
-       <fstack> _ => FL </fstack>
-       <lstack> _ => LL </lstack>
-       <blockId> N2 </blockId>
-       <env> Env:Map </env>
+   rule <k> executeClass(Metaclass:Object, CO:Object, Bases:Object, Builtins:Object, Globals:Object, Locals:Object) => executeFrame(N, CO, ref(Back), Locals, Globals, Builtins, makeCells(CO . String2Id("co_freevars"), CO . String2Id("co_cellvars"), getref2(ref(Back), "f_cells"), N), .) ~>  (String2Id("__module__"), .Expressions) := ref("globals")(String2Id("__name__")) ~> restoreContext(LL, FL, Back) ~> doCall(getmember(Metaclass. String2Id("__new__"), false, true, true), ListItem(Metaclass) ListItem(CO . String2Id("co_name")) ListItem(Bases) ListItem(Locals), .) ...</k>
+       <nextLoc> N => N +Int 1 </nextLoc>
+       <currentFrame> Back:Int </currentFrame>
+       <fstack> FL => . </fstack>
+       <lstack> LL => . </lstack>
 
-  rule (processArgs(L:List, M:Map, .Obj, .Obj) => .) ~> invokeClass(_, _, (. => L), (. => M))
+ rule <k> restoreContext(LL, FL, N) => . ...</k>
+      <fstack> _ => FL </fstack>
+      <lstack> _ => LL </lstack>
+      <currentFrame> _ => N </currentFrame>
+
+  rule (processArgs(L:List, M:Map, .Obj, .Obj) => .) ~> invokeClass(_, _, (.Obj => immutable(list(Idify(L)), ref("tuple"))), (. => stripMetaclass(M)))
 
   syntax Expression ::= "getMetaClass" "(" Arguments ")" [function]
   rule getMetaclass(X = E:Expression, _) => E when Id2String(X) ==String "metaclass" [function, anywhere]
   rule getMetaclass(_, K:K) => getMetaclass(K) [function, anywhere]
   rule getMetaclass(.Expressions) => ref("type") [function, anywhere]
 
-  //TODO: use result of __prepare__
-  rule invokeClass(O:Object, X, L, M, Env) => doCall(O, ListItem(Id2String(X)) ListItem(immutable(list(Idify(L)), ref("tuple"))) ListItem({DeMapify(Env2Dict(Env))}), stripMetaclass(M))
-
   syntax Map ::= "stripMetaclass" "(" Map ")" [function]
   rule stripMetaclass("metaclass" |-> K M) => stripMetaclass(M) [function, anywhere]
   rule stripMetaclass(K |-> K2 M) => K |-> K2 stripMetaclass(M) [function, anywhere]
+
+  rule invokeBuiltin(obj("new_type",_), ListItem(Type:Object) ListItem(Name:Object) ListItem(Bases:Object) ListItem(Dict:Object), .)
 
 endmodule
