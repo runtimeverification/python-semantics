@@ -34,7 +34,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule O:Object and K:K => test(plbool(bool(O)), K, O)
   rule O:Object or K => test(plbool(bool(O)), O, K)
 
-  syntax ObjRef ::= "comparison" "(" Expression "," Expression "," KLabel ")" [strict(1), klabel(comparison)]
+  syntax ObjRef ::= "comparison" "(" Expression "," Expression "," KLabel ")" [strict(1), klabel('comparison)]
 
   rule A:Expression is B:Expression => comparison(A, B, '_is_) [macro, anywhere]
   rule A:Expression is not B:Expression => comparison(A, B, '_isnot_) [macro, anywhere]

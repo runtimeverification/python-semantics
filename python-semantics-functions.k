@@ -160,10 +160,10 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule makeCodeObject(N, ., Ss, _) => visit(Ss, 'compileVisitor) ~> storescope ~> propscope ~> delscope
 
-  syntax K ::= "compileVisitor" "(" KLabel "," Int "," K ")" [klabel(compileVisitor)]
-             | "parameterVisitor" "(" KLabel "," Int "," K ")" [klabel(parameterVisitor)]
-             | "bindVisitor" "(" KLabel "," Int "," K ")" [klabel(bindVisitor)]
-             | "importVisitor" "(" KLabel "," Int "," K ")" [klabel(importVisitor)]
+  syntax K ::= "compileVisitor" "(" KLabel "," Int "," K ")" [klabel('compileVisitor)]
+             | "parameterVisitor" "(" KLabel "," Int "," K ")" [klabel('parameterVisitor)]
+             | "bindVisitor" "(" KLabel "," Int "," K ")" [klabel('bindVisitor)]
+             | "importVisitor" "(" KLabel "," Int "," K ")" [klabel('importVisitor)]
 
   syntax K ::= "addDef" "(" Id ")"
              | "addUse" "(" Id ")"
