@@ -3,7 +3,7 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-ATTRIBUTE-REF
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= "mapLookup" "(" Expression "," String ")" [strict(1)]
+  syntax ObjRef ::= "mapLookup" "(" Expression "," Expression ")" [strict]
                   | "basesLookup" "(" K "," String ")" [strict(1)]
                   | "descriptor" "(" Expression "," Expression "," Expression "," Test ")" [strict]
 
@@ -21,17 +21,17 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule getmember(O:Object, X, true, true, false) => descriptor(mapLookup(O, Id2String(X)), O, gettype(O), true) -> getmember(O, X, true, false, false)
   rule getmember(O:Object, X, false, false, false) => basesLookup(gettype(O), Id2String(X))
 
-  rule <k> mapLookup(obj(B:Builtin,_), S) => ref(B2:Builtin) ...</k>
+  rule <k> mapLookup(obj(B:Builtin,_), obj(B3:Builtin,_)) => ref(B2:Builtin) ...</k>
        <object>...
          <id>B</id>
-         <oenv>... S |-> B2 ...</oenv>
+         <oenv>... B3 |-> B2 ...</oenv>
        ...</object>
 
-  rule <k> mapLookup(obj(B,_), S:String) => .Obj ...</k>
+  rule <k> mapLookup(obj(B,_), O:Object) => .Obj ...</k>
        <object>...
          <id>B</id>
          <oenv>Env:Map</oenv>
-       ...</object> when notBool(S in keys(Env))
+       ...</object> when notBool(id(O) in keys(Env))
 
   //TODO: MRO
   rule basesLookup(O:Object, S:String) => (mapLookup(O, S) -> basesLookup(getbases(O), S))

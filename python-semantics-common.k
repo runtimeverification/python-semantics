@@ -42,6 +42,7 @@ module PYTHON-SEMANTICS-COMMON
              | "raiseInternal" "(" String "," Expression ")" [strict(2)]
              | "setattr" "(" Builtin "," String "," K ")"
              | "setref" "(" Builtin "," String "," Expression ")" [strict(3)]
+             | "setenv" "(" Builtin "," Expression "," Expression ")" [strict(2 3)]
              | "executeModule" "(" Expression "," Expression "," Expression ")" [strict]
              | "executeFrame" "(" Int "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression "," Map ")" [strict(2 3 4 5 6 7)]
              | "setArgs" "(" Map ")"
@@ -207,6 +208,12 @@ module PYTHON-SEMANTICS-COMMON
        <object>...
          <id>B</id>
          <oattrs> Attrs => Attrs[id(O) / S] </oattrs>
+       ...</object>
+
+  rule <k> setenv(B, O, O2) => . ...</k>
+       <object>...
+         <id>B</id>
+         <oenv> Env => Env [ id(O2) / id(O) ] </oenv>
        ...</object>
 
   syntax ListItem ::= "(" K "," Bag "," List "," List "," List "," K ")"

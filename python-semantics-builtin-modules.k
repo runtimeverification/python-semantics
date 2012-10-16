@@ -26,6 +26,13 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <symbols>... S |-> B:Builtin ...</symbols>
        <references>... S |-> (N => N -Int 1) ...</references>
 
+  rule <k> (. => setenv(B, S, ref(B2))) ~> resolve ...</k>
+       <object>...
+         <id>B</id>
+         <oenv>... S:String |-> B2:Builtin => . ...</oenv>
+       ...</object>
+       <references>... S |-> (N => N -Int 1) ...</references>
+
   rule <k> resolve ...</k>
        <oattrs>... _ |-> list(_ (ListItem(ref(S)) => ListItem(B)) _) ...</oattrs>
        <symbols>... S |-> B ...</symbols>
@@ -82,7 +89,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
          <oattrs>... . => "__bases__" |-> list(refs(L)) ...</oattrs>
        ...</object> when L =/=List .List
 
-  rule <k> (. => incref(S2:String,1)) ~> object N(_,_,(S |-> ref(S2) => .) _,_) ...</k>
+  rule <k> (. => incref(S2:String,1) ~> incref(S:String, 1)) ~> object N(_,_,(S |-> ref(S2) => .) _,_) ...</k>
        <object>...
          <id>N</id>
          <oenv>... . => S |-> ref(S2) ...</oenv>
@@ -90,7 +97,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
 
   context object N(_, _, S |-> HOLE _, _) when getKLabel HOLE =/=KLabel 'ref`(_`)
 
-  rule <k> object N(_,_,(S |-> O:Object => .) _,_) ...</k>
+  rule <k> (. => incref(S:String, 1)) ~> object N(_,_,(S |-> O:Object => .) _,_) ...</k>
        <object>...
          <id>N</id>
          <oenv>... . => S |-> id(O) ...</oenv>
