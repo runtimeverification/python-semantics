@@ -218,7 +218,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule compileVisitor('class_`(_`):_, 0, X) => visit(X, 'bindVisitor)
   rule compileVisitor('class_`(_`):_, 2, Ss) => visited(Ss)
-  rule compileVisitor(returner, -1, (class X (As:K): Ss)) => createClass(X, As, codeObject(X, ., Ss, true))
+  rule compileVisitor(returner, -1, (class X (As:K): Ss)) => createClass(X, As, codeObject(X, .Parameters, Ss, true))
 
   rule compileVisitor('_:=_,0,K) => visit(K, 'bindVisitor)
   rule compileVisitor('_+=_,0,K) => visit(K, 'bindVisitor)
