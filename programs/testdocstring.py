@@ -32,3 +32,7 @@ def f():
   y = 6
 
 assert f.__doc__ is None
+
+class A: "5"
+
+assert A.__doc__ == "5"
