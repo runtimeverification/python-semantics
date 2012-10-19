@@ -27,6 +27,9 @@ class KPythonVisitor(ast.NodeVisitor):
     else:
       return self.decorate("'def_`(_`)->_:_(" + self.getid(node.name) + ",," + self.getparams(node.args) + ",," + self.visit(node.returns) + ",," + self.visit_list(node.body, "'_newline_") + ")", node.decorator_list)
 
+  def visit_ClassDef(self, node):
+    return self.decorate("'class_`(_`):_(" + self.getid(node.name) + ",," + self.getargs(node.bases, node.keywords, node.starargs, node.kwargs) + ",," + self.visit_list(node.body, "'_newline_") + ")", node.decorator_list)
+
   def decorate(self, function, decorators):
     if not decorators:
       return function
