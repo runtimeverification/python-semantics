@@ -115,7 +115,6 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ) ~>
          object "iterator"("type",ListItem("object"),
            "__iter__" |-> def "iter_iter" (0, 0, true)
-           "__new__" |-> def "new_raise" (1, -1, false)
            "__next__" |-> def "iter_next" (0, 0, true)
            ,.) ~> 
          object "float"("type",ListItem("object"),.,.) ~>
@@ -179,23 +178,27 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "new_tuple" (1, 2, false)
            ,.) ~>
          object "type"("type",ListItem("object"),
+           "__bases__" |-> ref("__bases__")
            "__call__" |-> def "call_type" (0, -1, true)
-           "__name__" |-> ref("__name__type") ,.) ~>
+           "__mro__" |-> ref("__mro__")
+           "__name__" |-> ref("__name__type")
+           "__new__" |-> def "new_type"(2, 4, false)
+           "__prepare__" |-> def "prepare_type"(0, -1, false)
+           "mro" |-> def "mro_type"(0, 0, true)
+           ,.) ~>
          object "__name__type" ("attribute",.,., "__get__" |-> "__name__") ~>
-
+         object "__bases__" ("reference",.,., "__get__" |-> "__bases__") ~>
+         object "__mro__" ("reference",.,., "__get__" |-> "__mro__") ~>
          // module "types"
          object "attribute"("type",ListItem("object"),
            "__get__" |-> def "get_attr" (1, 2, true)
-           "__new__" |-> ref("new_raise")
            , "__name__" |-> undefined("internal type name")) ~>
          object "builtin-function" ("type",ListItem("object"),
            "__call__" |-> def "call_builtin_function" (0, -1, true)
-           "__new__" |-> ref("new_raise")
            , "__name__" |-> undefined("internal type name")) ~>
          object "builtin-method" ("type",ListItem("object"),
            "__call__" |-> ref("call_builtin_function")
            "__get__" |-> def "get_builtin_method" (1, 2, true)
-           "__new__" |-> ref("new_raise")
            , "__name__" |-> undefined("internal type name")) ~>
          object "code"("type",ListItem("object"),
            "co_name" |-> ref("co_name")
@@ -216,7 +219,6 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "co_consts" ("reference",.,., "__get__" |-> "co_consts") ~>
          object "co_names" ("reference",.,., "__get__" |-> "co_names") ~>
          object "frame"("type",ListItem("object"),
-           "__new__" |-> ref("new_raise")
            "f_back" |-> ref("f_back")
            "f_builtins" |-> ref("f_builtins")
            "f_code" |-> ref("f_code")
@@ -260,7 +262,6 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "__self__" ("reference",.,., "__get__" |-> "__self__") ~>
          object "reference"("type",ListItem("object"),
            "__get__" |-> def "get_ref" (1, 2, true)
-           "__new__" |-> ref("new_raise")
            , "__name__" |-> undefined("internal type name")) ~>
 
          // misc builtins

@@ -46,6 +46,7 @@ module PYTHON-SEMANTICS-COMMON
              | "executeModule" "(" Expression "," Expression "," Expression ")" [strict]
              | "executeFrame" "(" Int "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression "," Map ")" [strict(2 3 4 5 6 7)]
              | "setArgs" "(" Map ")"
+             | getMro(Builtin, Expression) [strict(2)]
 
   syntax Test ::= "istype" "(" Expression "," Expression ")" [strict]
                 | "hasbase" "(" K "," Expression ")" [strict]

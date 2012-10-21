@@ -38,13 +38,21 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <symbols>... S |-> B ...</symbols>
        <references>... S |-> (N => N -Int 1) ...</references>
 
-  rule <k> (. => setref(B, S2, immutable(list(L), ref("tuple")))) ~> resolve ...</k>
+  rule <k> (. => setref(B, "__bases__", immutable(list(L), ref("tuple")))) ~> resolve ...</k>
        <object>...
          <id>B</id>
-         <oattrs>... S2:String |-> list(L:List) ...</oattrs>
+         <oattrs>... "__bases__" |-> list(L:List) ...</oattrs>
        ...</object>
        <symbols>... S:String |-> B:Builtin ...</symbols>
        <references>... S |-> (N => N -Int 1) ...</references> when all(L, isBuiltin)
+
+  rule <k> (. => setref(B, "__mro__", immutable(getMro(B, getref2(ref(B), "__bases__")), ref("tuple")))) ~> resolve ...</k>
+       <object>...
+         <id>B</id>
+         <oattrs>... "__mro__" |-> _ ...</oattrs>
+       ...</object>
+       <symbols>... S:String |-> B:Builtin ...</symbols>
+       <references>M:Map S |-> (1 => 0) </references> when values M ==Set SetItem(1) orBool M ==Map .
 
   rule <k> resolve ...</k>
        <oattrs>... _ |-> (ref(S) => B) ...</oattrs>
@@ -61,7 +69,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
   rule <k> resolve => . ...</k>
        <references> .Map </references>
 
-  rule <k> (. => incref(S, 1)) ~> object (S:String => N:Int)(_,_,_,_) ...</k>
+  rule <k> (. => incref(S, #if S2 ==String "type" #then 2 #else 0 #fi)) ~> object (S:String => N:Int)(S2:String,_,_,_) ...</k>
        <nextLoc>N => N +Int 1</nextLoc>
        <store>... . =>
          <object>...
@@ -77,16 +85,16 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
          <oattrs>... . => "__class__" |-> ref(S) ...</oattrs>
        ...</object>
 
-  rule <k> object N(_,.,_,_) ...</k>
+  rule <k> object N(.,.,_,_) ...</k>
        <object>...
          <id>N</id>
-         <oattrs>(. => "__bases__" |-> list(.List)) M</oattrs>
-       ...</object> when notBool("__bases__" in keys(M))
+         <oattrs>(. => "__bases__" |-> list(.List) "__mro__" |-> .) M</oattrs>
+       ...</object> when notBool("__bases__" in keys(M)) andBool M("__class__") ==K ref("type")
 
   rule <k> (. => incref(L:List,1)) ~> object N(_,(L => .List),_,_) ...</k>
        <object>...
          <id>N</id>
-         <oattrs>... . => "__bases__" |-> list(refs(L)) ...</oattrs>
+         <oattrs>... . => "__bases__" |-> list(refs(L)) "__mro__" |-> . ...</oattrs>
        ...</object> when L =/=List .List
 
   rule <k> (. => incref(S2:String,1) ~> incref(S:String, 1)) ~> object N(_,_,(S |-> ref(S2) => .) _,_) ...</k>
@@ -137,7 +145,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <object>...
          <id>N</id>
          <oattrs> OAttrs </oattrs>
-       ...</object> when "__bases__" in keys(OAttrs)
+       ...</object> when "__bases__" in keys(OAttrs) orBool OAttrs("__class__") =/=K ref("type")
 
   rule <k> incref((ListItem(S) => .) _, N2:Int) ...</k>
        <references>... S |-> (N => N +Int N2) ...</references>

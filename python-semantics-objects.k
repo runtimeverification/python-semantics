@@ -4,16 +4,20 @@ module PYTHON-SEMANTICS-OBJECTS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
   syntax ObjRef ::= "init" "(" Expression "," Expression "," List "," Map ")" [strict(1 2)] 
+                  | "getMros" "(" List ")"
+                  | "mroMerge" "(" List{K} ")"
+  syntax Bool ::= "notInTail" "(" Builtin "," List ")" [function]
+  syntax List ::= "trimHead" "(" List "," Builtin ")" [function] 
 
   rule <k> invokeBuiltin(obj("call_type",_), ListItem(Type:Object) L:List, M:Map) => init(doCall(Type . String2Id("__new__"), ListItem(Type) L, M), Type, L, M) ...</k>
 
   rule <k> init(O:Object, Type, L, M) => test(istype(O, Type), (doCall(getmember(O, String2Id("__init__"), true, false, false), L, M) ; ~> ref(id(O))), O) ...</k>
 
-  rule <k> invokeBuiltin(obj("new_object",_), ListItem(obj(B:Builtin,_)) _, _) => ref(N) ...</k>
+  rule <k> invokeBuiltin(obj("new_object",_), ListItem(O:Object) _, _) => newHelper(O, ref("object"), SetItem("iterator") SetItem("attribute") SetItem("builtin-function") SetItem("builtin-method") SetItem("frame") SetItem("reference")) ~> ref(N) ...</k>
        <nextLoc> N:Nat => N +Int 1 </nextLoc>
        (. => <object>...
          <id>N</id>
-         <oattrs> "__class__" |-> B </oattrs>
+         <oattrs> "__class__" |-> id(O) </oattrs>
        ...</object>)
 
   rule <k> invokeBuiltin(obj("init_object",_), _, _) => ref("None") ...</k>
@@ -21,6 +25,25 @@ module PYTHON-SEMANTICS-OBJECTS
   rule <k> invokeBuiltin(obj("eq_object",_), ListItem(O) ListItem(O2:Object), .) => test(plbool(O is O2), ref("True"), ref("NotImplemented")) ...</k>
   rule <k> invokeBuiltin(obj("ne_object",_), ListItem(O) ListItem(O2), .) => test(plbool(O is not O2), ref("True"), ref("NotImplemented")) ...</k>
  
-  rule <k> invokeBuiltin(obj("new_raise",_), ListItem(O:Object) _, _) => raiseInternal("TypeError", "cannot create instances of this type") ...</k>
+  rule getMro(B:Builtin, Bases:Object) => mroMerge(list(ListItem(list(ListItem(B)))),,getMros(listvalue(Bases)),,list(ListItem(list(listvalue(Bases)))))
+  context mroMerge(_,,HOLE,,_)
+  rule getMros(ListItem(B:Builtin) L:List) => list(ListItem(getMro(B, getref2(ref(B), "__bases__")))) ,, getMros(L)
+  context mroMerge(_,,list(ListItem(HOLE)),,_)
+  rule getMros(.List) => .List{K}
+  rule mroMerge(((list(L:List),,list(L2:List)) => list(L L2)),,_) when all(L L2, isKList)
+  rule (. => list(.) ~> 0) ~> mroMerge(list(L))
+  rule list(_ (. => ListItem(B))) ~> (N:Int => 0) ~> mroMerge(list((L:List => trimHead(L, B)) ListItem(list((ListItem(B) => .) _)) (L2:List => trimHead(L2, B)))) when lengthList L ==Int N andBool notInTail(B, L L2)
+  rule notInTail(B, ListItem(list(ListItem(_) L)) L2) => notBool(B in Setify(L)) andBool notInTail(B, L2) [function, anywhere]
+  rule notInTail(B, .) => true [function, anywhere]
+  rule trimHead(ListItem(list(ListItem(B) L:List)) L2:List, B2) => ListItem(#if B ==K B2 #then list(L) #else list(ListItem(B) L) #fi) trimHead(L2, B) [function, anywhere]
+  rule trimHead(., _) => . [function, anywhere]
+  rule list(_) ~> _ ~> mroMerge(list(_ (ListItem(list(.)) => .) _))
+  rule list(_) ~> (N:Int => N +Int 1) ~> mroMerge(list(L:List ListItem(list(ListItem(B) _)) L2:List)) when lengthList L ==Int N andBool notBool notInTail(B, L L2)
+  rule list(_) ~> N:Int ~> mroMerge(list(L)) => raiseInternal("TypeError", "Cannot create a consistent method resolution order (MRO)") when N ==Int lengthList(L) andBool L =/=List .
+  rule list(L) ~> (_:Int ~> mroMerge(list(.)) => .)
+  context mutable(HOLE,_) when getKLabel HOLE ==KLabel 'getMro
+  context immutable(HOLE,_) when getKLabel HOLE ==KLabel 'getMro
+
+  rule invokeBuiltin(obj("mro_type",_), ListItem(Type), .) => mutable(getMro(id(Type), getref(Type, "__bases__")), ref("list"))
 
 endmodule
