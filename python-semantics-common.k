@@ -24,10 +24,8 @@ module PYTHON-SEMANTICS-COMMON
                   <references> "None" |-> 1 </references>
                   <literals> .Map </literals>
                   <nextLoc> 1 </nextLoc>
-                  <debug> true </debug>
-                  <hashInfo> ListItem(64) ListItem(2305843009213693951) ListItem(314159) ListItem(0) ListItem(1000003) </hashInfo>
-//                  <debug> $DEBUG:Bool </debug>
-//                  <hashInfo> $HASHINFO:List </hashInfo>
+                  <debug> $DEBUG:Bool </debug>
+                  <hashInfo> $HASHINFO:List </hashInfo>
                 </T>
 
   syntax K ::= "initialize" "(" K ")"
