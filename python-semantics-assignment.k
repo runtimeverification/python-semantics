@@ -13,9 +13,9 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   rule (. => (getmember(O, String2Id("__setitem__"), true, false, false) -> raiseInternal("TypeError", "object does not support item assignment")) (Key:Object, Value:Object, .Expressions) ;) ~> ((O:Object [ Key:Object ]) , Ts => Ts) := Value
   rule .Expressions := _ => .
 
-  context ((HOLE . _:Id) , _:Targets) := K:K when isKResult(K)
-  context ((HOLE [ _:Expression ]) , _:Targets) := K when isKResult(K)
-  context ((K [ HOLE ]) , _:Targets) := K2:K when isKResult(K) andBool isKResult(K2)
+  context ((HOLE . _:Id) , _) := K:K when isKResult(K)
+  context ((HOLE [ _:K ]) , _) := K when isKResult(K)
+  context ((K [ HOLE ]) , _) := K2:K when isKResult(K) andBool isKResult(K2)
 
   rule (. => unbind(X:Id)) ~> del (X , Ts => Ts)
   rule (. => unbindList(Listify(Ts2))) ~> del (tuple(Ts2) , Ts => Ts)
