@@ -27,7 +27,7 @@ module PYTHON-SEMANTICS-METHODS
        <symbols>... "None" |-> NoneId ...</symbols> when OwnerId =/=Int NoneId
 
   //can't use descriptors because method descriptors use it
-  rule <k> obj(N:Nat,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), String2Id("__call__"), false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable")) ...</k>
+  rule <k> obj(N:Nat,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), "__call__", false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable")) ...</k>
 
   //TODO: MRO
   rule <k> invokeBuiltin(obj("call_method",_), ListItem(obj(N, <oattrs>... "__func__" |-> FuncId:Builtin "__self__" |-> SelfId:Builtin ...</oattrs>)) L:List, M:Map) => doCall(ref(FuncId), ListItem(ref(SelfId)) L, M) ...</k>

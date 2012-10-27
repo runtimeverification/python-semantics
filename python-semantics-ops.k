@@ -3,12 +3,12 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-OPS
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= "coerceBinaryBase" "(" Expression "," Expression "," Id "," Id ")" [strict(1 2)]
-                  | "coerceBinary" "(" Expression "," Expression "," Id "," Id "," String ")" [strict(1 2)]
-                  | "coerceUnary" "(" Expression "," Id "," String ")" [strict(1)]
+  syntax ObjRef ::= "coerceBinaryBase" "(" Expression "," Expression "," Expression "," Expression ")" [strict(1 2)]
+                  | "coerceBinary" "(" Expression "," Expression "," Expression "," Expression "," String ")" [strict(1 2)]
+                  | "coerceUnary" "(" Expression "," Expression "," String ")" [strict(1)]
                   | "coercion" "(" Expression ")" [strict]
 
-  rule <k> coerceBinary(O:Object, O2:Object, X:Id, RX:Id, S:String) => coerceBinaryBase(O, O2, X, RX) -> (raiseInternal("TypeError", "unsupported operand type(s) for " +String S)) ...</k>
+  rule <k> coerceBinary(O:Object, O2:Object, X, RX, S:String) => coerceBinaryBase(O, O2, X, RX) -> (raiseInternal("TypeError", "unsupported operand type(s) for " +String S)) ...</k>
 
   rule <k> coerceBinaryBase(O, O2, X, RX) => test(hasbase(getbases(gettype(O2)), gettype(O)), coercion(getmember(O2, RX, true, false, false) (O, .Arguments)), .Obj) -> coercion(getmember(O, X, true, false, false) (O2, .Arguments)) -> coercion(getmember(O2, RX, true, false, false) (O, .Arguments)) ...</k>
 

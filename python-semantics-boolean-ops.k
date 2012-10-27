@@ -4,7 +4,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   imports PYTHON-SEMANTICS-OPS
 
   syntax ObjRef ::= "bool" "(" K ")" [strict]
-                  | "coerceBoolean" "(" Expression "," Expression "," Id "," Id "," String ")" [strict(1 2)]
+                  | "coerceBoolean" "(" Expression "," Expression "," Expression "," Expression "," String ")" [strict(1 2)]
                   | "len" "(" Expression ")" [strict]
                   | "checkBool" "(" Expression ")" [strict]
                   | "checkInt" "(" Expression ")" [strict]
@@ -13,7 +13,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
 
   rule bool(true) => ref("True")
   rule bool(false) => ref("False")
-  rule bool(O:Object) => test(plbool(O is ref("None")), ref("False"), checkBool(getmember(O, String2Id("__bool__"), true, false, false) (.Arguments)) -> checkInt(len(O)) -> ref("True")) 
+  rule bool(O:Object) => test(plbool(O is ref("None")), ref("False"), checkBool(getmember(O, "__bool__", true, false, false) (.Arguments)) -> checkInt(len(O)) -> ref("True")) 
   rule checkBool(O:Object) => test(istype(O, ref("bool")), O, raiseInternal("TypeError", "__bool__ should return bool"))
   rule checkBool(.Obj) => .Obj
   rule checkInt(O:Object) => test(intvalue(O) ==Int 0, ref("False"), ref("True"))
@@ -21,7 +21,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule invokeBuiltin(obj("new_bool",_), ListItem(O), .) => newHelper(O, ref("bool"), .) ~> ref("False")
   rule invokeBuiltin(obj("new_bool",_), ListItem(O:Object) ListItem(O2:Object), .) => newHelper(O, ref("bool"), .) ~> bool(O2)
 
-  rule len(O) => checkLen(getmember(O, String2Id("__len__"), true, false, false) (.Arguments))
+  rule len(O) => checkLen(getmember(O, "__len__", true, false, false) (.Arguments))
   rule checkLen(O:Object) => test(istype(O, ref("int")), test(intvalue(O) >=Int 0, O, raiseInternal("ValueError", "__len__() should return >= 0")), raiseInternal("TypeError", "object cannot be interpreted as an integer"))
   rule checkLen(.Obj) => .Obj
   rule invokeBuiltin(obj("call_len",_), ListItem(O), .) => len(O) -> raiseInternal("TypeError", "object has no len()")
@@ -53,20 +53,20 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
 
   rule comparison(obj(B:Builtin,_), obj(B2:Builtin,_), '_is_) => bool(B ==K B2)
   rule comparison(O:Object, O2:Object, '_isnot_) => not (O is O2)
-  rule comparison(O:Object, O2:Object, '_<_) => coerceBoolean(O, O2, String2Id("__lt__"), String2Id("__gt__"), "<")
-  rule comparison(O:Object, O2:Object, '_>_) => coerceBoolean(O, O2, String2Id("__gt__"), String2Id("__lt__"), ">")
-  rule comparison(O:Object, O2:Object, '_<=_) => coerceBoolean(O, O2, String2Id("__le__"), String2Id("__ge__"), "<=")
-  rule comparison(O:Object, O2:Object, '_>=_) => coerceBoolean(O, O2, String2Id("__ge__"), String2Id("__le__"), ">=")
-  rule comparison(O:Object, O2:Object, '_!=_) => coerceBinaryBase(O, O2, String2Id("__ne__"), String2Id("__ne__")) -> (O is not O2)
-  rule comparison(O:Object, O2:Object, '_==_) => coerceBinaryBase(O, O2, String2Id("__eq__"), String2Id("__eq__")) -> (O is O2)
-  rule comparison(O:Object, O2:Object, '_in_) => bool((getmember(O2, String2Id("__contains__"), true, false, false) (O)) -> contains(iterate(O2, .), O))
+  rule comparison(O:Object, O2:Object, '_<_) => coerceBoolean(O, O2, "__lt__", "__gt__", "<")
+  rule comparison(O:Object, O2:Object, '_>_) => coerceBoolean(O, O2, "__gt__", "__lt__", ">")
+  rule comparison(O:Object, O2:Object, '_<=_) => coerceBoolean(O, O2, "__le__", "__ge__", "<=")
+  rule comparison(O:Object, O2:Object, '_>=_) => coerceBoolean(O, O2, "__ge__", "__le__", ">=")
+  rule comparison(O:Object, O2:Object, '_!=_) => coerceBinaryBase(O, O2, "__ne__", "__ne__") -> (O is not O2)
+  rule comparison(O:Object, O2:Object, '_==_) => coerceBinaryBase(O, O2, "__eq__", "__eq__") -> (O is O2)
+  rule comparison(O:Object, O2:Object, '_in_) => bool((getmember(O2, "__contains__", true, false, false) (O)) -> contains(iterate(O2, .), O))
   rule comparison(O:Object, O2:Object, '_notin_) => not O in O2
 
   rule contains(list(ListItem(O:Object) L:List), O2) => ref("True") if O == O2 else contains(list(L), O2)
   rule contains(list(ListItem(B:Builtin) L:List), O2) => ref("True") if ref(B) == O2 else contains(list(L), O2)
   rule contains(list(.), O2) => ref("False")
 
-  rule <k> coerceBoolean(O, O2, X:Id, RX:Id, S:String) => coerceBinaryBase(O, O2, X, RX) -> (raiseInternal("TypeError", "unorderable types: " +String S)) ...</k>
+  rule <k> coerceBoolean(O, O2, X, RX, S:String) => coerceBinaryBase(O, O2, X, RX) -> (raiseInternal("TypeError", "unorderable types: " +String S)) ...</k>
 
 endmodule
 

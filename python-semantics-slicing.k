@@ -48,7 +48,7 @@ module PYTHON-SEMANTICS-SLICING
          <oattrs>... "current" |-> (Current:Int => Current +Int Step) "stop" |-> Stop "step" |-> Step ...</oattrs>
        ...</object>
 
-  rule index(O) => getmember(O, String2Id("__index__"), true, false, false) (.Arguments)
+  rule index(O) => getmember(O, "__index__", true, false, false) (.Arguments)
   rule range(O, O2, O3, O4) => mutable("start" |-> intvalue(O) "stop" |-> intvalue(O2) "step" |-> intvalue(O3), O4) when intvalue(O3) =/=Int 0
 
   rule range(_, _, O3, _) => raiseInternal("ValueError", "range() arg 3 must not be zero") when intvalue(O3) ==Int 0

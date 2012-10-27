@@ -16,7 +16,7 @@ module PYTHON-SEMANTICS-COMMON
                   <store>
                     <object multiplicity="*">
                       <id> 0 </id>
-                      <oenv> .Map </oenv>
+                      <oenv multiplicity="?"> .Map </oenv>
                       <oattrs> .Map </oattrs>
                     </object>
                   </store>
@@ -26,7 +26,7 @@ module PYTHON-SEMANTICS-COMMON
                   <nextLoc> 1 </nextLoc>
                   <debug> $DEBUG:Bool </debug>
                   <hashInfo> $HASHINFO:List </hashInfo>
-                  <bootstrapping> 3 </bootstrapping>
+                  <bootstrapping> 3 </bootstrapped>
                 </T>
 
   syntax K ::= "initialize" "(" K ")"
@@ -54,7 +54,7 @@ module PYTHON-SEMANTICS-COMMON
                   | "builtin" "(" Id ")"
                   | "gettype" "(" Expression ")"
                   | "getbases" "(" Expression ")"
-                  | "getmember" "(" Expression "," Id "," Bool "," Bool "," Bool ")" [strict(1)] 
+                  | "getmember" "(" Expression "," Expression "," Bool "," Bool "," Bool ")" [strict(1 2)] 
                   | "binaryOp" "(" Expression "," Expression "," String "," String "," K ")" [strict(1 2)]
                   | "unaryOp" "(" Expression "," String "," K ")" [strict(1)]
                   | "invoke" "(" Expression "," Map ")" [strict(1)]
@@ -71,7 +71,7 @@ module PYTHON-SEMANTICS-COMMON
 
   syntax K ::= "iterate" "(" Expression "," K ")" [strict(1)]
 
-  rule name(E) => getmember(E, String2Id("__name__"), true, false, true) [macro, anywhere]
+  rule name(E) => getmember(E, "__name__", true, false, true) [macro, anywhere]
 
   context doCall(HOLE, _, _) when HOLE =/=K .
 
@@ -261,12 +261,12 @@ module PYTHON-SEMANTICS-COMMON
   context list(.) ~> iterate(HOLE,_)
 
   rule iterate(O, K) => try: (list(.) ~> iterate(ref("iter") (O, .Arguments), K)) except ref("TypeError") : test(K ==K ., raise, K) else: pass
-  rule list(L:List) ~> iterate(O:Object, K) => try: addItem(getmember(O,  String2Id("__next__"), true, false, false) (.Arguments)) except ref("StopIteration") : list(L) else: (list(L) ~> iterate(O, K))
+  rule list(L:List) ~> iterate(O:Object, K) => try: addItem(getmember(O, "__next__", true, false, false) (.Arguments)) except ref("StopIteration") : list(L) else: (list(L) ~> iterate(O, K))
   rule (addItem(O:Object) => .) ~> popx ~> list(_ (. => ListItem(O)))
   rule K ~> setx(K2) => setx(K2) ~> K when isKResult(K)
   rule K ~> popx => popx ~> K when isKResult(K)
 
-  rule <k> mapping(O, K) => iterate(getmember(O, String2Id("keys"), true, false, false) (.Arguments) -> K, raiseInternal("TypeError", "o.keys() are not iterable")) ~> map(.) ~> mapping(O, K) ...</k>
+  rule <k> mapping(O, K) => iterate(getmember(O, "keys", true, false, false) (.Arguments) -> K, raiseInternal("TypeError", "o.keys() are not iterable")) ~> map(.) ~> mapping(O, K) ...</k>
   rule <k> list((ListItem(B:Builtin) => .) _) ~> (. => addPair(B, (O [ ref(B) ]))) ~> map(_) ~> mapping(O,_) ...</k>
   rule <k> list(_) ~> (addPair(B, O) => .) ~> map(_ (. => B |-> O)) ...</k>
   rule <k> (list(.) => .) ~> map(_) ~> (mapping(_,_) => .) ...</k>
