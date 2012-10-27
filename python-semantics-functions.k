@@ -144,7 +144,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule LOCAL(Defs, Globals, Nonlocals, Params) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set . [function, anywhere]
   rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses Defs) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals [function, anywhere]
   rule BOUND(Bound:Set, L (_, Defs, _, Nonlocals, Globals2, _, Params, false)) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals2, L) [function, anywhere]
-  rule BOUND(Bound:Set, L (_, _, _, _, _, _, _, true)) => BOUND(Bound, L)
+  rule BOUND(Bound:Set, L (_, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, true)) => BOUND(Bound, L)
   rule BOUND(Bound, .) => Bound [function, anywhere]
   rule PARAMS(ListItem(X) Params) => ListItem(Id2String(X)) PARAMS(Params) [function, anywhere]
   rule PARAMS(ListItem(* X) Params) => PARAMS(Params ListItem(* X)) [function, anywhere]
@@ -184,7 +184,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
        <scope> (_, _, _, _, _ (. => SetItem(Id2String(X))), _, _, _) ...</scope>
 
   rule <k> addParam(K) => . ...</k>
-       <scope> (_, _, _, _, _, _, _ (. => ListItem(K)), _) ...</scope>
+       <scope> (_, _:Set, _:Set, _:Set, _:Set, _:Set, _ (. => ListItem(K)), _) ...</scope>
 
   rule addGlobals(.NAMES) => .
   rule addNonlocals(.NAMES) => .
