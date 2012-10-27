@@ -137,7 +137,6 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ,.) ~>
          object "module"("type",ListItem("object"),
            "__dict__" |-> ref("__dict__")
-           "__getattribute__" |-> def "getattribute_module" (1, 1, true)
            ,.) ~>
          object "__dict__"("reference",.,., "__get__" |-> "__dict__") ~>
          object "object"("type",.,
@@ -180,6 +179,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "type"("type",ListItem("object"),
            "__bases__" |-> ref("__bases__")
            "__call__" |-> def "call_type" (0, -1, true)
+           "__getattribute__" |-> def "getattribute_type" (1, 1, true)
            "__mro__" |-> ref("__mro__")
            "__name__" |-> ref("__name__type")
            "__new__" |-> def "new_type"(2, 4, false)
@@ -192,6 +192,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          // module "types"
          object "attribute"("type",ListItem("object"),
            "__get__" |-> def "get_attr" (1, 2, true)
+           "__set__" |-> def "set_attr" (2, 2, true)
            , "__name__" |-> undefined("internal type name")) ~>
          object "builtin-function" ("type",ListItem("object"),
            "__call__" |-> def "call_builtin_function" (0, -1, true)
@@ -262,6 +263,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "__self__" ("reference",.,., "__get__" |-> "__self__") ~>
          object "reference"("type",ListItem("object"),
            "__get__" |-> def "get_ref" (1, 2, true)
+           "__set__" |-> def "set_ref" (2, 2, true)
            , "__name__" |-> undefined("internal type name")) ~>
 
          // misc builtins
