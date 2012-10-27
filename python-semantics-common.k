@@ -26,6 +26,7 @@ module PYTHON-SEMANTICS-COMMON
                   <nextLoc> 1 </nextLoc>
                   <debug> $DEBUG:Bool </debug>
                   <hashInfo> $HASHINFO:List </hashInfo>
+                  <bootstrapping> 3 </bootstrapping>
                 </T>
 
   syntax K ::= "initialize" "(" K ")"
