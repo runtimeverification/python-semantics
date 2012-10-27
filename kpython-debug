@@ -1,2 +1,4 @@
 #!/bin/bash
-krun --output-mode raw -cHASHINFO="ListItem(64) ListItem(2305843009213693951) ListItem(314159) ListItem(0) ListItem(1000003)" -cDEBUG="true" -cPGM="$@"
+echo "pass" > tmp
+krun --output-mode raw -cHASHINFO="ListItem(64) ListItem(2305843009213693951) ListItem(314159) ListItem(0) ListItem(1000003)" -cDEBUG="true" -cPGM="$@" tmp
+rm tmp
