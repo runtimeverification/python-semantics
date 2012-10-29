@@ -13,6 +13,6 @@ module PYTHON-SEMANTICS-TUPLES
 
   rule invokeBuiltin(obj("new_tuple",_), ListItem(O), .) => newHelper(O, ref("tuple"), .) ~> immutable(list(.), O)
   rule invokeBuiltin(obj("new_tuple",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("tuple"), .) ~> iterate(O2, .) ~> immutable(list(.), O)
-  rule (list(L:List) => .) ~> immutable(list(_ => L), _)
+  rule (list(L:List) => .) ~> immutable(list(_ => Idify(L)), _)
 
 endmodule
