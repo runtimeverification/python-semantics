@@ -9,3 +9,5 @@ try:
   assert False
 except KeyError:
   pass
+
+assert dict(x)["6"] == "7"
