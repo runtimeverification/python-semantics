@@ -27,6 +27,7 @@ module PYTHON-SEMANTICS-LOGIC
   rule test(false, _, K) => K
 
   rule (O:Object -> _) => O
+  rule map(M:Map) -> _ => map(M)
   rule .Obj -> Chain:K => Chain
   rule .Obj (_) => .Obj
 

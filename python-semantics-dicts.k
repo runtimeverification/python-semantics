@@ -11,27 +11,33 @@ module PYTHON-SEMANTICS-DICTS
          <oattrs>... "__revision__" |-> N "__value__" |-> map(M:Map) ...</oattrs>
        ...</object>
 
-  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(_,<oattrs>... "__revision__" |-> Rev1:Int "_mapping" |-> B ...</oattrs>)), .) => raiseInternal("RuntimeError", "dictionary changed size during iteration") ...</k>
+  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B2,_)), .) => raiseInternal("RuntimeError", "dictionary changed size during iteration") ...</k>
+       <object>...
+         <id>B2</id>
+         <oattrs>... "__revision__" |-> Rev1 "_mapping" |-> B:Builtin ...</oattrs>
+       ...</object>
        <object>...
          <id>B</id>
          <oattrs>... "__revision__" |-> Rev2:Int ...</oattrs>
        ...</object> when Rev1 =/=Int Rev2
 
-  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(_,<oattrs>... "__revision__" |-> Rev1 "__order__" |-> list(L:List) "__index__" |-> Idx:Int "_mapping" |-> B ...</oattrs>)), .) => raise ref("StopIteration") ...</k>
+  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B2,_)), .) => raise ref("StopIteration") ...</k>
+       <object>...
+         <id>B2</id>
+         <oattrs>... "__revision__" |-> Rev1 "__order__" |-> list(L) "__index__" |-> (Idx) "_mapping" |-> B:Builtin ...</oattrs>
+       ...</object>
        <object>...
          <id>B</id>
          <oattrs>... "__revision__" |-> Rev2 ...</oattrs>
        ...</object> when Rev1 ==Int Rev2 andBool Idx ==Int lengthList L
 
-  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => ref(key(get(getl(M:Map(get(L:List, Idx))), 0))) ...</k>
-       <object>...
-         <id>B</id>
-         <oattrs>... "__revision__" |-> Rev1 "__order__" |-> list(L) "__index__" |-> (Idx => Idx +Int 1) "__index2__" |-> (Idx2:Int => 1) "_mapping" |-> B2:Builtin ...</oattrs>
+  rule <object>...
+         <oattrs>... "__revision__" |-> Rev1 "__order__" |-> list(L) "__index__" |-> (Idx => Idx +Int 1) "__index2__" |-> (Idx2:Int => 0) "_mapping" |-> B2:Builtin ...</oattrs>
        ...</object>
        <object>...
          <id>B2</id>
          <oattrs>... "__revision__" |-> Rev2 "__value__" |-> map(M) ...</oattrs>
-       ...</object> when Rev1 ==Int Rev2 andBool Idx =/=Int lengthList L andBool Idx2 ==Int lengthList getl(M(get(L, Idx)))
+       ...</object> when Rev1 ==Int Rev2 andBool Idx =/=Int lengthList L andBool Idx2 ==Int lengthList getl(M:Map(get(L, Idx))) [structural]
 
   rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => ref(key(get(getl(M:Map(get(L:List, Idx))), Idx2))) ...</k>
        <object>...
@@ -41,7 +47,7 @@ module PYTHON-SEMANTICS-DICTS
        <object>...
          <id>B2</id>
          <oattrs>... "__revision__" |-> Rev2 "__value__" |-> map(M) ...</oattrs>
-       ...</object> when Rev1 ==Int Rev2 andBool Idx =/=Int lengthList L andBool Idx2 =/=Int lengthList getl(M(get(L, Idx)))
+       ...</object> when Rev1 ==Int Rev2 andBool Idx =/=Int lengthList L andBool Idx2 =/=Int lengthList getl(M:Map(get(L, Idx)))
 
   rule invokeBuiltin(obj("iter_dict",_), ListItem(O), .) => ((O . String2Id("keys")) (.Arguments) . String2Id("__iter__")) (.Arguments)
 
@@ -55,18 +61,19 @@ module PYTHON-SEMANTICS-DICTS
   rule invokeBuiltin(obj("delitem_dict",_), ListItem(obj(B,_)) ListItem(Key), .) => ref("hash")(Key, .Arguments) ~> tableDelete(B, 0, Key) ~> ref("None")
   rule (O:Object => .) ~> tableDelete(_,(_ => intvalue(O)),_)
 
-  syntax K ::= "makeDict" "(" Int ")"
+  syntax K ::= makeDict(Int, Expression) [strict(2)]
 
   rule invokeBuiltin(obj("new_dict",_), ListItem(O) _, .) => newHelper(O, ref("dict"), .) ~> {.KeyData}
   rule invokeBuiltin(obj("init_dict",_), ListItem(_:Object), .) => ref("None")
-  rule invokeBuiltin(obj("init_dict",_), ListItem(O) ListItem(O2:Object), .) => mapping(O2, .Obj) -> iterate(O2, .) ~> makeDict(0)
+  rule invokeBuiltin(obj("init_dict",_), ListItem(O) ListItem(O2:Object), .) => mapping(O2, .Obj) -> iterate(O2, .) ~> makeDict(0, O)
 
-  rule map(M) ~> makeDict(_) => { DeMapify(M) }
+  rule (. => O[Key], .Expressions := Value) ~> map((Key |-> Value => .) _) ~> makeDict(_, O) 
+  rule map(.) ~> makeDict(_, O) => ref(id(O))
 
-  rule <k> list(_) ~> (. => map(.)) ~> makeDict(_) ...</k>
-  rule <k> (. => iterate(O, raiseInternal("TypeError", "cannot convert dictionary update sequence element #" +String Int2String(N) +String "to a sequence"))) ~>  list((ListItem(O) => .) _) ~> map(_) ~> makeDict(N) ...</k>
-  rule <k> (list(ListItem(O) ListItem(O2)) => .) ~> list(_) ~> map(_ (. => O |-> O2)) ~> makeDict(N => N +Int 1) ...</k>
-  rule <k> list(L) ~> list(_) ~> map(_) ~> makeDict(N) => raiseInternal("ValueError", "dictionary update sequence element #" +String Int2String(N) +String " has length " +String Int2String(lengthList L) +String "; 2 is required") ...</k>
-  rule <k> (list(.) => .) ~> map(_) ~> makeDict(_) ...</k>
+  rule <k> list(_) ~> (. => map(.)) ~> makeDict(_, _) ...</k>
+  rule <k> (. => iterate(O, raiseInternal("TypeError", "cannot convert dictionary update sequence element #" +String Int2String(N) +String "to a sequence"))) ~>  list((ListItem(O) => .) _) ~> map(_) ~> makeDict(N, _) ...</k>
+  rule <k> (list(ListItem(O) ListItem(O2)) => .) ~> list(_) ~> map(_ (. => O |-> O2)) ~> makeDict(N => N +Int 1, _) ...</k>
+  rule <k> list(L) ~> list(_) ~> map(_) ~> makeDict(N, _) => raiseInternal("ValueError", "dictionary update sequence element #" +String Int2String(N) +String " has length " +String Int2String(lengthList L) +String "; 2 is required") ...</k>
+  rule <k> (list(.) => .) ~> map(_) ~> makeDict(_, _) ...</k>
 
 endmodule
