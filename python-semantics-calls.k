@@ -31,7 +31,7 @@ module PYTHON-SEMANTICS-CALLS
   rule (. => iterate(O:Object, raiseInternal("TypeError", "argument after * must be a sequence"))) ~> processArgs(_,_,O,_)
   rule (list(L:List) => .) ~> processArgs(_ (. => L),_,(_:Object => .Obj),_)
   rule (. => mapping(O:Object, raiseInternal("TypeError", "argument after ** must be a mapping"))) ~> processArgs(_,_,.Obj,O)
-  rule (. => test(istype(O, ref("str")), ., raiseInternal("TypeError", "keywords must be strings"))) ~> map(_ (O |-> O2:Object => .)) ~> processArgs(_,_ (. => strvalue(O) |-> O2),.Obj,_)
+  rule (. => test(istype(O, ref("str")), ., raiseInternal("TypeError", "keywords must be strings"))) ~> map(_ (O:Object |-> O2:Object => .)) ~> processArgs(_,_ (. => strvalue(O) |-> O2),.Obj,_)
   rule (map(.) => .) ~> processArgs(_,_,.Obj,(_:Object => .Obj))
 
   rule (processArgs(L, M:Map, .Obj, .Obj) => .) ~> invokeBuiltin(_, (. => L), (. => M))

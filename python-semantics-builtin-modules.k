@@ -90,7 +90,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <object>...
          <id>N</id>
          <oattrs>(. => "__bases__" |-> list(.List) "__mro__" |-> .) M</oattrs>
-       ...</object> when notBool("__bases__" in keys(M)) andBool M("__class__") ==K ref("type")
+       ...</object> when notBool("__bases__" in keys(M)) andBool M:Map("__class__") ==K ref("type")
 
   rule <k> (. => incref(L:List,1)) ~> object N(_,(L => .List),_,_) ...</k>
        <object>...
@@ -148,7 +148,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <object>...
          <id>N</id>
          <oattrs> OAttrs </oattrs>
-       ...</object> when "__bases__" in keys(OAttrs) orBool OAttrs("__class__") =/=K ref("type")
+       ...</object> when "__bases__" in keys(OAttrs) orBool OAttrs:Map("__class__") =/=K ref("type")
 
   rule <k> incref((ListItem(B) => .) _, N2:Int) ...</k>
        <references>... B |-> (N => N +Int N2) ...</references>

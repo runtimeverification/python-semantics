@@ -34,7 +34,7 @@ module PYTHON-SEMANTICS-COMMON
              | "unbind" "(" NAME ")"
              | "mapping" "(" Expression "," K ")" [strict(1)]
              | "addItem" "(" Expression ")" [strict]
-             | "addPair" "(" Builtin "," Expression ")" [strict(2)]
+             | "addPair" "(" Expression "," Expression ")"
              | "popx"
              | "setx" "(" K ")"
              | "newHelper" "(" Expression "," Expression "," Set ")" [strict(1 2)]
@@ -174,13 +174,13 @@ module PYTHON-SEMANTICS-COMMON
   rule getl(list(L)) => L [function, anywhere]
 
   syntax K ::= "getattr" "(" Expression "," String ")" [function]
-  rule getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs(S) [function, anywhere]
+  rule getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs:Map(S) [function, anywhere]
 
   syntax K ::= "getattr2" "(" Expression "," String ")" [strict(1)]
   rule getattr2(O:Object, S:String) => getattr(O, S)
 
   syntax ObjRef ::= "getref" "(" Expression "," String ")" [function]
-  rule getref(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => ref(Attrs(S)) [function, anywhere]
+  rule getref(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => ref(Attrs:Map(S)) [function, anywhere]
 
   syntax ObjRef ::= "getref2" "(" Expression "," String ")" [strict(1)]
   rule getref2(O:Object, S:String) => getref(O, S)
@@ -267,9 +267,10 @@ module PYTHON-SEMANTICS-COMMON
   rule K ~> popx => popx ~> K when isKResult(K)
 
   rule <k> mapping(O, K) => iterate(getmember(O, "keys", true, false, false) (.Arguments) -> K, raiseInternal("TypeError", "o.keys() are not iterable")) ~> map(.) ~> mapping(O, K) ...</k>
-  rule <k> list((ListItem(B:Builtin) => .) _) ~> (. => addPair(B, (O [ ref(B) ]))) ~> map(_) ~> mapping(O,_) ...</k>
-  rule <k> list(_) ~> (addPair(B, O) => .) ~> map(_ (. => B |-> O)) ...</k>
+  rule <k> list((ListItem(O2:Object) => .) _) ~> (. => addPair(O2, (O [ O2 ]))) ~> map(_) ~> mapping(O,_) ...</k>
+  rule <k> list(_) ~> (addPair(O:Object, O2:Object) => .) ~> map(_ (. => O |-> O2)) ...</k>
   rule <k> (list(.) => .) ~> map(_) ~> (mapping(_,_) => .) ...</k>
+  context list(_) ~> addPair(_, HOLE) ~> map(_)
 
   rule <k> newHelper(O:Object, Type:Object, St:Set) => test(hasbase(O, Type), test(id(O) in lookup(Sym, St), raiseInternal("TypeError", "unsafe builtin __new__ call error message"), .), raiseInternal("TypeError", "invalid builtin __new__ call argument type error message")) ...</k>
        <symbols> Sym:Map </symbols>
