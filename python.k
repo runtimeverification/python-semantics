@@ -11,12 +11,13 @@ require "python-semantics-boolean-ops.k"
 require "python-semantics-literals.k"
 require "python-semantics-try.k"
 require "python-semantics-slicing.k"
+require "python-semantics-calls.k"
 require "python-semantics-arithmetic-ops.k"
 require "python-semantics-assignment.k"
 require "python-semantics-attribute-ref.k"
 require "python-semantics-augmented-assignment.k"
 require "python-semantics-builtin-modules.k"
-require "python-semantics-calls.k"
+require "python-semantics-classes.k"
 require "python-semantics-dicts.k"
 require "python-semantics-dunder-builtin.k"
 require "python-semantics-environment.k"
@@ -39,7 +40,7 @@ module PYTHON
   imports PYTHON-SEMANTICS-AUGMENTED-ASSIGNMENT
   imports PYTHON-SEMANTICS-ATTRIBUTE-REF
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
-  imports PYTHON-SEMANTICS-CALLS
+  imports PYTHON-SEMANTICS-CLASSES
   imports PYTHON-SEMANTICS-DICTS
   imports PYTHON-SEMANTICS-DUNDER-BUILTIN
   imports PYTHON-SEMANTICS-ENVIRONMENT
