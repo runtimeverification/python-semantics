@@ -67,7 +67,7 @@ module PYTHON-SEMANTICS-COMMON
                   | "copy" "(" Expression "," Expression ")" [strict]
                   | "name" "(" Expression ")"
                   | "codeObject" "(" Id "," Parameters "," K "," Bool ")"
-                  | "class" "(" Arguments "," Expression ")" [strict(2)]
+                  | "class" "(" Arguments "," Expression ")" [strict]
 
   syntax K ::= "iterate" "(" Expression "," K ")" [strict(1)]
 
@@ -256,7 +256,7 @@ module PYTHON-SEMANTICS-COMMON
 
   rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at least " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when N =/=Int I andBool ((T andBool lengthList L -Int 1 <Int N) orBool ((notBool T) andBool lengthList L <Int N))
 
-  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at most " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when I >=Int 0 andBool N =/=Int I andBool ((T andBool lengthList L -Int 1 >Int I) orBool ((notBool T) andBool lengthList L >Int I))
+  rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at most " +String Int2String(I) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when I >=Int 0 andBool N =/=Int I andBool ((T andBool lengthList L -Int 1 >Int I) orBool ((notBool T) andBool lengthList L >Int I))
 
   context list(.) ~> iterate(HOLE,_)
 

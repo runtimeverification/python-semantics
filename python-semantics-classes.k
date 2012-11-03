@@ -10,11 +10,11 @@ module PYTHON-SEMANTICS-CLASSES
 
   syntax K ::= restoreContext(List, List, Int)
              | setWinner(Expression) [strict]
-  rule class(Args, CO:Object) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeClass(getMetaclass(Args), CO, .Obj, .)
+  rule class(Args, CO:Object) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeClass(getMetaclass(Args), CO, .Obj, .) when isKResult(Args)
 
   rule invokeClass(Metaclass:Object, CO:Object, Bases:Object, M:Map) => executeClass(Metaclass, CO, Bases, ref("builtins"), ref("globals")(.Arguments), doCall(Metaclass . String2Id("__prepare__"), ListItem(CO . String2Id("co_name")) ListItem(Bases), M))
 
-   rule <k> executeClass(Metaclass:Object, CO:Object, Bases:Object, Builtins:Object, Globals:Object, Locals:Object) => executeFrame(N, CO, ref(Back), Locals, Globals, Builtins, makeCells(CO . String2Id("co_freevars"), CO . String2Id("co_cellvars"), ref("tuple")(ref("map")(getref2(ref(Back), "f_cells") . String2Id("__getitem__"), CO . String2Id("co_freevars"), .Arguments)), N), .) ~>  (String2Id("__module__"), .Expressions) := ref("globals")(.Arguments)["__name__"] ~> if CO . String2Id("co_consts")[0] is not ref("None") : (String2Id("__doc__"), .Expressions) := CO . String2Id("co_consts")[0] else: pass ~> restoreContext(LL, FL, Back) ~> doCall(Metaclass, ListItem(Metaclass) ListItem(CO . String2Id("co_name")) ListItem(Bases) ListItem(Locals), .) ...</k>
+  rule <k> executeClass(Metaclass:Object, CO:Object, Bases:Object, Builtins:Object, Globals:Object, Locals:Object) => executeFrame(N, CO, ref(Back), Locals, Globals, Builtins, makeCells(CO . String2Id("co_freevars"), CO . String2Id("co_cellvars"), ref("tuple")(ref("map")(getref2(ref(Back), "f_cells") . String2Id("__getitem__"), CO . String2Id("co_freevars"), .Arguments)), N), .) ~>  (String2Id("__module__"), .Expressions) := ref("globals")(.Arguments)["__name__"] ~> if CO . String2Id("co_consts")[0] is not ref("None") : (String2Id("__doc__"), .Expressions) := CO . String2Id("co_consts")[0] else: pass ~> restoreContext(LL, FL, Back) ~> doCall(Metaclass, ListItem(CO . String2Id("co_name")) ListItem(Bases) ListItem(Locals), .) ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
        <currentFrame> Back:Int </currentFrame>
        <fstack> FL => . </fstack>
@@ -48,7 +48,7 @@ module PYTHON-SEMANTICS-CLASSES
   rule (. => iterate(Bases, .)) ~> calculateMetaclass(_, Bases, _, _, _)
   rule (. => if gettype(O) is ref("type") or bool(hasbase(Winner, gettype(O))) : pass else: test(hasbase(gettype(O), Winner), setWinner(gettype(O)), raiseInternal("TypeError", "metaclass conflict: the metaclass of a derived class must be a (non-strict) subclass of the metaclasses of all its bases"))) ~> list((ListItem(O) => .) _) ~> calculateMetaclass(_, _, _, _, Winner)
   rule (setWinner(O:Object) => .) ~> list(_) ~> calculateMetaclass(_, _, _, _, (_ => O))
-  rule list(.) ~> calculateMetaclass(Name, Bases, Type, Dict, Type) => makeType(mutable("__name__" |-> strvalue(Name) "__bases__" |-> id(Bases), Type), ref("dict")(Dict))
+  rule list(.) ~> calculateMetaclass(Name, Bases, Type, Dict, Type) => makeType(mutable("__name__" |-> strvalue(Name) "__bases__" |-> id(Bases), Type), ref("dict")(Dict, .Arguments))
   rule list(.) ~> calculateMetaclass(Name, Bases, Type, Dict, Winner) => Winner . String2Id("__new__") (Winner, Name, Bases, Dict) when Winner =/=K Type
 
   rule makeType(O:Object, Dict:Object) => (if "__doc__" not in Dict : Dict["__doc__"], .Expressions := ref("None") else: pass) ~> (if "__module__" not in Dict : Dict["__module__"], .Expressions := ref("globals")(.Arguments)["__name__"] else: pass) ~> (if getref(O, "__bases__") == tuple(.Expressions) : setref(id(O), "__bases__", tuple(ref("object"))) else: pass) ~> setref(id(O), "__dict__", Dict) ~> setref(id(O), "__mro__", ref("tuple")(getmember(O, "mro", true, false, true) (.Arguments))) ~> ref(id(O))
