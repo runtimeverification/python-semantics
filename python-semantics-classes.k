@@ -39,11 +39,11 @@ module PYTHON-SEMANTICS-CLASSES
 
   rule invokeBuiltin(obj("prepare_type",_), _, _) => {.KeyData}
 
-  rule invokeBuiltin(obj("new_type",_), ListItem(Type:Object) ListItem(O:Object), .) => newHelper(Type, ref("type"), .Set) ~> getref(O, "__class__")
+  rule invokeBuiltin(obj("new_type",_), ListItem(Type:Object) ListItem(O:Object), _) => newHelper(Type, ref("type"), .Set) ~> getref(O, "__class__")
   
-  rule invokeBuiltin(obj("new_type",_), ListItem(Type:Object) ListItem(O:Object) ListItem(O2:Object), .) => newHelper(Type, ref("type"), .Set) ~> raiseInternal("TypeError", "type() takes 1 or 3 arguments")
+  rule invokeBuiltin(obj("new_type",_), ListItem(Type:Object) ListItem(O:Object) ListItem(O2:Object), _) => newHelper(Type, ref("type"), .Set) ~> raiseInternal("TypeError", "type() takes 1 or 3 arguments")
 
-  rule invokeBuiltin(obj("new_type",_), ListItem(Type:Object) ListItem(Name:Object) ListItem(Bases:Object) ListItem(Dict:Object), .) => newHelper(Type, ref("type"), .Set) ~> test(istype(Name, ref("str")), test(istype(Bases, ref("tuple")), test(istype(Dict, ref("dict")), calculateMetaclass(Name, Bases, Type, Dict, Type), raiseInternal("TypeError", "type() argument 3 must be dict")), raiseInternal("TypeError", "type() argument 2 must be tuple")), raiseInternal("TypeError", "type() argument 1 must be str"))
+  rule invokeBuiltin(obj("new_type",_), ListItem(Type:Object) ListItem(Name:Object) ListItem(Bases:Object) ListItem(Dict:Object), _) => newHelper(Type, ref("type"), .Set) ~> test(istype(Name, ref("str")), test(istype(Bases, ref("tuple")), test(istype(Dict, ref("dict")), calculateMetaclass(Name, Bases, Type, Dict, Type), raiseInternal("TypeError", "type() argument 3 must be dict")), raiseInternal("TypeError", "type() argument 2 must be tuple")), raiseInternal("TypeError", "type() argument 1 must be str"))
 
   rule (. => iterate(Bases, .)) ~> calculateMetaclass(_, Bases, _, _, _)
   rule (. => if gettype(O) is ref("type") or bool(hasbase(Winner, gettype(O))) : pass else: test(hasbase(gettype(O), Winner), setWinner(gettype(O)), raiseInternal("TypeError", "metaclass conflict: the metaclass of a derived class must be a (non-strict) subclass of the metaclasses of all its bases"))) ~> list((ListItem(O) => .) _) ~> calculateMetaclass(_, _, _, _, Winner)
