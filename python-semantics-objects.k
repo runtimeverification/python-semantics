@@ -35,7 +35,7 @@ module PYTHON-SEMANTICS-OBJECTS
   rule list(_ (. => ListItem(B))) ~> (N:Int => 0) ~> mroMerge(list((L:List => trimHead(L, B)) ListItem(list((ListItem(B) => .) _)) (L2:List => trimHead(L2, B)))) when lengthList L ==Int N andBool notInTail(B, L L2)
   rule notInTail(B, ListItem(list(ListItem(_) L)) L2) => notBool(B in Setify(L)) andBool notInTail(B, L2) [function, anywhere]
   rule notInTail(B, .) => true [function, anywhere]
-  rule trimHead(ListItem(list(ListItem(B) L:List)) L2:List, B2) => ListItem(#if B ==K B2 #then list(L) #else list(ListItem(B) L) #fi) trimHead(L2, B) [function, anywhere]
+  rule trimHead(ListItem(list(ListItem(B) L:List)) L2:List, B2) => ListItem(#if B ==K B2 #then list(L) #else list(ListItem(B) L) #fi) trimHead(L2, B2) [function, anywhere]
   rule trimHead(., _) => . [function, anywhere]
   rule list(_) ~> _ ~> mroMerge(list(_ (ListItem(list(.)) => .) _))
   rule list(_) ~> (N:Int => N +Int 1) ~> mroMerge(list(L:List ListItem(list(ListItem(B) _)) L2:List)) when lengthList L ==Int N andBool notBool notInTail(B, L L2)
