@@ -34,7 +34,7 @@ module PYTHON-SEMANTICS-CLASSES
 
   syntax Map ::= stripMetaclass(Map) [function]
   rule stripMetaclass("metaclass" |-> K M) => stripMetaclass(M) [function, anywhere]
-  rule stripMetaclass(K |-> K2 M) => K |-> K2 stripMetaclass(M) [function, anywhere]
+  rule stripMetaclass(S:String |-> K M) => S |-> K stripMetaclass(M) when S=/=String "metaclass" [function, anywhere]
   rule stripMetaclass(.) => . [function, anywhere]
 
   rule invokeBuiltin(obj("prepare_type",_), _, _) => {.KeyData}
@@ -49,7 +49,7 @@ module PYTHON-SEMANTICS-CLASSES
   rule (. => if gettype(O) is ref("type") or bool(hasbase(Winner, gettype(O))) : pass else: test(hasbase(gettype(O), Winner), setWinner(gettype(O)), raiseInternal("TypeError", "metaclass conflict: the metaclass of a derived class must be a (non-strict) subclass of the metaclasses of all its bases"))) ~> list((ListItem(O) => .) _) ~> calculateMetaclass(_, _, _, _, Winner)
   rule (setWinner(O:Object) => .) ~> list(_) ~> calculateMetaclass(_, _, _, _, (_ => O))
   rule list(.) ~> calculateMetaclass(Name, Bases, Type, Dict, Type) => makeType(mutable("__name__" |-> strvalue(Name) "__bases__" |-> id(Bases), Type), ref("dict")(Dict, .Arguments))
-  rule list(.) ~> calculateMetaclass(Name, Bases, Type, Dict, Winner) => Winner . String2Id("__new__") (Winner, Name, Bases, Dict) when Winner =/=K Type
+  rule list(.) ~> calculateMetaclass(Name, Bases, Type, Dict, Winner) => Winner . String2Id("__new__") (Winner, Name, Bases, Dict, .Arguments) when Winner =/=K Type
 
   rule makeType(O:Object, Dict:Object) => (if "__doc__" not in Dict : Dict["__doc__"], .Expressions := ref("None") else: pass) ~> (if "__module__" not in Dict : Dict["__module__"], .Expressions := ref("globals")(.Arguments)["__name__"] else: pass) ~> (if getref(O, "__bases__") == tuple(.Expressions) : setref(id(O), "__bases__", tuple(ref("object"))) else: pass) ~> setref(id(O), "__dict__", Dict) ~> setref(id(O), "__mro__", ref("tuple")(getmember(O, "mro", true, false, true) (.Arguments))) ~> ref(id(O))
 
