@@ -35,7 +35,7 @@ module PYTHON-SEMANTICS-METHODS
 
   rule <k> doCall((O:Object => .), _, _) ~> (. => O (.Arguments)) ...</k>
   rule <k> doCall(., _ (ListItem(K:K) => .), .) ~> _:Object (Args:K => (K , Args)) ...</k>
-  rule <k> doCall(., _, _ (X:Id |-> K => .)) ~> _:Object (Args:K => (X = K, Args)) ...</k>
+  rule <k> doCall(., _, _ (S:String |-> K => .)) ~> _:Object (Args:K => (String2Id(S) = K, Args)) ...</k>
   rule <k> doCall(., ., .) => . ...</k>
 
   rule <k> invokeBuiltin(obj("call_builtin_function",_), ListItem(obj(B:Builtin,<oattrs>... "__call__" |-> S:String ...</oattrs>)) L, M) => doCall(ref(S), L, M) ...</k>
