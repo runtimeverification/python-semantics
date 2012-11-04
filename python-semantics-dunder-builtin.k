@@ -146,6 +146,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__init__" |-> def "init_object" (0, -1, true)
            "__ne__" |-> def "ne_object" (1, 1, true)
            "__new__" |-> def "new_object" (1, -1, false)
+           "__setattr__" |-> def "setattr_object"(2, 2, true)
            ,.) ~>
          object "__class__" ("reference",.,., "__get__" |-> "__class__") ~>
          object "range" ("type",ListItem("object"),
@@ -184,6 +185,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__name__" |-> ref("__name__type")
            "__new__" |-> def "new_type"(2, 4, false)
            "__prepare__" |-> def "prepare_type"(0, -1, false)
+           "__setattr__" |-> def "setattr_type"(2, 2, true)
            "mro" |-> def "mro_type"(0, 0, true)
            ,.) ~>
          object "__name__type" ("attribute",.,., "__get__" |-> "__name__") ~>

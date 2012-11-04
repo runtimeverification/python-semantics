@@ -1,4 +1,4 @@
-require "python-zsemantics-common.k"
+require "python-semantics-common.k"
 
 module PYTHON-SEMANTICS-ATTRIBUTE-REF
   imports PYTHON-SEMANTICS-COMMON
@@ -67,7 +67,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule checkDataSet(O:Object, Name, Value) => getmember(O, "__set__", false, false, false) (O, Name, Value, .Arguments) -> .Obj
   rule checkDataSet(.Obj, _, _) => .Obj
 
-  rule <k> mapInsert(obj(B,_), Name, Value) => ref(Dict) [Name] , .Expressions := Value ...</k>
+  rule <k> mapInsert(obj(B,_), Name, Value) => ref(Dict) [Name] , .Expressions := Value ~> ref("None") ...</k>
        <object>
          <id> B </id>
          <oattrs>... "__dict__" |-> Dict ...</oattrs>
