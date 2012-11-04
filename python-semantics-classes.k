@@ -29,7 +29,7 @@ module PYTHON-SEMANTICS-CLASSES
 
   syntax Expression ::= getMetaclass(Arguments) [function]
   rule getMetaclass(X = E:Expression, _) => E when Id2String(X) ==String "metaclass" [function, anywhere]
-  rule getMetaclass(_, K:K) => getMetaclass(K) [function, anywhere]
+  rule getMetaclass(Arg, K:K) => getMetaclass(K) when getKLabel Arg =/=KLabel '_=_ [function, anywhere]
   rule getMetaclass(.Expressions) => ref("type") [function, anywhere]
 
   syntax Map ::= stripMetaclass(Map) [function]
