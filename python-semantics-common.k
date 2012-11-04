@@ -55,6 +55,7 @@ module PYTHON-SEMANTICS-COMMON
                   | "gettype" "(" Expression ")"
                   | "getbases" "(" Expression ")"
                   | "getmember" "(" Expression "," Expression "," Bool "," Bool "," Bool ")" [strict(1 2)] 
+                  | "setmember" "(" Expression "," Expression ")" [strict] 
                   | "binaryOp" "(" Expression "," Expression "," String "," String "," K ")" [strict(1 2)]
                   | "unaryOp" "(" Expression "," String "," K ")" [strict(1)]
                   | "invoke" "(" Expression "," Map ")" [strict(1)]

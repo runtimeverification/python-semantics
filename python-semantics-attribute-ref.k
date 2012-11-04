@@ -1,13 +1,15 @@
-require "python-semantics-common.k"
+require "python-zsemantics-common.k"
 
 module PYTHON-SEMANTICS-ATTRIBUTE-REF
   imports PYTHON-SEMANTICS-COMMON
 
   syntax ObjRef ::= "mapLookup" "(" Expression "," Expression ")" [strict]
+                  | "mapInsert" "(" Expression "," Expression "," Expression ")" [strict]
                   | "basesLookup" "(" Expression "," Expression ")" [strict]
                   | "basesLookup" "(" List "," Expression ")" [strict(2)]
                   | "descriptor" "(" Expression "," Expression "," Expression "," Test ")" [strict]
                   | "checkData" "(" Expression "," Expression ")" [strict]
+                  | "checkDataSet" "(" Expression "," Expression "," Expression ")" [strict]
 
   rule O . X:Id => try: (getmember(O, "__getattribute__", true, false, true) (Id2String(X))) except ref("AttributeError") : (getmember(O, "__getattr__", true, false, false) (Id2String(X)) -> raise) else: pass
 
@@ -60,4 +62,28 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule <k> descriptor(O:Object, O2:Object, Type:Object, false) => (getmember(O, "__get__", false, false, false) (O, O2, O2, .Arguments)) -> O ...</k>
        <symbols>... "None" |-> None:Int ...</symbols> when id(O2) ==K None
  
+  rule setmember(O:Object, Name:Object, Value:Object) => checkDataSet(getmember(O, Name, false, false, false), Name, Value) -> mapInsert(O, Name, Value) -> raiseInternal("AttributeError", "object has no attribute '" +String strvalue(Name) +String "'")
+
+  rule checkDataSet(O:Object, Name, Value) => getmember(O, "__set__", false, false, false) (O, Name, Value, .Arguments) -> .Obj
+  rule checkDataSet(.Obj, _, _) => .Obj
+
+  rule <k> mapInsert(obj(B,_), Name, Value) => ref(Dict) [Name] , .Expressions := Value ...</k>
+       <object>
+         <id> B </id>
+         <oattrs>... "__dict__" |-> Dict ...</oattrs>
+       </object>
+
+  rule <k> mapInsert(obj(B,_), _, _) => .Obj ...</k>
+       <object>...
+         <id> B </id>
+         <oattrs> Env:Map </oattrs>
+       ...</object> when notBool("__dict__" in keys(Env))
+
+  rule <k> mapInsert(obj(B,_), _, _) => raiseInternal("TypeError", "can't set attributes of built-in/extension type") ...</k>
+       <object>...
+         <id> B </id>
+         <oattrs>... "__dict__" |-> _ ...</oattrs>
+         <oenv> _ </oenv>
+       ...</object>
+
 endmodule
