@@ -72,7 +72,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule makeCodeObject(_, ((ListItem(X = _) => ListItem(X)) _), _, _)
 
   rule (. => setref(N, "__defaults__", test(plbool(getref2(ref(N), "__defaults__") is ref("None")), tuple(O), (getref2(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, false)
-  rule (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), {Id2String(X) : O}, (getref2(ref(N), "__kwdefaults__")[Id2String(X)] := O))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, true)
+  rule (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), setref(N, "__kwdefaults__", {Id2String(X) : O}), (getref2(ref(N), "__kwdefaults__")[Id2String(X)] := O))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, true)
   rule makeFunction(_, ((ListItem(X:Id) => .) _), _, _)
 
   rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 4)) ~> addParam(* X)) ~> makeCodeObject(N, ((ListItem(* X:Id) => ListItem(*)) L), _, false) 

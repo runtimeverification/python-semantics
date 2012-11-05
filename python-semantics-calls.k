@@ -57,7 +57,7 @@ module PYTHON-SEMANTICS-CALLS
   rule matchArgs(Function:Object, Code:Object, ., _ S |-> _, _ X |-> _, _) => raiseInternal("TypeError", name(Function) + "() got multiple values for keyword argument '" +String S +String "'") when Id2String(X) ==String S
 
   // fill in default value for unspecified parameter
-  rule (. => addDefaults(0, ref("len")(Function . String2Id("__defaults__"))) ~> addKwDefaults(0, Function . String2Id("__kwdefaults__"))) ~> matchArgs(Function:Object,Code:Object, ., ., M, _) when lengthMap M <Int numArgs(Code)
+  rule (. => addDefaults(0, ref("len")(Function . String2Id("__defaults__")) if Function . String2Id("__defaults__") is not ref("None") else 0) ~> addKwDefaults(0, Function . String2Id("__kwdefaults__"))) ~> matchArgs(Function:Object,Code:Object, ., ., M, _) when lengthMap M <Int numArgs(Code)
   rule (addDefaults(N, _) => .) ~> addKwDefaults(_,_) ~> matchArgs(_,Code:Object, _, _ ,_ ,_) when N ==Int getattr(Code, "co_argcount")
   rule (. => addDefault(Code . String2Id("co_varnames") [N])) ~> addDefaults((N => N +Int 1), O) ~> addKwDefaults(_,_) ~> matchArgs(_,Code:Object, _, _, _, _) when N <Int getattr(Code, "co_argcount")
   rule addDefault(O) ~> addDefaults(N2:Int, O2) ~> addKwDefaults(_,_) ~> matchArgs(Function:Object, Code:Object, _, _, M, N) => raiseInternal("TypeError", name(Function) + "() takes at least " +String Int2String(getattr(Code, "co_argcount") -Int intvalue(O2)) +String "arguments (" +String Int2String(N) +String " given)") when notBool(String2Id(strvalue(O)) in keys(M)) andBool N2 <Int getattr(Code, "co_argcount") -Int intvalue(O2)
