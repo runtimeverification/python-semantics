@@ -3,6 +3,8 @@ require "python-semantics-calls.k"
 module PYTHON-SEMANTICS-CLASSES
   imports PYTHON-SEMANTICS-CALLS
 
+  //TODO: staticmethod
+
   syntax ObjRef ::= makeType(Expression, Expression) [strict]
                   | invokeClass(Expression, Expression, Expression, Map) [strict(1 2 3)]
                   | executeClass(Expression, Expression, Expression, Expression, Expression, Expression, Map) [strict(1 2 3 4 5 6)] 
@@ -14,7 +16,7 @@ module PYTHON-SEMANTICS-CLASSES
 
   rule invokeClass(Metaclass:Object, CO:Object, Bases:Object, M:Map) => executeClass(Metaclass, CO, Bases, ref("builtins"), ref("globals")(.Arguments), doCall(Metaclass . String2Id("__prepare__"), ListItem(CO . String2Id("co_name")) ListItem(Bases), M), M)
 
-  rule <k> executeClass(Metaclass:Object, CO:Object, Bases:Object, Builtins:Object, Globals:Object, Locals:Object, M:Map) => executeFrame(N, CO, ref(Back), Locals, Globals, Builtins, makeCells(CO . String2Id("co_freevars"), CO . String2Id("co_cellvars"), ref("tuple")(ref("map")(getref2(ref(Back), "f_cells") . String2Id("__getitem__"), CO . String2Id("co_freevars"), .Arguments)), N), .) ~>  (String2Id("__module__"), .Expressions) := ref("globals")(.Arguments)["__name__"] ~> if CO . String2Id("co_consts")[0] is not ref("None") : (String2Id("__doc__"), .Expressions) := CO . String2Id("co_consts")[0] else: pass ~> restoreContext(LL, FL, Back) ~> doCall(Metaclass, ListItem(CO . String2Id("co_name")) ListItem(Bases) ListItem(Locals), M) ...</k>
+  rule <k> executeClass(Metaclass:Object, CO:Object, Bases:Object, Builtins:Object, Globals:Object, Locals:Object, M:Map) => executeFrame(N, CO, ref(Back), Locals, Globals, Builtins, makeCells(CO . String2Id("co_freevars"), CO . String2Id("co_cellvars"), ref("tuple")(ref("map")(getref2(ref(Back), "f_cells") . String2Id("__getitem__"), CO . String2Id("co_freevars"), .Arguments)), N), .) ~> ((Locals["__module__"], .Expressions) := ref("globals")(.Arguments)["__name__"]) ~> (if CO . String2Id("co_consts")[0] is not ref("None") : (Locals["__doc__"], .Expressions) := CO . String2Id("co_consts")[0] else: pass) ~> restoreContext(LL, FL, Back) ~> doCall(Metaclass, ListItem(CO . String2Id("co_name")) ListItem(Bases) ListItem(Locals), M) ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
        <currentFrame> Back:Int </currentFrame>
        <fstack> FL => . </fstack>
