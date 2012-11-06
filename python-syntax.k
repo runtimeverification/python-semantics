@@ -5,8 +5,6 @@ module PYTHON-TOKENS
   imports COMPLEX-NUMBERS
   imports BYTES
 
-  //TODO: redo with hooks
-
   syntax NAME ::= Id
   syntax NUMBER ::= Int | Float | Imaginary
   syntax STRING ::= String | Bytes
@@ -16,10 +14,11 @@ endmodule
 module PYTHON-SYNTAX imports PYTHON-TOKENS
 
   syntax CompFor ::= "for" Targets "in" Expressions
-  syntax CompIf ::= "if" "(" Expression ")"
-  syntax CompIter ::= CompFor
-                    | CompIf
-                    | CompIter "@" CompIter
+  syntax CompIf ::= "if" Expression
+  syntax Comp ::= CompFor
+                    | Comp "@" CompIf
+  syntax Comps ::= List{Comp,"@"}
+
 
   syntax YieldExpression ::= "yield" Expression [strict] 
                            | "yield"
@@ -46,10 +45,10 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                 | NUMBER
                 | STRING
                 | "tuple" "(" Expressions ")" [strict]
-                | "[" Expression CompIter "]"
-                | "generator" "(" Expression CompIter ")"
-                | "{" Expression CompIter "}"
-                | "{" Expression ":" Expression CompIter "}"
+                | "[" Expression Comps "]"
+                | "generator" "(" Expression Comps ")"
+                | "{" Expression Comps "}"
+                | "{" Expression ":" Expression Comps "}"
                 | "[" Expressions "]" [strict]
                 | "{" KeyData "}" [strict]
                 | "{" Expressions "}" [strict]
@@ -153,6 +152,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                      | "try" ":" Statements ExceptClauses "else" ":" Statements //"finally" ":" Statements
                      | "try" ":" Statements "finally" ":" Statements
                      | "with" Expression "as" Target ":" Statements
+                     | "with" Expression ":" Statements
                      | Decorated
 
   syntax Statements ::= Statement
@@ -176,6 +176,6 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                    | "def" NAME "(" Parameters ")" ":" Statements
 
 
-  syntax ClassDef ::= "class" NAME "(" Arguments ")" ":" Statements
+  syntax ClassDef ::= "class" NAME "(" Arguments ")" ":" Statements [strict(2)]
 
 endmodule

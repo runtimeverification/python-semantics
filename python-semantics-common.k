@@ -26,6 +26,7 @@ module PYTHON-SEMANTICS-COMMON
                   <nextLoc> 1 </nextLoc>
                   <debug> $DEBUG:Bool </debug>
                   <hashInfo> $HASHINFO:List </hashInfo>
+                  <importlib> $IMPORTLIB:K </importlib>
                   <bootstrapping> 3 </bootstrapped>
                 </T>
 
@@ -225,7 +226,6 @@ module PYTHON-SEMANTICS-COMMON
   rule gettype(E:Expression) => getref(E, "__class__") [macro, anywhere]
   rule getbases(E) => getattr2(getref2(E, "__bases__"), "__value__") [macro, anywhere]
 
-  //TODO: subclasshook
   rule istype(O:Object, Type:Object) => hasbase(gettype(O), Type)
 
   //needs predicates to work without obj()

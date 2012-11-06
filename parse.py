@@ -108,6 +108,12 @@ class KPythonVisitor(ast.NodeVisitor):
     return ("'if_:_else:_(" + self.visit(node.test) + ",,"
             + self.visit_list(node.body,"'_newline_") + ",," + (self.visit_list(node.orelse,"'_newline_") if node.orelse else "'pass(.List{K})") + ")")
 
+  def visit_With(self, node):
+    if node.optional_vars:
+      return "'with_as_:_(" + self.visit(node.context_expr) + ",," + self.visit(node.optional_vars) + ",," + self.visit_list(node.body, "'_newline_") + ")"
+    else:
+      return "'with_:_(" + self.visit(node.context_expr) + ",," + self.visit_list(node.body, "'_newline_") + ")"
+
   def visit_Raise(self, node):
     if not node.exc:
       return "'raise(.List{K})"
@@ -133,6 +139,9 @@ class KPythonVisitor(ast.NodeVisitor):
   def visit_Assert(self, node):
     return ("'assert_('_`,_(" + self.visit(node.test)
             + (",,'_`,_(" + self.visit(node.msg) if node.msg else "") + ",,'.List`{\",\"`}(.List{K})))" + (")" if node.msg else ""))
+
+  def visit_Import(self, node):
+    return "'import_(" + self.visit_list(node.names, "'_`,_", ",") + ")"
 
   def visit_Global(self, node):
     return "'global_(" + self.visit_list(node.names, "'_`,_", ",") + ")"
@@ -164,6 +173,9 @@ class KPythonVisitor(ast.NodeVisitor):
   def visit_Lambda(self, node):
     return "'lambda_:_(" + self.getparams(node.args) + ",," + self.visit(node.body) + ")"
 
+  def visit_IfExp(self, node):
+    return "'_if_else_(" + self.visit(node.test) + ",," + self.visit(node.body) + ",," + self.visit(node.orelse) + ")"
+
   def visit_Dict(self, node):
     result = "'`{_`}("
     for i in range(len(node.keys)):
@@ -172,6 +184,12 @@ class KPythonVisitor(ast.NodeVisitor):
     result += ")" * (len(node.keys) + 1)
     return result
  
+  def visit_ListComp(self, node):
+    return "'`[__`](" + self.visit(node.elt) + ",," + self.visit_list(node.generators, "'_@_", "@") + ")"
+
+  def visit_GeneratorExp(self, node):
+    return "'generator`(__`)(" + self.visit(node.elt) + ",," + self.visit_list(node.generators, "'_@_", "@") + ")"
+
   def visit_Compare(self, node):
     return self.visit(node.ops[0]) + "(" + self.visit(node.left) + ",," + self.visit_ops(node.comparators, [self.visit(n) for n in node.ops[1:]]) + ")"
 
@@ -319,6 +337,15 @@ class KPythonVisitor(ast.NodeVisitor):
     return "'_in_"
   def visit_NotIn(self, node):
     return "'_notin_"
+
+  def visit_comprehension(self, node):
+    return "'_@_(" * len(node.ifs) + "'for_in_(" + self.visit(node.target) + ",," + self.visit(node.iter) + ")" + "".join(map(lambda x: ",,'if_(" + self.visit(x) + "))", node.ifs))
+
+  def visit_alias(self, node):
+    if node.asname:
+      return "'_as_(" + self.getid(node.name) + ",," + self.getid(node.asname) + ")"
+    else:
+      return self.getid(node.name)
 
 input = "".join(sys.stdin.readlines())
 print(KPythonVisitor().visit(ast.parse(input)))
