@@ -242,6 +242,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__code__" |-> ref("__code__")
            "__defaults__" |-> ref("__defaults__")
            "__doc__" |-> ref("__doc__")
+           "__get__" |-> def "get_function" (1, 2, true)
            "__globals__" |-> ref("__globals__")
            "__kwdefaults__" |-> ref("__kwdefaults__")
            "__module__" |-> ref("__module__") 

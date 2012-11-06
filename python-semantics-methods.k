@@ -6,6 +6,7 @@ module PYTHON-SEMANTICS-METHODS
   syntax ObjRef ::= "method" "(" Expression "," Expression "," Expression ")" [strict]
 
   rule <k> invokeBuiltin(obj("get_builtin_method",_), ListItem(Self:Object) ListItem(Instance:Object) ListItem(Owner:Object), .) => method(Self, Instance, Owner) ...</k>
+  rule <k> invokeBuiltin(obj("get_function",_), ListItem(Self:Object) ListItem(Instance:Object) ListItem(Owner:Object), .) => method(Self, Instance, Owner) ...</k>
 
   syntax K ::= "triple" "(" K "," K "," K ")"
 
@@ -29,7 +30,6 @@ module PYTHON-SEMANTICS-METHODS
   //can't use descriptors because method descriptors use it
   rule <k> obj(N:Nat,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), "__call__", false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable")) ...</k>
 
-  //TODO: MRO
   rule <k> invokeBuiltin(obj("call_method",_), ListItem(obj(N, <oattrs>... "__func__" |-> FuncId:Builtin "__self__" |-> SelfId:Builtin ...</oattrs>)) L:List, M:Map) => doCall(ref(FuncId), ListItem(ref(SelfId)) L, M) ...</k>
        <symbols>... "None" |-> NoneId:Nat ...</symbols>
 
