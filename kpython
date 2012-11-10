@@ -3,4 +3,5 @@ PYTHON_LIB=/usr/lib/python3.2
 SIXTYFOUR_BIT="ListItem(64) ListItem(2305843009213693951) ListItem(314159) ListItem(0) ListItem(1000003)"
 DEBUG=true
 HASHINFO=$SIXTYFOUR_BIT
-krun --parser=./parser --output-mode raw -cHASHINFO="$HASHINFO" -cDEBUG="$DEBUG" --cfg-parser="./parser" -cIMPORTLIB="$PYTHON_LIB/importlib/_bootstrap.py" $@
+OS=POSIX
+krun --parser=./parser --output-mode raw -cHASHINFO="$HASHINFO" -cDEBUG="$DEBUG" -cOS="$OS" --cfg-parser="./parser" -cIMPORTLIB="$PYTHON_LIB/importlib/_bootstrap.py" $@

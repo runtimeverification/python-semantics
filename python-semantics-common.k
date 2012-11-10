@@ -22,12 +22,13 @@ module PYTHON-SEMANTICS-COMMON
                   </store>
                   <symbols> .Map </symbols>
                   <references> "None" |-> 1 </references>
+                  <bootstrapping> 3 </bootstrapped>
                   <literals> .Map </literals>
                   <nextLoc> 1 </nextLoc>
                   <debug> $DEBUG:Bool </debug>
                   <hashInfo> $HASHINFO:List </hashInfo>
                   <importlib> $IMPORTLIB:K </importlib>
-                  <bootstrapping> 3 </bootstrapped>
+                  <os> $OS:K </os>
                 </T>
 
   syntax K ::= "initialize" "(" K ")"
