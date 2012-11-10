@@ -306,9 +306,9 @@ module PYTHON-SEMANTICS-COMMON
   rule setArgs(.) => .
 
   rule <k> describe(Self, Instance, Owner, S) => doDescribe(Self, Instance, gettype(Instance), S) ...</k>
-       <symbols>... "None" |-> NoneId ...</symbols> when id(Owner) ==K NoneId
+       <symbols>... "None" |-> NoneId ...</symbols> when id(Owner) ==K NoneId orBool id(Instance) =/=K NoneId
 
   rule <k> describe(Self, Instance, Owner, S) => doDescribe(Self, .Obj, Owner, S) ...</k>
-       <symbols>... "None" |-> NoneId ...</symbols> when id(Owner) =/=K NoneId
+       <symbols>... "None" |-> NoneId ...</symbols> when id(Owner) =/=K NoneId andBool id(Instance) ==K NoneId
 
 endmodule
