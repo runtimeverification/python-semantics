@@ -141,9 +141,9 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                      | "raise" Expression "from" Expression [seqstrict]
                      | "break"
                      | "continue"
-                     | "import" ModuleAliases [seqstrict]
-                     | "from" RelativeModule "import" ModuleAliases [strict(1)]
-                     | "from" Expression "import" "*" [strict]
+                     | "import" ModuleAliases
+                     | "from" RelativeModule "import" ModuleAliases
+                     | "from" Expression "import" "*"
                      | "global" NAMES
                      | "nonlocal" NAMES
                      > "if" Expression ":" Statements "else" ":" Statements [strict(1)]

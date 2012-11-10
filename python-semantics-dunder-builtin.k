@@ -277,6 +277,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
   rule <k> modules => (
 
          // module declarations
+         module "_io"({.KeyData}) ~>
+         module "_os"({.KeyData}) ~>
+         module "_warnings"({.KeyData}) ~>
          module "builtins"({
            "AssertionError" : ref("AssertionError")
          , "AttributeError" : ref("AttributeError")
@@ -316,6 +319,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "type" : ref("type")
          , .KeyData
          }) ~>
+         module "errno"({.KeyData}) ~>
+         module "imp"({.KeyData}) ~>
+         module "marshal"({.KeyData}) ~>
          module "sys"({
            "hash_info" : tuple(N1, N2, N3, N4, N5, .Expressions)
          , .KeyData

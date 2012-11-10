@@ -1,4 +1,5 @@
 require "bytes.k"
+require "python-semantics-os.k"
 require "complex-numbers.k"
 require "machine-integers.k"
 require "python-visitor.k"
@@ -12,17 +13,18 @@ require "python-semantics-literals.k"
 require "python-semantics-try.k"
 require "python-semantics-slicing.k"
 require "python-semantics-calls.k"
+require "python-semantics-builtin-modules.k"
 require "python-semantics-arithmetic-ops.k"
 require "python-semantics-assignment.k"
 require "python-semantics-attribute-ref.k"
 require "python-semantics-augmented-assignment.k"
-require "python-semantics-builtin-modules.k"
 require "python-semantics-classes.k"
 require "python-semantics-dicts.k"
 require "python-semantics-dunder-builtin.k"
 require "python-semantics-environment.k"
 require "python-semantics-exceptions.k"
 require "python-semantics-functions.k"
+require "python-semantics-import.k"
 require "python-semantics-integers.k"
 require "python-semantics-iterators.k"
 require "python-semantics-lists.k"
@@ -46,6 +48,7 @@ module PYTHON
   imports PYTHON-SEMANTICS-ENVIRONMENT
   imports PYTHON-SEMANTICS-EXCEPTIONS
   imports PYTHON-SEMANTICS-FUNCTIONS
+  imports PYTHON-SEMANTICS-IMPORT
   imports PYTHON-SEMANTICS-INTEGERS
   imports PYTHON-SEMANTICS-ITERATORS
   imports PYTHON-SEMANTICS-LISTS
