@@ -146,12 +146,12 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule BOUND(Bound:Set, L (_, Defs, _, Nonlocals, Globals2, _, Params, false)) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals2, L) [function, anywhere]
   rule BOUND(Bound:Set, L (_, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, true)) => BOUND(Bound, L)
   rule BOUND(Bound, .) => Bound [function, anywhere]
-  rule PARAMS(ListItem(X) Params) => ListItem(Id2String(X)) PARAMS(Params) [function, anywhere]
-  rule PARAMS(ListItem(* X) Params) => PARAMS(Params ListItem(* X)) [function, anywhere]
-  rule PARAMS(ListItem(** X) ListItem(* Y:Id)) => ListItem(Id2String(Y)) ListItem(Id2String(X)) [function, anywhere]
-  rule PARAMS(ListItem(* X)) => ListItem(Id2String(X)) [function, anywhere]
-  rule PARAMS(ListItem(** X)) => ListItem(Id2String(X)) [function, anywhere]
-  rule PARAMS(ListItem(* X) ListItem(** Y)) => ListItem(Id2String(X)) ListItem(Id2String(Y)) [function, anywhere]
+  rule PARAMS(ListItem(X:Id) Params) => ListItem(Id2String(X)) PARAMS(Params) [function, anywhere]
+  rule PARAMS(ListItem(* X:Id) Params) => PARAMS(Params ListItem(* X)) [function, anywhere]
+  rule PARAMS(ListItem(** X:Id) ListItem(* Y:Id)) => ListItem(Id2String(Y)) ListItem(Id2String(X)) [function, anywhere]
+  rule PARAMS(ListItem(* X:Id)) => ListItem(Id2String(X)) [function, anywhere]
+  rule PARAMS(ListItem(** X:Id)) => ListItem(Id2String(X)) [function, anywhere]
+  rule PARAMS(ListItem(* X:Id) ListItem(** Y:Id)) => ListItem(Id2String(X)) ListItem(Id2String(Y)) [function, anywhere]
   rule PARAMS(.) => . [function, anywhere]
 
   rule createFunction(X, Ps, K:K, O:Object) => visited((X, .Expressions) := function(Ps, O, K))
