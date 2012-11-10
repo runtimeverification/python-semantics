@@ -22,7 +22,7 @@ module PYTHON-SEMANTICS-METHODS
          <oattrs> "__class__" |-> N2 "__func__" |-> FuncId "__self__" |-> SelfId </oattrs>
        ...</object>) when notBool(triple(FuncId, SelfId, N2) in keys M)
 
-  rule <k> method(obj(FuncId,_), obj(SelfId,_))) => ref(N) ...</k>
+  rule <k> method(obj(FuncId,_), obj(SelfId,_)) => ref(N) ...</k>
        <literals>... triple(FuncId, SelfId, N2) |-> N ...</literals>
        <symbols>... "method" |-> N2:Nat ...</symbols>
 
