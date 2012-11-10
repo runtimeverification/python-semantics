@@ -37,6 +37,11 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "bool"("type",ListItem("int"),
            "__new__" |-> def "new_bool" (1, 2, false)
            ,.) ~>
+         object "classmethod"("type", ListItem("object"),
+           "__get__" |-> def "get_classmethod"(1, 2, true)
+           "__init__" |-> def "init_classmethod"(1, 1, true)
+           "__new__" |-> def "new_classmethod"(2, 2, false)
+           ,.) ~>
          object "complex"("type",ListItem("object"),.,.) ~>
          object "dict"("type",ListItem("object"),
            "keys" |-> def "keys_dict" (0, 0, true)

@@ -71,6 +71,8 @@ module PYTHON-SEMANTICS-COMMON
                   | "name" "(" Expression ")"
                   | "codeObject" "(" Id "," Parameters "," K "," Bool ")"
                   | "class" "(" Arguments "," Expression ")" [strict]
+                  | describe(Expression, Expression, Expression, String) [strict(1 2 3)]
+                  | doDescribe(Expression, Expression, Expression, String) [strict(1 2 3)]
 
   syntax K ::= "iterate" "(" Expression "," K ")" [strict(1)]
 
@@ -235,8 +237,12 @@ module PYTHON-SEMANTICS-COMMON
   rule hasbase(list(ListItem(N) L), Base) => or(hasbase(ref(N), Base),hasbase(list(L), Base))
   rule hasbase(list(.List), Base) => false
 
-  rule <k> invokeBuiltin(obj("get_ref",_), ListItem(obj(_, <oattrs>... "__get__" |-> S ...</oattrs>)) ListItem(O) ListItem(_), .) => getref(O, S) ...</k>
-  rule <k> invokeBuiltin(obj("get_attr",_), ListItem(obj(_, <oattrs>... "__get__" |-> S ...</oattrs>)) ListItem(O) ListItem(_), .) => getattr(O, S) ...</k>
+  rule invokeBuiltin(obj("get_ref",_), ListItem(Self) ListItem(Instance) ListItem(Owner), .) => describe(Self, Instance, Owner, "get_ref")
+  rule invokeBuiltin(obj("get_attr",_), ListItem(Self) ListItem(Instance) ListItem(Owner), .) => describe(Self, Instance, Owner, "get_attr")
+  rule doDescribe(Self, .Obj, _, "get_ref") => Self
+  rule doDescribe(Self, .Obj, _, "get_attr") => Self
+  rule doDescribe(Self, O:Object, _, "get_ref") => getref(O, getattr(Self, "__get__"))
+  rule doDescribe(Self, O:Object, _, "get_attr") => getattr(O, getattr(Self, "__get__"))
 
   rule <k> ref(S:String) => ref(N:Int) ...</k>
        <symbols>... S |-> N ...</symbols>
@@ -298,5 +304,11 @@ module PYTHON-SEMANTICS-COMMON
 
   rule (. => X:Id, .Expressions := ref(B)) ~> setArgs((X |-> B => .) _)
   rule setArgs(.) => .
+
+  rule <k> describe(Self, Instance, Owner, S) => doDescribe(Self, Instance, gettype(Instance), S) ...</k>
+       <symbols>... "None" |-> NoneId ...</symbols> when id(Owner) ==Int NoneId
+
+  rule <k> describe(Self, Instance, Owner, S) => doDescribe(Self, .Obj, Owner, S) ...</k>
+       <symbols>... "None" |-> NoneId ...</symbols> when id(Owner) =/=Int NoneId
 
 endmodule
