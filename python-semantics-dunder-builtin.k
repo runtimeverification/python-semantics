@@ -56,6 +56,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "dict_keys" ("type",ListItem("object"),
            "__iter__" |-> def "iter_dict_keys" (0, 0, true)
            ,.) ~>
+         object "getattr" ( "builtin-function" ,.,.,
+           "__call__" |-> def "call_getattr" (2, 3, false)
+           ) ~>
          object "globals" ( "builtin-function" ,.,.,
            "__call__" |-> def "call_globals" (0, 0, false)
            ) ~>
@@ -158,6 +161,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__iter__" |-> def "iter_range" (0, 0, true)
            "__new__" |-> def "new_range" (1, 4, false)
            ,.) ~>
+         object "setattr" ( "builtin-function" ,.,.,
+           "__call__" |-> def "call_setattr" (3, 3, false)
+           ) ~>
          object "slice" ("type",ListItem("object"),
            "indices" |-> def "indices_slice" (1, 1, true)
            "start" |-> ref("start")
@@ -314,11 +320,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "int" : ref("int")
          , "iter" : ref("iter")
          , "float" : ref("float")
+         , "getattr" : ref("getattr")
          , "len" : ref("len")
          , "list" : ref("list")
          , "map" : ref("map")
          , "object" : ref("object")
          , "range" : ref("range")
+         , "setattr" : ref("setattr")
          , "slice" : ref("slice")
          , "str" : ref("str")
          , "tuple" : ref("tuple")

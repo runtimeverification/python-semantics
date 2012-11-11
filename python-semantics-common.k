@@ -239,6 +239,8 @@ module PYTHON-SEMANTICS-COMMON
 
   rule invokeBuiltin(obj("get_ref",_), ListItem(Self) ListItem(Instance) ListItem(Owner), .) => describe(Self, Instance, Owner, "get_ref")
   rule invokeBuiltin(obj("get_attr",_), ListItem(Self) ListItem(Instance) ListItem(Owner), .) => describe(Self, Instance, Owner, "get_attr")
+  rule invokeBuiltin(obj("set_ref",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => doCall(getref(Self, "__set__"), ListItem(Self) ListItem(Instance) ListItem(Value), .)
+  rule invokeBuiltin(obj("set_attr",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => doCall(getref(Self, "__set__"), ListItem(Self) ListItem(Instance) ListItem(Value), .)
   rule doDescribe(Self, .Obj, _, "get_ref") => Self
   rule doDescribe(Self, .Obj, _, "get_attr") => Self
   rule doDescribe(Self, O:Object, _, "get_ref") => getref(O, getattr(Self, "__get__"))

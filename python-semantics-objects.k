@@ -46,6 +46,8 @@ module PYTHON-SEMANTICS-OBJECTS
 
   rule invokeBuiltin(obj("mro_type",_), ListItem(Type), .) => mutable(getMro(id(Type), getref(Type, "__bases__")), ref("list"))
 
+  rule invokeBuiltin(obj("call_setattr",_), ListItem(O) ListItem(Name:Object) ListItem(Value:Object), .) => O . String2Id("__setattr__") (Name, Value)
+
   rule invokeBuiltin(obj("setattr_object",_), ListItem(O) ListItem(Name) ListItem(Value), .) => test(istype(O, ref("type")), raiseInternal("TypeError", "can't apply this __setattr__ to type object"), setmember(O, Name, Value))
   rule invokeBuiltin(obj("setattr_type",_), ListItem(Type) ListItem(Name) ListItem(Value), .) => setmember(Type, Name, Value)
 

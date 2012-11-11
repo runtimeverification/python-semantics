@@ -9,7 +9,7 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   rule (. => bind(X:Id, B:Builtin)) ~> (X , Ts:Expressions => Ts) := obj(B,_)
   rule (. => bindList(Listify(Ts2), O, false)) ~> (tuple(Ts2:Expressions) , Ts => Ts) := O:Object
   rule (. => bindList(Listify(Ts2), O, false)) ~> ([ Ts2 ] , Ts => Ts) := O
-  rule (. => (getmember(O, "__setattr__", true, false, true) (Id2String(X), O2) ;)) ~> ((O:Object . X:Id) , Ts => Ts) := O2:Object
+  rule (. => ref("setattr")(O, Id2String(X), O2) ;) ~> ((O:Object . X:Id) , Ts => Ts) := O2:Object
   rule (. => (getmember(O, "__setitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item assignment")) (Key:Object, Value:Object, .Expressions) ;) ~> ((O:Object [ Key:Object ]) , Ts => Ts) := Value
   rule .Expressions := _ => .
 

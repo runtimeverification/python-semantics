@@ -11,7 +11,9 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
                   | "checkData" "(" Expression "," Expression ")" [strict]
                   | "checkDataSet" "(" Expression "," Expression "," Expression ")" [strict]
 
-  rule O . X:Id => try: (getmember(O, "__getattribute__", true, false, true) (Id2String(X))) except ref("AttributeError") : (getmember(O, "__getattr__", true, false, false) (Id2String(X)) -> raise) else: pass
+  rule O:Object . X:Id => ref("getattr")(O, Id2String(X), .Arguments)
+
+  rule invokeBuiltin(obj("call_getattr",_), ListItem(O) ListItem(S:Object), .) => try: (getmember(O, "__getattribute__", true, false, true) (S)) except ref("AttributeError") : (getmember(O, "__getattr__", true, false, false) (S) -> raise) else: pass
 
   rule invokeBuiltin(obj("getattribute_object",_), ListItem(O) ListItem(O2:Object), .) => checkData(getmember(O, O2, false, false, false), O) -> mapLookup(O, O2) -> getmember(O, O2, true, false, true)
   rule invokeBuiltin(obj("getattribute_type",_), ListItem(O) ListItem(O2), .) => checkData(getmember(O, O2, false, false, false), O) -> getmember(O, O2, true, true, true)
@@ -62,9 +64,9 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule <k> descriptor(O:Object, O2:Object, Type:Object, false) => (getmember(O, "__get__", false, false, false) (O, O2, O2, .Arguments)) -> O ...</k>
        <symbols>... "None" |-> None:Int ...</symbols> when id(O2) ==K None
  
-  rule setmember(O:Object, Name:Object, Value:Object) => checkDataSet(getmember(O, Name, false, false, false), Name, Value) -> mapInsert(O, Name, Value) -> raiseInternal("AttributeError", "object has no attribute '" +String strvalue(Name) +String "'")
+  rule setmember(O:Object, Name:Object, Value:Object) => checkDataSet(getmember(O, Name, false, false, false), O, Value) -> mapInsert(O, Name, Value) -> raiseInternal("AttributeError", "object has no attribute '" +String strvalue(Name) +String "'")
 
-  rule checkDataSet(O:Object, Name, Value) => getmember(O, "__set__", false, false, false) (O, Name, Value, .Arguments) -> .Obj
+  rule checkDataSet(O:Object, Instance, Value) => getmember(O, "__set__", false, false, false) (O, Instance, Value, .Arguments) -> .Obj
   rule checkDataSet(.Obj, _, _) => .Obj
 
   rule <k> mapInsert(obj(B,_), Name, Value) => ref(Dict) [Name] , .Expressions := Value ~> ref("None") ...</k>
