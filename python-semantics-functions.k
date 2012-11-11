@@ -30,10 +30,10 @@ module PYTHON-SEMANTICS-FUNCTIONS
            makeFunction(N, Listify(Ps), Return, false) ~> ref(N) ...</k>
        <nextLoc> N:Int => N +Int 1 </nextLoc>
        <currentFrame> N2 </currentFrame>
-       (. => <object>...
+       (. => <object>
          <id>N</id>
          <oattrs> "__code__" |-> id(O) "__class__" |-> Function </oattrs>
-       ...</object>)
+       </object>)
        <symbols>... "function" |-> Function:Int ...</symbols>
 
   rule <k> codeObject(X, Ps, Ss:K, T:Bool) =>
