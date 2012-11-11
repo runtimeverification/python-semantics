@@ -11,7 +11,7 @@ module PYTHON-SEMANTICS-OBJECTS
 
   rule <k> invokeBuiltin(obj("call_type",_), ListItem(Type:Object) L:List, M:Map) => init(doCall(Type . String2Id("__new__"), ListItem(Type) L, M), Type, L, M) ...</k>
 
-  rule <k> init(O:Object, Type, L, M) => test(istype(O, Type), (doCall(getmember(O, "__init__", true, false, false), L, M) ; ~> ref(id(O))), O) ...</k>
+  rule <k> init(O:Object, Type, L, M) => test(istype(O, Type), test(plbool(doCall(getmember(O, "__init__", true, false, false), L, M) is ref("None")), ref(id(O)), raiseInternal("TypeError", "__init__() should return None")), O) ...</k>
 
   rule <k> invokeBuiltin(obj("new_object",_), ListItem(O:Object) _, _) => newHelper(O, ref("object"), SetItem("iterator") SetItem("attribute") SetItem("builtin-function") SetItem("builtin-method") SetItem("frame") SetItem("reference")) ~> (if O is not ref("object") : setref(N, "__dict__", {.KeyData}) else: pass) ~> ref(N) ...</k>
        <nextLoc> N:Nat => N +Int 1 </nextLoc>
