@@ -307,6 +307,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "__debug__" : #if T #then ref("True") #else ref("False") #fi
          , "__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."
          , "bool" : ref("bool")
+         , "classmethod" : ref("classmethod")
          , "complex" : ref("complex")
          , "dict" : ref("dict")
          , "hash" : ref("hash")
