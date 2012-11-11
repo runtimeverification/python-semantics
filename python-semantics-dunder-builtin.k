@@ -145,9 +145,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__next__" |-> def "map_next" (0, 0, true)
            ,.) ~>
          object "module"("type",ListItem("object"),
-           "__dict__" |-> ref("__dict__")
+           "__dict__" |-> ref("__dict__module")
            ,.) ~>
-         object "__dict__"("reference",.,., "__get__" |-> "__dict__") ~>
+         object "__dict__module"("reference",.,., "__get__" |-> "__dict__") ~>
          object "object"("type",.,
            "__class__" |-> ref("__class__")
            "__getattribute__" |-> def "getattribute_object" (1, 1, true)
@@ -251,7 +251,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__closure__" |-> ref("__closure__")
            "__code__" |-> ref("__code__")
            "__defaults__" |-> ref("__defaults__")
-           "__dict__" |-> ref("__dict__")
+           "__dict__" |-> ref("__dict__function")
            "__doc__" |-> ref("__doc__")
            "__get__" |-> def "get_function" (1, 2, true)
            "__globals__" |-> ref("__globals__")
@@ -263,7 +263,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "__closure__" ("reference",.,., "__get__" |-> "__closure__") ~>
          object "__code__" ("reference",.,., "__get__" |-> "__code__") ~>
          object "__defaults__" ("reference",.,., "__get__" |-> "__defaults__") ~>
-         object "__dict__" ("reference",.,., "__get__" |-> "__dict__") ~>
+         object "__dict__function" ("reference",.,., "__get__" |-> "__dict__") ~>
          object "__doc__" ("reference",.,., "__get__" |-> "__doc__" "__set__" |-> ref("set_ref_default")) ~>
          object "__globals__" ("reference",.,., "__get__" |-> "__globals__") ~>
          object "__kwdefaults__" ("reference",.,., "__get__" |-> "__kwdefaults__") ~>
