@@ -20,3 +20,17 @@ try:
 except TypeError:
   c = 3
 assert c == 3
+
+try:
+  setattr(5, "x", 5)
+  assert False
+except AttributeError:
+  a = 1
+assert a == 1
+
+try:
+  setattr(int, "x", 5)
+  assert False
+except TypeError:
+  b = 2
+assert b == 2
