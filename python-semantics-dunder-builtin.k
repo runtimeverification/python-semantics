@@ -266,7 +266,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "__doc__" ("reference",.,., "__get__" |-> "__doc__") ~>
          object "__globals__" ("reference",.,., "__get__" |-> "__globals__") ~>
          object "__kwdefaults__" ("reference",.,., "__get__" |-> "__kwdefaults__") ~>
-         object "__module__" ("reference",.,., "__get__" |-> "__module__") ~>
+         object "__module__" ("reference",.,., "__get__" |-> "__module__" "__set__" |-> def "set_ref_default"(3, 3, false)) ~>
          object "__name__function"("reference",.,., "__get__" |-> "__name__") ~>
          object "method" ("type", ListItem("object"),
            "__call__" |-> def "call_method" (0, -1, true)
