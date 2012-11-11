@@ -237,9 +237,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "f_builtins" |-> ref("f_builtins")
            "f_code" |-> ref("f_code")
            "f_globals" |-> ref("f_globals")
-           "f_lasti" |-> ref("f_lasti")
            "f_locals" |-> ref("f_locals")
-           , "f_lasti" |-> undefined("bytecode is implementation specific")) ~>
+           ,.) ~>
          object "f_back" ("reference",.,., "__get__" |-> "f_back") ~>
          object "f_builtins" ("reference",.,., "__get__" |-> "f_builtins") ~>
          object "f_code" ("reference",.,., "__get__" |-> "f_code") ~>
