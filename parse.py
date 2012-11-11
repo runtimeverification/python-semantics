@@ -79,7 +79,7 @@ class KPythonVisitor(ast.NodeVisitor):
 
   def dolist(self, result):
     if not result:
-      return "'.List`{\",\"`}(.List{K})"
+      return "'.List`{\"`,\"`}(.List{K})"
     else:
       return "'_`,_(" + result[0] + ",," + self.dolist(result[1:]) + ")"
 
@@ -90,10 +90,10 @@ class KPythonVisitor(ast.NodeVisitor):
       return "'return(.List{K})"
 
   def visit_Delete(self, node):
-    return "'del_(" + self.visit_list(node.targets, "'_`,_",",") + ")"
+    return "'del_(" + self.visit_list(node.targets, "'_`,_","`,") + ")"
 
   def visit_Assign(self, node):
-    return "'_:=_(" + self.visit_list(node.targets, "'_`,_",",") + ",," + self.visit(node.value) + ")"
+    return "'_:=_(" + self.visit_list(node.targets, "'_`,_","`,") + ",," + self.visit(node.value) + ")"
 
   def visit_AugAssign(self, node):
     return "'_" + self.visit(node.op) + "=_(" + self.visit(node.target) + ",," + self.visit(node.value) + ")"
@@ -138,16 +138,16 @@ class KPythonVisitor(ast.NodeVisitor):
 
   def visit_Assert(self, node):
     return ("'assert_('_`,_(" + self.visit(node.test)
-            + (",,'_`,_(" + self.visit(node.msg) if node.msg else "") + ",,'.List`{\",\"`}(.List{K})))" + (")" if node.msg else ""))
+            + (",,'_`,_(" + self.visit(node.msg) if node.msg else "") + ",,'.List`{\"`,\"`}(.List{K})))" + (")" if node.msg else ""))
 
   def visit_Import(self, node):
-    return "'import_(" + self.visit_list(node.names, "'_`,_", ",") + ")"
+    return "'import_(" + self.visit_list(node.names, "'_`,_", "`,") + ")"
 
   def visit_Global(self, node):
-    return "'global_(" + self.visit_list(node.names, "'_`,_", ",") + ")"
+    return "'global_(" + self.visit_list(node.names, "'_`,_", "`,") + ")"
 
   def visit_Nonlocal(self, node):
-    return "'nonlocal_(" + self.visit_list(node.names, "'_`,_", ",") + ")"
+    return "'nonlocal_(" + self.visit_list(node.names, "'_`,_", "`,") + ")"
 
   def visit_Expr(self, node):
     return "'_;(" + self.visit(node.value) + ")"
@@ -180,7 +180,7 @@ class KPythonVisitor(ast.NodeVisitor):
     result = "'`{_`}("
     for i in range(len(node.keys)):
       result += "'_`,_('_:_(" + self.visit(node.keys[i]) + ",," + self.visit(node.values[i]) + "),,"
-    result += "'.List`{\",\"`}(.List{K})"
+    result += "'.List`{\"`,\"`}(.List{K})"
     result += ")" * (len(node.keys) + 1)
     return result
  
@@ -213,7 +213,7 @@ class KPythonVisitor(ast.NodeVisitor):
     result = ""
     for node in nodes:
       result += "'_`,_(" + node + ",,"
-    result += "'.List`{\",\"`}(.List{K})" 
+    result += "'.List`{\"`,\"`}(.List{K})" 
     for node in nodes:
       result += ")"
     return result
@@ -256,10 +256,10 @@ class KPythonVisitor(ast.NodeVisitor):
     return '# #id("' + s + '")(.List{K})'
 
   def visit_List(self, node):
-    return "'`[_`](" + self.visit_list(node.elts, "'_`,_", ",") + ")"
+    return "'`[_`](" + self.visit_list(node.elts, "'_`,_", "`,") + ")"
 
   def visit_Tuple(self, node):
-    return "'tuple`(_`)(" + self.visit_list(node.elts, "'_`,_", ",") + ")"
+    return "'tuple`(_`)(" + self.visit_list(node.elts, "'_`,_", "`,") + ")"
 
   def visit_Slice(self, node):
     if node.lower:
@@ -276,7 +276,7 @@ class KPythonVisitor(ast.NodeVisitor):
     return op
 
   def visit_ExtSlice(self, node):
-    return "'tuple`(_`)(" + self.visit_list(node.dims, "'_`,_", ",") + ")"
+    return "'tuple`(_`)(" + self.visit_list(node.dims, "'_`,_", "`,") + ")"
 
   def visit_Index(self, node):
     return self.visit(node.value)
