@@ -262,7 +262,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "__closure__" ("reference",.,., "__get__" |-> "__closure__") ~>
          object "__code__" ("reference",.,., "__get__" |-> "__code__") ~>
          object "__defaults__" ("reference",.,., "__get__" |-> "__defaults__") ~>
-         object "__doc__" ("reference",.,., "__get__" |-> "__doc__") ~>
+         object "__doc__" ("reference",.,., "__get__" |-> "__doc__" "__set__" |-> ref("set_ref_default")) ~>
          object "__globals__" ("reference",.,., "__get__" |-> "__globals__") ~>
          object "__kwdefaults__" ("reference",.,., "__get__" |-> "__kwdefaults__") ~>
          object "__module__" ("reference",.,., "__get__" |-> "__module__" "__set__" |-> def "set_ref_default"(3, 3, false)) ~>
