@@ -41,10 +41,13 @@ module PYTHON-SEMANTICS-METHODS
 
   rule <k> invokeBuiltin(obj("new_classmethod",_), ListItem(Class) ListItem(Method), .) => newHelper(Class, ref("classmethod"), .) ~> mutable("__func__" |-> None, Class) ...</k>
        <symbols>... "None" |-> None ...</symbols>
-
   rule invokeBuiltin(obj("init_classmethod",_), ListItem(Self) ListItem(Method), .) => setref(id(Self), "__func__", Method) ~> ref("None")
-
   rule invokeBuiltin(obj("get_classmethod",_), ListItem(Self) ListItem(Instance) ListItem(Owner), .) => describe(Self, Instance, Owner, "get_classmethod")
   rule doDescribe(Self, _, Owner, "get_classmethod") => method(getref(Self, "__func__"), Owner)
+
+  rule <k> invokeBuiltin(obj("new_staticmethod",_), ListItem(Class) ListItem(Method), .) => newHelper(Class, ref("staticmethod"), .) ~> mutable("__func__" |-> None, Class) ...</k>
+       <symbols>... "None" |-> None ...</symbols>
+  rule invokeBuiltin(obj("init_staticmethod",_), ListItem(Self) ListItem(Method), .) => setref(id(Self), "__func__", Method) ~> ref("None")
+  rule invokeBuiltin(obj("get_staticmethod",_), ListItem(Self) ListItem(Instance) ListItem(Owner), .) => getref(Self, "__func__")
 
 endmodule

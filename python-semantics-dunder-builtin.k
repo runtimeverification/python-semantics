@@ -175,6 +175,11 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "start"("attribute",.,., "__get__" |-> "start") ~>
          object "stop"("attribute",.,., "__get__" |-> "stop") ~>
          object "step"("attribute",.,., "__get__" |-> "step") ~>
+         object "staticmethod"("type", ListItem("object"),
+           "__get__" |-> def "get_staticmethod"(1, 2, true)
+           "__init__" |-> def "init_staticmethod"(1, 1, true)
+           "__new__" |-> def "new_staticmethod"(2, 2, false)
+           ,.) ~>
          object "str"("type",ListItem("object"),
            "__add__" |-> def "add_str" (1, 1, true)
            "__eq__" |-> def "eq_str" (1, 1, true)
@@ -329,6 +334,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "range" : ref("range")
          , "setattr" : ref("setattr")
          , "slice" : ref("slice")
+         , "staticmethod" : ref("staticmethod")
          , "str" : ref("str")
          , "tuple" : ref("tuple")
          , "type" : ref("type")
