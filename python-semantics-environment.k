@@ -52,7 +52,7 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                             S in Code . String2Id("co_freevars") :
                                               test(B ==K 0,
                                                    setattr(id(getref(Frame, "f_cells")[S]), "cell_contents", .Obj),
-                                                   setattr(id(getref(Frame, "f_cells")[S]), "cell_contents", B))
+                                                   setref(id(getref(Frame, "f_cells")[S]), "cell_contents", ref(B)))
                                          else: pass ~>
                                          if S in Code . String2Id("co_freevars") :
                                               doBind(S, B, getref2(getref(Frame, "f_cells")[S], "cell_frame"))

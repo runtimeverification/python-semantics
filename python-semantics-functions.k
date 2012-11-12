@@ -26,7 +26,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
            setref(N, "__closure__", ref("None")) ~>
            setref(N, "__annotations__", {.KeyData}) ~> 
            setref(N, "__kwdefaults__", ref("None")) ~>
-           setattr(N, "__frame__", N2) ~>
+           setref(N, "__frame__", ref(N2)) ~>
            makeFunction(N, Listify(Ps), Return, false) ~> ref(N) ...</k>
        <nextLoc> N:Int => N +Int 1 </nextLoc>
        <currentFrame> N2 </currentFrame>
