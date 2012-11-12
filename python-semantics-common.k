@@ -219,6 +219,8 @@ module PYTHON-SEMANTICS-COMMON
          <oattrs> Attrs => Attrs[ref(id(O)) / S] </oattrs>
        ...</object>
 
+  context setref(id(HOLE), _, _)
+
   rule <k> setenv(B, O, O2) => . ...</k>
        <object>...
          <id>B</id>
