@@ -8,7 +8,7 @@ module PYTHON-SEMANTICS-ITERATORS
   rule <k> invokeBuiltin(obj("get_iter",_), ListItem(obj(_:Builtin,<oattrs>... "__value__" |-> K:K ...</oattrs>)), .) => mutable(K, ref("iterator")) ...</k>
 
   rule <k> invokeBuiltin(obj("iter_iter",_), ListItem(O:Object), .) => O ...</k>
-  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B:Builtin,_)), .) => ref(B2:Builtin) ...</k>
+  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B:Builtin,_)), .) => B2 ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> list((ListItem(B2) => .) L:List) ...</oattrs>
@@ -19,7 +19,7 @@ module PYTHON-SEMANTICS-ITERATORS
          <oattrs>... "__value__" |-> list(.) ...</oattrs>
        ...</object>
 
-  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => try: (getmember(ref(B2), "__getitem__", true, false, true) (I:Int)) except ref("IndexError"): (setx(.Obj) ~> raise ref("StopIteration")) else: pass  ...</k>
+  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => try: (getmember(B2, "__getitem__", true, false, true) (I:Int)) except ref("IndexError"): (setx(.Obj) ~> raise ref("StopIteration")) else: pass  ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__index__" |-> (I => I +Int 1) "__value__" |-> B2 ...</oattrs>

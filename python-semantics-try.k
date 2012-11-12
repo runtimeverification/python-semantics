@@ -37,26 +37,23 @@ module PYTHON-SEMANTICS-TRY
        <xstack> _:ListItem => . ...</xstack>
 
   rule <k> raise => raiseInternal("RuntimeError", "No active exception to reraise") ...</k>
-       <xcontext> N:Nat </xcontext>
-       <symbols>... "None" |-> N ...</symbols>
+       <xcontext> ref("None") </xcontext>
 
   rule <k> (. => ECs) ~> raise ...</k>
        <control>
-         <xcontext> B:Builtin </xcontext>
+         <xcontext> B </xcontext>
          <xstack> (ECs, _, C, _, (true => false)) ...</xstack>
          (_ => C)
-       </control>
-       <symbols>... "None" |-> N ...</symbols> when B =/=K N
+       </control> when B =/=K ref("None")
 
   rule <k> (. => Finally) ~> raise ...</k>
        <control>
-         <xcontext> B:Builtin </xcontext>
+         <xcontext> B </xcontext>
          <xstack> (Finally, C, _, LL, FL, _) => . ...</xstack>
          <lstack> _ => LL </lstack>
          <fstack> _ => FL </fstack>
          (_ => C)
-       </control>
-       <symbols>... "None" |-> N ...</symbols> when B =/=K N
+       </control> when B =/=K ref("None")
 
   rule <k> raise ...</k>
        <control>...
@@ -73,7 +70,7 @@ module PYTHON-SEMANTICS-TRY
   rule <k> doRaise(O, O2, T:Bool) => test(istype(O, ref("BaseException")), test(or(T,istype(O2, ref("BaseException"))), (setcause(O, O2) ~> savex(O) ~> raise) , raiseInternal("TypeError", "exception causes must derive from BaseException")), raiseInternal("TypeError", "exceptions must derive from BaseException")) ...</k>
 
   rule <k> savex(obj(B,_)) => . ...</k>
-       <xcontext> B2:Builtin => B </xcontext>
+       <xcontext> B2 => ref(B) </xcontext>
        <object>...
          <id>B</id>
          <oattrs> OAttrs:Map => OAttrs[B2 / "__context__"] </oattrs>
@@ -85,7 +82,7 @@ module PYTHON-SEMANTICS-TRY
   rule <k> setcause(obj(B,_), obj(B2,_)) => . ...</k>
        <object>...
          <id>B</id>
-         <oattrs> OAttrs => OAttrs[B2 / "__cause__"] </oattrs>
+         <oattrs> OAttrs => OAttrs[ref(B2) / "__cause__"] </oattrs>
        ...</object>
 
   //TODO: handle traceback
@@ -100,10 +97,10 @@ module PYTHON-SEMANTICS-TRY
   rule <k> except O:Object as X:NAME : Except:K => test(hasbase(O, ref("BaseException")), doExcept(O, Except, X), test(istype(O, ref("tuple")), doExcepts(listvalue(O), Except, X), raiseInternal("TypeError", "catching classes that do not inherit from BaseException is not allowed"))) ...</k>
 
   rule <k> doExcepts(., Except, X) => . ...</k>
-  rule <k> doExcepts(ListItem(B:Builtin) L:List, Except, X) => doExcept(ref(B), Except, X) ~> doExcepts(L, Except, X) ...</k>
+  rule <k> doExcepts(ListItem(B) L:List, Except, X) => doExcept(B, Except, X) ~> doExcepts(L, Except, X) ...</k>
 
   //TODO: sys.exc_info
-  rule <k> doExcept(Type:Object, Except, X) => test(istype(ref(B), Type), test(Id2String(X) ==String "", except: Except, (bind(X, B) ~> except: (try: Except finally: unbind(X)))), .) ...</k>
-       <xcontext> B:Builtin </xcontext>
+  rule <k> doExcept(Type:Object, Except, X) => test(istype(B, Type), test(Id2String(X) ==String "", except: Except, (X, .Expressions := B ~> except: (try: Except finally: unbind(X)))), .) ...</k>
+       <xcontext> B </xcontext>
 
 endmodule

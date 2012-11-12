@@ -6,7 +6,7 @@ module PYTHON-SEMANTICS-EXCEPTIONS
   rule <k> invokeBuiltin(obj("init_baseexception",_), ListItem(obj(B:Builtin,_)) L:List, .) => ref("None") ...</k>
        <object>...
          <id>B</id>
-         <oattrs> OAttrs:Map => OAttrs[list(Idify(L)) / "args"] </oattrs>
+         <oattrs> OAttrs:Map => OAttrs[list(Refify(Idify(L))) / "args"] </oattrs>
        ...</object>
 
 endmodule

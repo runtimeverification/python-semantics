@@ -22,11 +22,11 @@ module PYTHON-SEMANTICS-LITERALS
   syntax Builtin ::= "value" "(" KeyDatum ")" [function]
   rule value(_ : B) => B [function, anywhere]
 
-  rule <k> I:Int => immutable(I,ref("int")) ...</k>
-  rule <k> S:String => immutable(S,ref("str")) ...</k>
-  rule <k> F:Float => immutable(F,ref("float")) ...</k>
-  rule <k> tuple(Osc:Expressions) => immutable(list(Idify(Listify(Osc))), ref("tuple")) ...</k>
-  rule <k> [ Osc:Expressions ] => mutable(list(Idify(Listify(Osc))), ref("list")) ...</k>
+  rule <k> I:Int => mutable(I,ref("int")) ...</k>
+  rule <k> S:String => mutable(S,ref("str")) ...</k>
+  rule <k> F:Float => mutable(F,ref("float")) ...</k>
+  rule <k> tuple(Osc:Expressions) => mutable(list(Refify(Idify(Listify(Osc)))), ref("tuple")) ...</k>
+  rule <k> [ Osc:Expressions ] => mutable(list(Refify(Idify(Listify(Osc)))), ref("list")) ...</k>
   rule <k> { Osc:Expressions } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k>
   rule <k> { OPs:KeyData } => processDict(mutable(map(.),ref("dict")), Mapify(OPs)) ...</k>
 
@@ -44,7 +44,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule <k> checkHash(O:Object) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__hash__ method should return an integer")) ...</k>
 
-  rule <k> processDictElement(obj(B:Builtin,_), Key:Object, Hash:Object, Value:K) => tableInsert(B, intvalue(Hash), Key, id(Key) : id(Value)) ...</k>
+  rule <k> processDictElement(obj(B:Builtin,_), Key:Object, Hash:Object, Value:K) => tableInsert(B, intvalue(Hash), Key, ref(id(Key)) : ref(id(Value))) ...</k>
 
   rule <k> processSetElement(obj(B,_), Element, Hash) => tableInsert(B, intvalue(Hash), Element, id(Element)) ...</k>
 
@@ -60,7 +60,7 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(_ H |-> list(Values)) ...</oattrs>
        ...</object>
 
-  rule bucketInsert(B, H, Key, K, ListItem(Key2:Builtin : Value2:Builtin) Suffix:List, Prefix:List) => test(plbool(Key == ref(Key2)), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem(Key2 : Value2)))
+  rule bucketInsert(B, H, Key, K, ListItem(Key2 : Value2) Suffix:List, Prefix:List) => test(plbool(Key == Key2), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem(Key2 : Value2)))
 
   rule <k> bucketInsert(B, H, Key, K, ., Prefix) => . ...</k>
        <object>...
@@ -92,7 +92,7 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
-  rule bucketLookup(Key, ListItem(Key2 : Value2) Suffix) => test(plbool(Key == ref(Key2)), ref(Value2), bucketLookup(Key, Suffix))
+  rule bucketLookup(Key, ListItem(Key2 : Value2) Suffix) => test(plbool(Key == Key2), Value2, bucketLookup(Key, Suffix))
   rule bucketLookup(Key, .) => raise ref("KeyError") (Key, .Arguments)
 
   rule <k> tableDelete(B, H, Key) => bucketDelete(B, H, Key, Values, .) ...</k>
@@ -107,28 +107,8 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
-  rule bucketDelete(B, H, Key, ListItem(Key2 : Value2) Suffix, Prefix) => test(plbool(Key == ref(Key2)), setBucket(B, H, Prefix Suffix), bucketDelete(B, H, Key, Suffix, Prefix ListItem(Key2 : Value2)))
+  rule bucketDelete(B, H, Key, ListItem(Key2 : Value2) Suffix, Prefix) => test(plbool(Key == Key2), setBucket(B, H, Prefix Suffix), bucketDelete(B, H, Key, Suffix, Prefix ListItem(Key2 : Value2)))
   rule bucketDelete(_, _, Key, ., _) => raise ref("KeyError") (Key, .Arguments)
-
-  syntax K ::= "pair" "(" Value "," Builtin ")"
- 
-  rule <k> copy(obj(B,_), O) => immutable(V:Value, O) ...</k>
-       <object>...
-         <id>B</id>
-         <oattrs>... "__value__" |-> V ...</oattrs>
-       ...</object>
-
-  rule <k> immutable(V:Value,obj(B:Builtin,_)) => ref(N:Int) ...</k>
-       <literals>... pair(V,B) |-> N ...</literals>
-
-  rule <k> immutable(V:Value,obj(B:Builtin,_)) => ref(N:Int) ...</k>
-       <literals> Ref:Map (. => pair(V,B) |-> N) </literals>
-       <nextLoc> N => N +Int 1 </nextLoc>
-       (. =>
-       <object>...
-         <id>N</id>
-         <oattrs> "__class__" |-> B "__value__" |-> V </oattrs>
-       ...</object>) when notBool(pair(V,B) in keys(Ref))
 
   rule <k> mutable(V:Value,O) => mutable("__value__" |-> V "__revision__" |-> 0, O) ...</k>
 
@@ -137,7 +117,7 @@ module PYTHON-SEMANTICS-LITERALS
        (. =>
        <object>...
          <id>N</id>
-         <oattrs> "__class__" |-> B M </oattrs>
+         <oattrs> "__class__" |-> ref(B) M </oattrs>
        ...</object>)
 
 endmodule

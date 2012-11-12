@@ -27,10 +27,10 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule getmember(O:Object, O2, true, true, false) => descriptor(basesLookup(getref(O, "__mro__"), O2), O, gettype(O), true) -> getmember(O, O2, true, false, false)
   rule getmember(O:Object, O2, false, false, false) => basesLookup(getref2(gettype(O), "__mro__"), O2)
 
-  rule <k> mapLookup(obj(B,_), O) => try: ref(B2)[O] except ref("KeyError") : .Obj else: pass ...</k>
+  rule <k> mapLookup(obj(B,_), O) => try: K[O] except ref("KeyError") : .Obj else: pass ...</k>
        <object>
          <id>B</id>
-         <oattrs>... "__dict__" |-> B2 ...</oattrs>
+         <oattrs>... "__dict__" |-> K ...</oattrs>
        </object>
 
   rule <k> mapLookup(obj(B,_), O:Object) => .Obj ...</k>
@@ -52,7 +52,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
        ...</object> when notBool(strvalue(O) in keys(Env))
 
   rule basesLookup(O:Object, O2:Object) => basesLookup(listvalue(O), O2)
-  rule basesLookup(ListItem(B) L:List, O) => mapLookup(ref(B), O) -> basesLookup(L, O)
+  rule basesLookup(ListItem(B) L:List, O) => mapLookup(B, O) -> basesLookup(L, O)
   rule basesLookup(., _) => .Obj
 
   rule descriptor(.Obj,_,_,_) => .Obj

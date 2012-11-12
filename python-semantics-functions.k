@@ -32,9 +32,8 @@ module PYTHON-SEMANTICS-FUNCTIONS
        <currentFrame> N2 </currentFrame>
        (. => <object>
          <id>N</id>
-         <oattrs> "__code__" |-> id(O) "__class__" |-> Function </oattrs>
+         <oattrs> "__code__" |-> ref(id(O)) "__class__" |-> ref("function") </oattrs>
        </object>)
-       <symbols>... "function" |-> Function:Int ...</symbols>
 
   rule <k> codeObject(X, Ps, Ss:K, T:Bool) =>
            setref(N, "co_varnames", tuple(.Expressions)) ~>
@@ -44,9 +43,8 @@ module PYTHON-SEMANTICS-FUNCTIONS
        <nextLoc> N => N +Int 1 </nextLoc>
        (. => <object>...
          <id>N</id>
-         <oattrs> "co_name" |-> Id2String(X) "co_argcount" |-> 0 "co_kwonlyargcount" |-> 0 "co_nlocals" |-> 0 "__class__" |-> Code "co_flags" |-> 0 </oattrs>
+         <oattrs> "co_name" |-> Id2String(X) "co_argcount" |-> 0 "co_kwonlyargcount" |-> 0 "co_nlocals" |-> 0 "__class__" |-> ref("code") "co_flags" |-> 0 </oattrs>
        ...</object>)
-       <symbols>... "code" |-> Code:Int ...</symbols>
        
 
   context makeFunction(_, (ListItem(X = HOLE) _:List), _, _)
@@ -92,7 +90,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule makeFunction(N, ., .Obj, _) => setref(N, "__closure__", makeClosure(ref(N) . String2Id("__code__") . String2Id("co_freevars")))
   rule makeClosure(O:Object) => makeClosure(list(listvalue(O)))
   rule makeClosure(list(.)) => tuple(.Expressions)
-  rule <k> makeClosure(list(ListItem(N) L)) => tuple((getref2(ref(Frame), "f_cells")[ref(N)]), .Expressions) + makeClosure(list(L)) ...</k>
+  rule <k> makeClosure(list(ListItem(N) L)) => tuple((getref2(ref(Frame), "f_cells")[N]), .Expressions) + makeClosure(list(L)) ...</k>
        <currentFrame> Frame:Int </currentFrame>
 
   syntax K ::= "createFunction" "(" Id "," K "," K "," Expression ")" [strict(4)]

@@ -79,28 +79,27 @@ module PYTHON-SEMANTICS-CALLS
                   | "makeCells" "(" Expression "," Expression "," Expression "," Int ")" [strict(1 2 3)]
                   | "makeCells" "(" List "," List "," List "," Expression "," Int ")" [strict(4)]
 
-  rule <k> invoke(obj(_:Int,<oattrs>... "__closure__" |-> Closure:Int "__code__" |-> CodeId:Int "__globals__" |-> Globals:Int ...</oattrs>), M) ~> K:K => executeFrame(N, ref(CodeId), ref(N2), makeLocals(ref(CodeId) . String2Id("co_freevars"), ref(Closure)), ref(Globals), ref(Globals) ["__builtins__"], makeCells(ref(CodeId) . String2Id("co_freevars"), ref(CodeId) . String2Id("co_cellvars"), ref(Closure), N), M) ~> return </k>
+  rule <k> invoke(obj(_:Int,<oattrs>... "__closure__" |-> Closure "__code__" |-> Code "__globals__" |-> Globals ...</oattrs>), M) ~> K:K => executeFrame(N, Code, ref(Frame), makeLocals(Code . String2Id("co_freevars"), Closure), Globals, Globals ["__builtins__"], makeCells(Code . String2Id("co_freevars"), Code . String2Id("co_cellvars"), Closure, N), M) ~> return </k>
        <nextLoc> N => N +Int 1 </nextLoc>
        <control>
-         <currentFrame> N2 => N </currentFrame>
-         <fstack> . => (K, C, N2, LL) ...</fstack>
+         <currentFrame> Frame:Int => N </currentFrame>
+         <fstack> . => (K, C, Frame, LL) ...</fstack>
          <lstack> LL => . </lstack>
          C:Bag
        </control>
 
   rule makeLocals(Free:Object, O:Object) => makeLocals(listvalue(Free), listvalue(O), {.KeyData})
-  rule (. => test(getattr2(ref(N2), "cell_contents") ==Obj .Obj, ., (((O[ref(N)]), .Expressions) := getref2(ref(N2), "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
+  rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (((O[N]), .Expressions) := getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
   rule makeLocals(.List, .List, O:Object) => ref(id(O))
 
   rule makeCells(Free:Object, Cells:Object, O:Object, N) => makeCells(listvalue(Free), listvalue(Cells), listvalue(O), {.KeyData}, N)
-  rule (. => ((O[ref(N)]), .Expressions) := ref(N2)) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
-  rule <k> (. => ((O[ref(N)]), .Expressions) := ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O:Object, Frame:Int) ...</k>
+  rule (. => ((O[N]), .Expressions) := N2) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
+  rule <k> (. => ((O[N]), .Expressions) := ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O:Object, Frame:Int) ...</k>
        <nextLoc> N2 => N2 +Int 1 </nextLoc>
        (. => <object>...
          <id>N2</id>
-         <oattrs> "__class__" |-> Cell "cell_contents" |-> .Obj "cell_frame" |-> Frame </oattrs>
+         <oattrs> "__class__" |-> ref("cell") "cell_contents" |-> .Obj "cell_frame" |-> ref(Frame) </oattrs>
        ...</object>)
-       <symbols>... "cell" |-> Cell:Int ...</symbols>
 
   rule makeCells(.List, .List, .List, O:Object, _) => ref(id(O))
 

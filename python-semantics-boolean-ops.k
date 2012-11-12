@@ -63,7 +63,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule comparison(O:Object, O2:Object, '_notin_) => not O in O2
 
   rule contains(list(ListItem(O:Object) L:List), O2) => ref("True") if O == O2 else contains(list(L), O2)
-  rule contains(list(ListItem(B:Builtin) L:List), O2) => ref("True") if ref(B) == O2 else contains(list(L), O2)
+  context contains(list(ListItem(HOLE) _), _)
   rule contains(list(.), O2) => ref("False")
 
   rule <k> coerceBoolean(O, O2, X, RX, S:String) => coerceBinaryBase(O, O2, X, RX) -> (raiseInternal("TypeError", "unorderable types: " +String S)) ...</k>

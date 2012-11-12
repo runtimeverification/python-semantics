@@ -13,8 +13,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__context__" |-> ref("__context__")
            "__init__" |-> def "init_baseexception" (0, -1, true)
            ,.) ~>
-         object "__cause__" ("reference",.,., "__get__" |-> "__cause__") ~>
-         object "__context__" ("reference",.,., "__get__" |-> "__context__") ~>
+         object "__cause__" ("attribute",.,., "__get__" |-> "__cause__") ~>
+         object "__context__" ("attribute",.,., "__get__" |-> "__context__") ~>
          object "Exception"("type",ListItem("BaseException"),.,.) ~>
          object "False"("bool",.,.,
            "__value__" |-> 0) ~>
@@ -147,7 +147,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "module"("type",ListItem("object"),
            "__dict__" |-> ref("__dict__module")
            ,.) ~>
-         object "__dict__module"("reference",.,., "__get__" |-> "__dict__") ~>
+         object "__dict__module"("attribute",.,., "__get__" |-> "__dict__") ~>
          object "object"("type",.,
            "__class__" |-> ref("__class__")
            "__getattribute__" |-> def "getattribute_object" (1, 1, true)
@@ -157,7 +157,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "new_object" (1, -1, false)
            "__setattr__" |-> def "setattr_object"(2, 2, true)
            ,.) ~>
-         object "__class__" ("reference",.,., "__get__" |-> "__class__") ~>
+         object "__class__" ("attribute",.,., "__get__" |-> "__class__") ~>
          object "range" ("type",ListItem("object"),
            "__iter__" |-> def "iter_range" (0, 0, true)
            "__new__" |-> def "new_range" (1, 4, false)
@@ -206,8 +206,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "mro" |-> def "mro_type"(0, 0, true)
            ,.) ~>
          object "__name__type" ("attribute",.,., "__get__" |-> "__name__") ~>
-         object "__bases__" ("reference",.,., "__get__" |-> "__bases__") ~>
-         object "__mro__" ("reference",.,., "__get__" |-> "__mro__") ~>
+         object "__bases__" ("attribute",.,., "__get__" |-> "__bases__") ~>
+         object "__mro__" ("attribute",.,., "__get__" |-> "__mro__") ~>
          // module "types"
          object "attribute"("type",ListItem("object"),
            "__get__" |-> def "get_attr" (1, 2, true)
@@ -233,11 +233,11 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "co_name" ("attribute",.,., "__get__" |-> "co_name") ~>
          object "co_argcount" ("attribute",.,., "__get__" |-> "co_argcount") ~>
          object "co_nlocals" ("attribute",.,., "__get__" |-> "co_nlocals") ~>
-         object "co_varnames" ("reference",.,., "__get__" |-> "co_varnames") ~>
-         object "co_cellvars" ("reference",.,., "__get__" |-> "co_cellvars") ~>
-         object "co_freevars" ("reference",.,., "__get__" |-> "co_freevars") ~>
-         object "co_consts" ("reference",.,., "__get__" |-> "co_consts") ~>
-         object "co_names" ("reference",.,., "__get__" |-> "co_names") ~>
+         object "co_varnames" ("attribute",.,., "__get__" |-> "co_varnames") ~>
+         object "co_cellvars" ("attribute",.,., "__get__" |-> "co_cellvars") ~>
+         object "co_freevars" ("attribute",.,., "__get__" |-> "co_freevars") ~>
+         object "co_consts" ("attribute",.,., "__get__" |-> "co_consts") ~>
+         object "co_names" ("attribute",.,., "__get__" |-> "co_names") ~>
          object "frame"("type",ListItem("object"),
            "f_back" |-> ref("f_back")
            "f_builtins" |-> ref("f_builtins")
@@ -245,11 +245,11 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "f_globals" |-> ref("f_globals")
            "f_locals" |-> ref("f_locals")
            ,.) ~>
-         object "f_back" ("reference",.,., "__get__" |-> "f_back") ~>
-         object "f_builtins" ("reference",.,., "__get__" |-> "f_builtins") ~>
-         object "f_code" ("reference",.,., "__get__" |-> "f_code") ~>
-         object "f_globals" ("reference",.,., "__get__" |-> "f_globals") ~>
-         object "f_locals" ("reference",.,., "__get__" |-> "f_locals") ~>
+         object "f_back" ("attribute",.,., "__get__" |-> "f_back") ~>
+         object "f_builtins" ("attribute",.,., "__get__" |-> "f_builtins") ~>
+         object "f_code" ("attribute",.,., "__get__" |-> "f_code") ~>
+         object "f_globals" ("attribute",.,., "__get__" |-> "f_globals") ~>
+         object "f_locals" ("attribute",.,., "__get__" |-> "f_locals") ~>
          object "function"("type",ListItem("object"),
            "__annotations__" |-> ref("__annotations__")
            "__call__" |-> def "call_function" (0, -1, true)
@@ -264,32 +264,28 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__module__" |-> ref("__module__") 
            "__name__" |-> ref("__name__function")
            ,.) ~>
-         object "__annotations__" ("reference",.,., "__get__" |-> "__annotations__") ~>
-         object "__closure__" ("reference",.,., "__get__" |-> "__closure__") ~>
-         object "__code__" ("reference",.,., "__get__" |-> "__code__") ~>
-         object "__defaults__" ("reference",.,., "__get__" |-> "__defaults__") ~>
-         object "__dict__function" ("reference",.,., "__get__" |-> "__dict__") ~>
-         object "__doc__" ("reference",.,., "__get__" |-> "__doc__" "__set__" |-> ref("set_ref_default")) ~>
-         object "__globals__" ("reference",.,., "__get__" |-> "__globals__") ~>
-         object "__kwdefaults__" ("reference",.,., "__get__" |-> "__kwdefaults__") ~>
-         object "__module__" ("reference",.,., "__get__" |-> "__module__" "__set__" |-> def "set_ref_default"(3, 3, false)) ~>
-         object "__name__function"("reference",.,., "__get__" |-> "__name__" "__set__" |-> def "set_attr_string"(3, 3, false)) ~>
+         object "__annotations__" ("attribute",.,., "__get__" |-> "__annotations__") ~>
+         object "__closure__" ("attribute",.,., "__get__" |-> "__closure__") ~>
+         object "__code__" ("attribute",.,., "__get__" |-> "__code__") ~>
+         object "__defaults__" ("attribute",.,., "__get__" |-> "__defaults__") ~>
+         object "__dict__function" ("attribute",.,., "__get__" |-> "__dict__") ~>
+         object "__doc__" ("attribute",.,., "__get__" |-> "__doc__" "__set__" |-> ref("set_ref_default")) ~>
+         object "__globals__" ("attribute",.,., "__get__" |-> "__globals__") ~>
+         object "__kwdefaults__" ("attribute",.,., "__get__" |-> "__kwdefaults__") ~>
+         object "__module__" ("attribute",.,., "__get__" |-> "__module__" "__set__" |-> def "set_ref_default"(3, 3, false)) ~>
+         object "__name__function"("attribute",.,., "__get__" |-> "__name__" "__set__" |-> def "set_attr_string"(3, 3, false)) ~>
          object "method" ("type", ListItem("object"),
            "__call__" |-> def "call_method" (0, -1, true)
            "__func__" |-> ref("__func__")
            "__self__" |-> ref("__self__")
            , .) ~>
-         object "__func__" ("reference",.,., "__get__" |-> "__func__") ~>
-         object "__self__" ("reference",.,., "__get__" |-> "__self__") ~>
-         object "reference"("type",ListItem("object"),
-           "__get__" |-> def "get_ref" (1, 2, true)
-           "__set__" |-> def "set_ref" (2, 2, true)
-           , "__name__" |-> undefined("internal type name")) ~>
+         object "__func__" ("attribute",.,., "__get__" |-> "__func__") ~>
+         object "__self__" ("attribute",.,., "__get__" |-> "__self__") ~>
 
          // misc builtins
          object "cell"("type",ListItem("object"),
            ., .) ~>
-         object "cell_contents" ("reference",.,., "__get__" |-> "cell_contents")) ...</k>
+         object "cell_contents" ("attribute",.,., "__get__" |-> "cell_contents")) ...</k>
 
   rule <k> modules => (
 
@@ -353,9 +349,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "CodeType" : ref("code")
          , "FrameType" : ref("frame")
          , "FunctionType" : ref("function")
-         , "GetSetDescriptorType" : undefined("cpython implementation type")
+         , "GetSetDescriptorType" : ref("attribute")
          , "LambdaType" : ref("function")
-         , "MemberDescriptorType" : undefined("cpython implementation type")
+         , "MemberDescriptorType" : ref("attribute")
          , "MethodType" : ref("method")
          , "ModuleType" : ref("module")
          , .KeyData

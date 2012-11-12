@@ -21,9 +21,8 @@ module PYTHON-SEMANTICS-COMMON
                     </object>
                   </store>
                   <symbols> .Map </symbols>
-                  <references> "None" |-> 1 </references>
+                  <references> .Map </references>
                   <bootstrapping> 3 </bootstrapped>
-                  <literals> .Map </literals>
                   <nextLoc> 1 </nextLoc>
                   <debug> $DEBUG:Bool </debug>
                   <hashInfo> $HASHINFO:List </hashInfo>
@@ -47,7 +46,7 @@ module PYTHON-SEMANTICS-COMMON
              | "executeModule" "(" Expression "," Expression "," Expression ")" [strict]
              | "executeFrame" "(" Int "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression "," Map ")" [strict(2 3 4 5 6 7)]
              | "setArgs" "(" Map ")"
-             | getMro(Builtin, Expression) [strict(2)]
+             | getMro(Expression, Expression) [strict]
 
   syntax Test ::= "istype" "(" Expression "," Expression ")" [strict]
                 | "hasbase" "(" K "," Expression ")" [strict]
@@ -66,8 +65,6 @@ module PYTHON-SEMANTICS-COMMON
                   | "doCall" "(" Expression "," List "," Map ")"
                   | "mutable" "(" Value "," Expression ")" [strict(2)]
                   | "mutable" "(" Map "," Expression ")" [strict(2)]
-                  | "immutable" "(" Value "," Expression ")" [strict(2)]
-                  | "copy" "(" Expression "," Expression ")" [strict]
                   | "name" "(" Expression ")"
                   | "codeObject" "(" Id "," Parameters "," K "," Bool ")"
                   | "class" "(" Arguments "," Expression ")" [strict]
@@ -108,6 +105,10 @@ module PYTHON-SEMANTICS-COMMON
   syntax Expressions ::= "DeListify" "(" List ")" [function]
   rule DeListify(ListItem(P) L) => P , DeListify(L) [function, anywhere]
   rule DeListify(.) => .Expressions [function, anywhere]
+
+  syntax List ::= "Refify" "(" List ")" [function]
+  rule Refify(ListItem(O) L) => ListItem(ref(O)) Refify(L) [function, anywhere]
+  rule Refify(.) => . [function, anywhere]
 
   syntax List ::= "Idify" "(" List ")" [function]
   rule Idify(ListItem(O) L) => ListItem(id(O)) Idify(L) [function, anywhere]
@@ -185,7 +186,7 @@ module PYTHON-SEMANTICS-COMMON
   rule getattr2(O:Object, S:String) => getattr(O, S)
 
   syntax ObjRef ::= "getref" "(" Expression "," String ")" [function]
-  rule getref(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => ref(Attrs:Map(S)) [function, anywhere]
+  rule getref(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs:Map(S) [function, anywhere]
 
   syntax ObjRef ::= "getref2" "(" Expression "," String ")" [strict(1)]
   rule getref2(O:Object, S:String) => getref(O, S)
@@ -212,7 +213,7 @@ module PYTHON-SEMANTICS-COMMON
   rule <k> setref(B, S, O) => . ...</k>
        <object>...
          <id>B</id>
-         <oattrs> Attrs => Attrs[id(O) / S] </oattrs>
+         <oattrs> Attrs => Attrs[ref(id(O)) / S] </oattrs>
        ...</object>
 
   rule <k> setenv(B, O, O2) => . ...</k>
@@ -234,18 +235,14 @@ module PYTHON-SEMANTICS-COMMON
   //needs predicates to work without obj()
   rule hasbase(obj(N:Int,ObjState:Bag), Base:Object) => or(obj(N,ObjState) ==K Base, hasbase(getbases(obj(N,ObjState)), Base))
 
-  rule hasbase(list(ListItem(N) L), Base) => or(hasbase(ref(N), Base),hasbase(list(L), Base))
+  rule hasbase(list(ListItem(N) L), Base) => or(hasbase(N, Base),hasbase(list(L), Base))
   rule hasbase(list(.List), Base) => false
 
-  rule invokeBuiltin(obj("get_ref",_), ListItem(Self) ListItem(Instance) ListItem(Owner), .) => describe(Self, Instance, Owner, "get_ref")
   rule invokeBuiltin(obj("get_attr",_), ListItem(Self) ListItem(Instance) ListItem(Owner), .) => describe(Self, Instance, Owner, "get_attr")
-  rule invokeBuiltin(obj("set_ref",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => doCall(getref(Self, "__set__"), ListItem(Self) ListItem(Instance) ListItem(Value), .)
   rule invokeBuiltin(obj("set_attr",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => doCall(getref(Self, "__set__"), ListItem(Self) ListItem(Instance) ListItem(Value), .)
   rule invokeBuiltin(obj("set_ref_default",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => setref(id(Instance), getattr(Self, "__get__"), Value) ~> ref("None")
   rule invokeBuiltin(obj("set_attr_string",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => test(istype(Value, ref("str")), setattr(id(Instance), getattr(Self, "__get__"), getattr(Value, "__value__")), raiseInternal("TypeError", getattr(Self, "__get__") +String " must be set to a string object")) ~> ref("None")
-  rule doDescribe(Self, .Obj, _, "get_ref") => Self
   rule doDescribe(Self, .Obj, _, "get_attr") => Self
-  rule doDescribe(Self, O:Object, _, "get_ref") => getref(O, getattr(Self, "__get__"))
   rule doDescribe(Self, O:Object, _, "get_attr") => getattr(O, getattr(Self, "__get__"))
 
   rule <k> ref(S:String) => ref(N:Int) ...</k>
@@ -293,18 +290,16 @@ module PYTHON-SEMANTICS-COMMON
        <nextLoc> N => N +Int 2 </nextLoc>
        (. => <object>...
          <id>N</id>
-         <oattrs> "__dict__" |-> id(Dict) "__class__" |-> Module </oattrs>
+         <oattrs> "__dict__" |-> ref(id(Dict)) "__class__" |-> ref("module") </oattrs>
        ...</object>)
-       <symbols>... "module" |-> Module:Int ...</symbols>
 
 
   rule <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . String2Id("__dict__")), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells) ~> setArgs(Args) ~> getattr(CO, "co_code") ...</k>
        <currentFrame> _ => N </currentFrame>
        (. => <object>...
          <id>N</id>
-         <oattrs> "__class__" |-> Frame </oattrs>
+         <oattrs> "__class__" |-> ref("frame") </oattrs>
        ...</object>)
-       <symbols>... "frame" |-> Frame:Int ...</symbols>
 
   rule (. => X:Id, .Expressions := ref(B)) ~> setArgs((X |-> B => .) _)
   rule setArgs(.) => .
