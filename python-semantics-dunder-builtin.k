@@ -126,7 +126,14 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__iter__" |-> def "iter_iter" (0, 0, true)
            "__next__" |-> def "iter_next" (0, 0, true)
            ,.) ~> 
-         object "float"("type",ListItem("object"),.,.) ~>
+         object "float"("type",ListItem("object"),
+           "__eq__" |-> def "eq_float"(1, 1, true)
+           "__ge__" |-> def "ge_float" (1, 1, true)
+           "__gt__" |-> def "gt_float" (1, 1, true)
+           "__le__" |-> def "le_float" (1, 1, true)
+           "__lt__" |-> def "lt_float" (1, 1, true)
+           "__ne__" |-> def "ne_float" (1, 1, true)
+           ,.) ~>
          object "len"( "builtin-function" ,.,.,
            "__call__" |-> def "call_len" (1, 1, false)
            ) ~>

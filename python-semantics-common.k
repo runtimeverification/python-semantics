@@ -161,6 +161,9 @@ module PYTHON-SEMANTICS-COMMON
   syntax Int ::= "intvalue" "(" Expression ")" [function]
   rule intvalue(obj(_,<oattrs>... "__value__" |-> I:Int ...</oattrs>)) => I [function, anywhere]
 
+  syntax Float ::= "floatvalue" "(" Expression ")" [function]
+  rule floatvalue(obj(_,<oattrs>... "__value__" |-> F:Float ...</oattrs>)) => F [function, anywhere]
+
   syntax String ::= "strvalue" "(" Object ")" [function]
   rule strvalue(obj(_,<oattrs>... "__value__" |-> S:String ...</oattrs>)) => S [function, anywhere]
 
