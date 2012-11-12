@@ -69,7 +69,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule checkDataSet(O:Object, Instance, Value) => getmember(O, "__set__", false, false, false) (O, Instance, Value, .Arguments) -> .Obj
   rule checkDataSet(.Obj, _, _) => .Obj
 
-  rule <k> mapInsert(obj(B,_), Name, Value) => ref(Dict) [Name] , .Expressions := Value ~> ref("None") ...</k>
+  rule <k> mapInsert(obj(B,_), Name, Value) => Dict [Name] , .Expressions := Value ~> ref("None") ...</k>
        <object>
          <id> B </id>
          <oattrs>... "__dict__" |-> Dict ...</oattrs>
