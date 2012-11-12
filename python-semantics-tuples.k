@@ -1,7 +1,7 @@
-require "python-semantics-slicing.k"
+require "python-semantics-lists.k"
 
 module PYTHON-SEMANTICS-TUPLES
-  imports PYTHON-SEMANTICS-SLICING
+  imports PYTHON-SEMANTICS-LISTS
 
   rule invokeBuiltin(obj("add_tuple",_), ListItem(O:Object) ListItem(O2:Object), .) => test(and(istype(O, ref("tuple")), istype(O2, ref("tuple"))), mutable(list(listvalue(O) listvalue(O2)),ref("tuple")), raiseInternal("TypeError", "can only concatenate tuple to tuple"))
 
@@ -14,5 +14,8 @@ module PYTHON-SEMANTICS-TUPLES
   rule invokeBuiltin(obj("new_tuple",_), ListItem(O), .) => newHelper(O, ref("tuple"), .) ~> mutable(list(.), O)
   rule invokeBuiltin(obj("new_tuple",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("tuple"), .) ~> iterate(O2, .) ~> mutable(list(.), O)
   rule (list(L:List) => .) ~> mutable(list(_ => Refify(Idify(L))), _)
+
+  rule invokeBuiltin(obj("eq_tuple",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "tuple", "tuple", (ref("bool") (equalList(listvalue(O), (listvalue(O2))))))
+  rule invokeBuiltin(obj("ne_tuple",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "tuple", "tuple", not equalList(listvalue(O), listvalue(O2)))
 
 endmodule
