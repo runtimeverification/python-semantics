@@ -27,11 +27,11 @@ module PYTHON-SEMANTICS-SLICING
   rule (O:Object => .) ~> iters(_) ~> list(_ (. => ListItem(O)))
   rule iters(.) => .
   rule (list(L) => .) ~> makeMap(_, O, (. => L))
-  rule makeMap(O, O2, L) => mutable("__func__" |-> id(O2) "__iters__" |-> list(Idify(L)), O)
+  rule makeMap(O, O2, L) => mutable("__func__" |-> ref(id(O2)) "__iters__" |-> list(Refify(Idify(L))), O)
 
   rule invokeBuiltin(obj("map_next",_), ListItem(O), .) => getref(O, "__func__")(nexts(getl(getattr(O, "__iters__"))))
 
-  rule nexts(ListItem(B:Builtin) L:List) => ((ref(B) . String2Id("__next__")) (.Arguments)) , nexts(L) [function, anywhere]
+  rule nexts(ListItem(B) L:List) => ((B . String2Id("__next__")) (.Arguments)) , nexts(L) [function, anywhere]
   rule nexts(.) => .Arguments [function, anywhere]
 
   rule invokeBuiltin(obj("new_range",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("range"), .) ~> ref("new_range") (O, 0, O2, .Arguments)
@@ -57,7 +57,7 @@ module PYTHON-SEMANTICS-SLICING
 
   rule invokeBuiltin(obj("new_slice",_), ListItem(O:Object) ListItem(O2:Object) ListItem(O3:Object), .) => newHelper(O, ref("slice"), .) ~> ref("new_slice") (O, O2, O3, ref("None"), .Expressions)
 
- rule invokeBuiltin(obj("new_slice",_), ListItem(O) ListItem(O2) ListItem(O3) ListItem(O4:Object), .) => newHelper(O, ref("slice"), .) ~> mutable("start" |-> id(O2) "stop" |-> id(O3) "step" |-> id(O4), O)
+ rule invokeBuiltin(obj("new_slice",_), ListItem(O) ListItem(O2) ListItem(O3) ListItem(O4:Object), .) => newHelper(O, ref("slice"), .) ~> mutable("start" |-> ref(id(O2)) "stop" |-> ref(id(O3)) "step" |-> ref(id(O4)), O)
 
   rule invokeBuiltin(obj("indices_slice",_), ListItem(O) ListItem(O2), .) => indices(slicepart(getref(O, "start")), slicepart(getref(O, "stop")), slicepart(getref(O, "step")), index(O2) -> raiseInternal("TypeError","object cannot be interpreted as an integer"))
 
