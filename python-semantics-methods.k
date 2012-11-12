@@ -7,7 +7,7 @@ module PYTHON-SEMANTICS-METHODS
 
   rule invokeBuiltin(obj("get_builtin_method",_), ListItem(Self:Object) ListItem(Instance:Object) ListItem(Owner:Object), .) => describe(Self, Instance, Owner, "get_function")
   rule invokeBuiltin(obj("get_function",_), ListItem(Self:Object) ListItem(Instance:Object) ListItem(Owner:Object), .) => describe(Self, Instance, Owner, "get_function")
-  rule doDescribe(Self, .Obj, O, "get_function") => O
+  rule doDescribe(Self, .Obj, O, "get_function") => Self
   rule doDescribe(Self, O:Object, _, "get_function") => method(Self, O)
 
   rule <k> method(obj(FuncId,_), obj(SelfId,_)) => ref(N:Nat) ...</k>
