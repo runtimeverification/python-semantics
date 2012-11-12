@@ -68,7 +68,7 @@ module PYTHON-SEMANTICS-DICTS
   rule invokeBuiltin(obj("init_dict",_), ListItem(O) ListItem(O2:Object), .) => mapping(O2, .Obj) -> iterate(O2, .) ~> makeDict(0, O)
 
   rule (. => O[Key], .Expressions := Value) ~> map((Key |-> Value => .) _) ~> makeDict(_, O) 
-  rule map(.) ~> makeDict(_, O) => ref(id(O))
+  rule map(.) ~> makeDict(_, O) => ref("None")
 
   rule <k> list(_) ~> (. => map(.)) ~> makeDict(_, _) ...</k>
   rule <k> (. => iterate(O, raiseInternal("TypeError", "cannot convert dictionary update sequence element #" +String Int2String(N) +String "to a sequence"))) ~>  list((ListItem(O) => .) _) ~> map(_) ~> makeDict(N, _) ...</k>
