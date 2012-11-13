@@ -1,7 +1,7 @@
 try:
   x = (5,6).__iter__()
-  assert x.__next__() is 5
-  assert x.__next__() is 6
+  assert x.__next__() == 5
+  assert x.__next__() == 6
   y = 5
   assert x.__next__() and False
 except StopIteration as e:
