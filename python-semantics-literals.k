@@ -22,10 +22,10 @@ module PYTHON-SEMANTICS-LITERALS
   syntax Builtin ::= "value" "(" KeyDatum ")" [function]
   rule value(_ : B) => B [function, anywhere]
 
-  rule <k> I:Int => mutable(I,ref("int")) ...</k>
-  rule <k> S:String => mutable(S,ref("str")) ...</k>
-  rule <k> F:Float => mutable(F,ref("float")) ...</k>
-  rule <k> tuple(Osc:Expressions) => mutable(list(Refify(Idify(Listify(Osc)))), ref("tuple")) ...</k>
+  rule <k> I:Int => immutable(I,ref("int")) ...</k>
+  rule <k> S:String => immutable(S,ref("str")) ...</k>
+  rule <k> F:Float => immutable(F,ref("float")) ...</k>
+  rule <k> tuple(Osc:Expressions) => immutable(list(Refify(Idify(Listify(Osc)))), ref("tuple")) ...</k>
   rule <k> [ Osc:Expressions ] => mutable(list(Refify(Idify(Listify(Osc)))), ref("list")) ...</k>
   rule <k> { Osc:Expressions } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k>
   rule <k> { OPs:KeyData } => processDict(mutable(map(.),ref("dict")), Mapify(OPs)) ...</k>
@@ -111,13 +111,26 @@ module PYTHON-SEMANTICS-LITERALS
   rule bucketDelete(_, _, Key, ., _) => raise ref("KeyError") (Key, .Arguments)
 
   rule <k> mutable(V:Value,O) => mutable("__value__" |-> V "__revision__" |-> 0, O) ...</k>
-
-  rule <k> mutable(M:Map,obj(B,_)) => ref(N) ...</k>
+  rule <k> mutable(M,obj(B,ObjState)) => mutable(M,N,obj(B,ObjState)) ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
+
+  rule <k> mutable(M:Map,N,obj(B,_)) => ref(N) ...</k>
        (. =>
        <object>...
          <id>N</id>
          <oattrs> "__class__" |-> ref(B) M </oattrs>
        ...</object>)
+
+  rule immutable(V:Value, O) => immutable("__value__" |-> V, O)
+
+  syntax K ::= pair(Map, Builtin)
+  syntax ObjRef ::= mutable(Map, Int, Expression) [strict(3)]
+
+  rule <k> immutable(M, obj(B,_)) => O ...</k>
+       <literals>... pair(M, B) |-> O ...</literals>
+
+  rule <k> immutable(M, obj(B,ObjState)) => mutable(M, N, obj(B,ObjState)) ...</k>
+       <literals> Literals:Map (. => pair(M, B) |-> ref(N)) </literals>
+       <nextLoc> N => N +Int 1 </nextLoc> when notBool(pair(M, B) in keys(Literals))
 
 endmodule
