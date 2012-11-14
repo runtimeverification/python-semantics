@@ -24,30 +24,32 @@ module PYTHON-SEMANTICS-DICTS
   rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B2,_)), .) => raise ref("StopIteration") ...</k>
        <object>...
          <id>B2</id>
-         <oattrs>... "__revision__" |-> Rev1 "__order__" |-> list(L) "__index__" |-> (Idx) "_mapping" |-> ref(B:Builtin) ...</oattrs>
+         <oattrs>... "__revision__" |-> Rev "__order__" |-> list(L) "__index__" |-> (Idx) "_mapping" |-> ref(B:Builtin) ...</oattrs>
        ...</object>
        <object>...
          <id>B</id>
-         <oattrs>... "__revision__" |-> Rev2 ...</oattrs>
-       ...</object> when Rev1 ==Int Rev2 andBool Idx ==Int lengthList L
+         <oattrs>... "__revision__" |-> Rev ...</oattrs>
+       ...</object> when Idx ==Int lengthList L
 
-  rule <object>...
-         <oattrs>... "__revision__" |-> Rev1 "__order__" |-> list(L) "__index__" |-> (Idx => Idx +Int 1) "__index2__" |-> (Idx2:Int => 0) "_mapping" |-> ref(B2:Builtin) ...</oattrs>
+  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) ...</k>
+       <object>...
+         <id>B</id>
+         <oattrs>... "__revision__" |-> Rev "__order__" |-> list(L) "__index__" |-> (Idx => Idx +Int 1) "__index2__" |-> (Idx2:Int => 0) "_mapping" |-> ref(B2:Builtin) ...</oattrs>
        ...</object>
        <object>...
          <id>B2</id>
-         <oattrs>... "__revision__" |-> Rev2 "__value__" |-> map(M) ...</oattrs>
-       ...</object> when Rev1 ==Int Rev2 andBool Idx =/=Int lengthList L andBool Idx2 ==Int lengthList getl(M:Map(get(L, Idx))) [structural]
+         <oattrs>... "__revision__" |-> Rev "__value__" |-> map(M) ...</oattrs>
+       ...</object> when Idx =/=Int lengthList L andBool Idx2 ==Int lengthList getl(M:Map(get(L, Idx))) [structural]
 
   rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => key(get(getl(M:Map(get(L:List, Idx))), Idx2)) ...</k>
        <object>...
          <id>B</id>
-         <oattrs>... "__revision__" |-> Rev1 "__order__" |-> list(L) "__index__" |-> Idx "__index2__" |-> (Idx2:Int => Idx2 +Int 1) "_mapping" |-> ref(B2:Builtin) ...</oattrs>
+         <oattrs>... "__revision__" |-> Rev "__order__" |-> list(L) "__index__" |-> Idx "__index2__" |-> (Idx2:Int => Idx2 +Int 1) "_mapping" |-> ref(B2:Builtin) ...</oattrs>
        ...</object>
        <object>...
          <id>B2</id>
-         <oattrs>... "__revision__" |-> Rev2 "__value__" |-> map(M) ...</oattrs>
-       ...</object> when Rev1 ==Int Rev2 andBool Idx =/=Int lengthList L andBool Idx2 =/=Int lengthList getl(M:Map(get(L, Idx)))
+         <oattrs>... "__revision__" |-> Rev "__value__" |-> map(M) ...</oattrs>
+       ...</object> when Idx =/=Int lengthList L andBool Idx2 =/=Int lengthList getl(M:Map(get(L, Idx)))
 
   rule invokeBuiltin(obj("iter_dict",_), ListItem(O), .) => ((O . String2Id("keys")) (.Arguments) . String2Id("__iter__")) (.Arguments)
 
