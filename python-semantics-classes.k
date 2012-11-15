@@ -20,7 +20,7 @@ module PYTHON-SEMANTICS-CLASSES
        <nextLoc> N => N +Int 1 </nextLoc>
        <currentFrame> Back:Int </currentFrame>
        <fstack> FL => . </fstack>
-       <lstack> LL => . </lstack>
+       <lstack> LL => . </lstack> [allocation]
 
  rule <k> restoreContext(LL, FL, N) => . ...</k>
       <fstack> _ => FL </fstack>

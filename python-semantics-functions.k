@@ -33,7 +33,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
        (. => <object>
          <id>N</id>
          <oattrs> "__code__" |-> ref(id(O)) "__class__" |-> ref("function") </oattrs>
-       </object>)
+       </object>) [allocation]
 
   rule <k> codeObject(X, Ps, Ss:K, T:Bool) =>
            setref(N, "co_varnames", tuple(.Expressions)) ~>
@@ -44,7 +44,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
        (. => <object>...
          <id>N</id>
          <oattrs> "co_name" |-> Id2String(X) "co_argcount" |-> 0 "co_kwonlyargcount" |-> 0 "co_nlocals" |-> 0 "__class__" |-> ref("code") "co_flags" |-> 0 </oattrs>
-       ...</object>)
+       ...</object>) [allocation]
        
 
   context makeFunction(_, (ListItem(X = HOLE) _:List), _, _)

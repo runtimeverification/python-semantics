@@ -86,7 +86,7 @@ module PYTHON-SEMANTICS-CALLS
          <fstack> . => (K, C, Frame, LL) ...</fstack>
          <lstack> LL => . </lstack>
          C:Bag
-       </control>
+       </control> [allocation]
 
   rule makeLocals(Free:Object, O:Object) => makeLocals(listvalue(Free), listvalue(O), {.KeyData})
   rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (((O[N]), .Expressions) := getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
@@ -99,7 +99,7 @@ module PYTHON-SEMANTICS-CALLS
        (. => <object>...
          <id>N2</id>
          <oattrs> "__class__" |-> ref("cell") "cell_contents" |-> .Obj "cell_frame" |-> ref(Frame) </oattrs>
-       ...</object>)
+       ...</object>) [allocation]
 
   rule makeCells(.List, .List, .List, O:Object, _) => ref(id(O))
 
