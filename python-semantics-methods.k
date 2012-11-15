@@ -10,7 +10,13 @@ module PYTHON-SEMANTICS-METHODS
   rule doDescribe(Self, .Obj, O, "get_function") => Self
   rule doDescribe(Self, O:Object, _, "get_function") => method(Self, O)
 
-  rule method(obj(FuncId,_), obj(SelfId,_)) => immutable("__func__" |-> ref(FuncId) "__self__" |-> ref(SelfId), ref("method"))
+  rule <k> method(obj(FuncId,_), obj(SelfId,_)) => ref(N:Nat) ...</k>
+       <nextLoc>N => N +Int 1</nextLoc>
+       (. =>
+       <object>...
+         <id>N</id>
+         <oattrs> "__class__" |-> ref("method") "__func__" |-> ref(FuncId) "__self__" |-> ref(SelfId) </oattrs>
+       ...</object>)
 
   //can't use descriptors because method descriptors use it
   rule obj(N:Nat,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), "__call__", false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable"))

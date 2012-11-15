@@ -27,7 +27,7 @@ module PYTHON-SEMANTICS-CLASSES
       <lstack> _ => LL </lstack>
       <currentFrame> _ => N </currentFrame>
 
-  rule (processArgs(L:List, M:Map, .Obj, .Obj) => .) ~> invokeClass(_, _, (.Obj => immutable(list(Refify(Idify(L))), ref("tuple"))), (. => stripMetaclass(M)))
+  rule (processArgs(L:List, M:Map, .Obj, .Obj) => .) ~> invokeClass(_, _, (.Obj => mutable(list(Refify(Idify(L))), ref("tuple"))), (. => stripMetaclass(M)))
 
   syntax Expression ::= getMetaclass(Arguments) [function]
   rule getMetaclass(X = E:Expression, _) => E when Id2String(X) ==String "metaclass" [function, anywhere]

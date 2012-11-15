@@ -43,7 +43,6 @@ module PYTHON-SEMANTICS-OBJECTS
   rule list(_) ~> N:Int ~> mroMerge(list(L)) => raiseInternal("TypeError", "Cannot create a consistent method resolution order (MRO)") when N ==Int lengthList(L) andBool L =/=List .
   rule list(L => Refify(Idify(L))) ~> (_:Int ~> mroMerge(list(.)) => .)
   context mutable(HOLE,_) when getKLabel HOLE ==KLabel 'getMro
-  context immutable(HOLE,_) when getKLabel HOLE ==KLabel 'getMro
 
   rule invokeBuiltin(obj("mro_type",_), ListItem(Type), .) => mutable(getMro(Type, getref(Type, "__bases__")), ref("list"))
 
