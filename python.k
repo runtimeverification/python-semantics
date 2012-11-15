@@ -25,7 +25,6 @@ require "python-semantics-environment.k"
 require "python-semantics-exceptions.k"
 require "python-semantics-floats.k"
 require "python-semantics-functions.k"
-require "python-semantics-garbage-collection.k"
 require "python-semantics-import.k"
 require "python-semantics-integers.k"
 require "python-semantics-iterators.k"
@@ -51,7 +50,6 @@ module PYTHON
   imports PYTHON-SEMANTICS-EXCEPTIONS
   imports PYTHON-SEMANTICS-FUNCTIONS
   imports PYTHON-SEMANTICS-FLOATS
-  imports PYTHON-SEMANTICS-GARBAGE-COLLECTION
   imports PYTHON-SEMANTICS-IMPORT
   imports PYTHON-SEMANTICS-INTEGERS
   imports PYTHON-SEMANTICS-ITERATORS

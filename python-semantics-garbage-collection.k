@@ -1,84 +1,46 @@
 module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   imports PYTHON-SEMANTICS-COMMON
 
-  rule [run-garbage-collection]:
-    <T>
-      C:Bag
-      <nextLoc> N </nextLoc>
-      <garbage> .Set => everything(C2) -Set refcount(C <store> C2 </store>) </garbage>
-      <gc> N2 => N </gc>
-      <store> C2:Bag </store>
-      <gcThreshold> N3 </gcThreshold>
-    </T> when N2 <Int N andBool N -Int N2 >Int N3 [structural]
+  rule <T>
+         C:Bag
+         <store>
+           (<object>...
+             <id> B:Builtin </id>
+           ...</object> => .)
+           C2:Bag
+         </store>
+       </T> when notBool(refcount(B, <T> C <store> C2 </store> </T>))
 
+  syntax Bool ::= "refcount" "(" Builtin "," Bag ")" [function]
+                | "refcountattrs" "(" Builtin "," Map ")" [function]
+                | "refcountk" (" Builtin "," K ")" [function]
 
-  rule [collect-garbage]:
-    (<object>... <id>N</id> ...</object> => .)
-    <garbage>... SetItem(N) => . ...</SetItem>
+  rule refcount(B, <T>... <k> K:K </k> <control> C </control> <store> C2 </store> ...</T>) => refcountk(B, K) orElseBool refcount(B, C) orElseBool refcount(B, C2) [function, anywhere]
+  rule refcount(B, BI:BagItem BI2:BagItem C) => refcount(B, BI) orElseBool refcount(B, BI2) orElseBool refcount(B, C) [function, anywhere]
+  rule refcount(_, .) => false [function, anywhere]
+  rule refcount(B, <xstack> (K, K2:K, C, Ex:Builtin, _) XL:List </xstack>) => refcountk(B, K) orElseBool refcountk(B, K2) orElseBool refcount(B, C) orElseBool B ==K Ex orElseBool refcount(B, <xstack> XL </xstack>) [function, anywhere]
+  rule refcount(B, <xstack> . </xstack>) => false [function, anywhere]
+  rule refcount(B, <xcontext> Ex </xcontext) => B ==K Ex [function, anywhere]
+  rule refcount(B, <currentFrame> Frame:Builtin </currentFrame) => B ==K Frame [function, anywhere]
+  rule refcount(B, <xstack> (K, C, XL, LL, FL, Ex) XL2:List </xstack) => refcountk(B, K) orElseBool refcount(B, C) orElseBool refcount(B, <xstack> XL </xstack>) orElseBool refcount(B, <lstack> LL </lstack>) orElseBool refcount(B, <fstack> FL </fstack>) orElseBool B ==K Ex orElseBool refcount(B, <xstack> XL2 </xstack>) [function, anywhere]
+  rule refcount(B, <lstack> (K, C, XL, LL, FL, Ex) LL2:List </xstack) => refcountk(B, K) orElseBool refcount(B, C) orElseBool refcount(B, <xstack> XL </xstack>) orElseBool refcount(B, <lstack> LL </lstack>) orElseBool refcount(B, <fstack> FL </fstack>) orElseBool B ==K Ex orElseBool refcount(B, <lstack> LL2 </lstack>) [function, anywhere]
+  rule refcount(B, <fstack> (K, C, XL, LL, FL, Ex) FL2:List </xstack) => refcountk(B, K) orElseBool refcount(B, C) orElseBool refcount(B, <xstack> XL </xstack>) orElseBool refcount(B, <lstack> LL </lstack>) orElseBool refcount(B, <fstack> FL </fstack>) orElseBool B ==K Ex orElseBool refcount(B, <fstack> FL2 </fstack>) [function, anywhere]
+  rule refcount(B, <lstack> (K, K2, C) LL:List </lstack>) => refcountk(B, K) orElseBool refcountk(B, K2) orElseBool refcount(B, C) orElseBool refcount(B, <lstack> LL </lstack>) [function, anywhere]
+  rule refcount(B, <lstack> . </lstack>) => false [function, anywhere]
+  rule refcount(B, <fstack> (K, C, Frame, LL) FL:List </fstack) => refcountk(B, K) orElseBool refcount(B, C) orElseBool B ==K Frame orElseBool refcount(B, <lstack> LL </lstack>) orElseBool refcount(B, <fstack> FL </fstack) [function, anywhere]
+  rule refcount(B, <fstack> . </fstack) => false [function, anywhere]
+  rule refcount(B, <scope> (CO:Builtin, _:Set, _:Set, _:Set, _:Set, _:Set) SL:List </scope>) => B ==K CO orElseBool refcount(B, <scope> SL </scope>) [function, anywhere]
+  rule refcount(B, <scope> . </scope) => false [function, anywhere]
 
-  syntax Set ::= refcount(Bag) [function]
-                | refcountbag(Bag) [function]
-                | refcountk(K) [function]
-                | refcountlistk(List{K}) [function]
-                | refcountklabel(KLabel) [function]
-                | refcountmap(Map) [function]
-                | refcountset(Set) [function]
-                | refcountlist(List) [function]
-                | everything(Bag) [function]
+  rule refcount(B, <object>... <oenv> Env:Map </oenv> <oattrs> Attrs:Map </oattrs> ...</object>) => B in values Env orElseBool refcountattrs(B, Attrs) [function, anywhere]
+  rule refcountattrs(B, S |-> K M:Map) => refcountk(B, K) orElseBool refcountattrs(B, M) [function, anywhere]
 
-  rule everything(<object>...<id>B</id>...</object> C:Bag) => SetItem(B) everything(C)
-  rule everything(.Bag) => .Set
-
-  rule [refcount]: refcount(<k> K </k> <control> C </control> <store> C2 </store> <symbols> Symbols </symbols> _:Bag) => (values Symbols) refcountk(K) refcountbag(C) refcountbag(C2)
-  rule refcountbag(BI:BagItem BI2:BagItem C) => refcountbag(BI) refcountbag(BI2) refcountbag(C)
-  rule refcountbag(.) => .Set
-
-  rule refcountbag(<xstack> (K, K2, C, K3, _) XL:List </xstack>) => refcountk(K ~> K2 ~> K3) refcountbag(C <xstack> XL </xstack>)
-  rule refcountbag(<xstack> . </xstack>) => .Set
-
-  rule refcountbag(<xcontext> K </xcontext>) => refcountk(K)
-
-  rule refcountbag(<currentFrame> Frame </currentFrame>) => SetItem(Frame)
-
-  rule refcountbag(<xstack> (K, C, XL, LL, FL, K2) XL2:List </xstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL XL2 </xstack> <lstack> LL </lstack> <fstack> FL </fstack>)
-  rule refcountbag(<lstack> (K, C, XL, LL, FL, K2) LL2:List </lstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL </xstack> <lstack> LL LL2 </lstack> <fstack> FL </fstack>)
-  rule refcountbag(<fstack> (K, C, XL, LL, FL, K2) FL2:List </fstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL </xstack> <lstack> LL </lstack> <fstack> FL FL2 </fstack>)
-
-  rule refcountbag(<lstack> (K, K2, C) LL:List </lstack>) => refcountk(K ~> K2) refcountbag(C <lstack> LL </lstack>)
-  rule refcountbag(<lstack> . </lstack>) => .Set
-
-  rule refcountbag(<fstack> (K, C, Frame, LL) FL:List </fstack>) => refcountk(K ~> ref(Frame)) refcountbag(C <lstack> LL </lstack> <fstack> FL </fstack>)
-  rule refcountbag(<fstack> . </fstack>) => .Set
-
-  rule refcountbag(<scope> (CO, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, _) SL:List </scope>) => refcountk(ref(CO)) refcountbag(<scope> SL </scope>)
-  rule refcountbag(<scope> . </scope>) => .Set
-
-  rule refcountbag(<object>... <oenv> Env:Map </oenv> <oattrs> Attrs:Map </oattrs> ...</object>) => refcountset(values Env) refcountset(values Attrs)
-  rule refcountbag(<object>... <oattrs> Attrs:Map </oattrs> ...</object>) => refcountset(values Attrs)
-
-  rule refcountk(Lbl:KLabel(Kl:List{K}) ~> Lbl2:KLabel(Kl2:List{K}) ~> K2) => refcountk(Lbl(Kl)) refcountk(Lbl2(Kl2)) refcountk(K2)
-  rule refcountk(Lbl:KLabel(Kl:List{K})) => refcountklabel(Lbl) refcountlistk(Kl) when Lbl =/=KLabel 'obj`(_`,_`) andThenBool Lbl =/=KLabel 'ref`(_`)
-  rule refcountk(.K) => .Set
-
-  rule refcountk(obj(N,_)) => SetItem(N)
-  rule refcountk(ref(N)) => SetItem(N)
-
-  rule refcountlistk(K,,Kl:List{K}) => refcountk(K) refcountlistk(Kl)
-  rule refcountlistk(.List{K}) => .Set
-
-  rule refcountklabel(Lbl) => .Set when isString(KLabel2String(Lbl))
-  rule refcountklabel(Lbl) => .Set when is#Int(Lbl(.List{K})) orBool is#Float(Lbl(.List{K})) orBool is#Bool(Lbl(.List{K})) orBool is#String(Lbl(.List{K})) orBool is#Id(Lbl(.List{K}))
-  rule refcountklabel(Map2KLabel M:Map) => refcountmap(M)
-  rule refcountklabel(Set2KLabel S:Set) => refcountset(S)
-  rule refcountklabel(List2KLabel L:List) => refcountlist(L)
-
-  rule refcountmap(K |-> K2 M:Map) => refcountk(K ~> K2) refcountmap(M)
-  rule refcountmap(.Map) => .Set
-
-  rule refcountlist(ListItem(K) L:List) => refcountk(K) refcountlist(L)
-  rule refcountlist(.List) => .Set
-
-  rule refcountset(SetItem(K) S:Set) => refcountk(K) refcountset(S)
-  rule refcountset(.Set) => .Set
+  rule refcountk(B, K ~> K2) => refcountk(B, K) orElseBool refcountk(B, K2) [function, anywhere]
+  rule refcountk(B, Lbl:KLabel(K,,Kl:List{K})) => refcountk(K) orElseBool refcountk(Lbl(Kl)) when Lbl =/=KLabel 'obj`(_`,_`) andBool Lbl =/=KLabel 'ref`(_`) [function, anywhere]
+  rule refcountk(B, obj(B,_)) => true [function, anywhere]
+  rule refcountk(B, ref(B)) => true [function, anywhere]
+  rule refcountk(B, obj(B2,_)) => false when B =/=K B2 [function, anywhere]
+  rule refcountk(B, ref(B2)) => false when B =/=K B2 [function, anywhere]
+  rule refcountk(B, Lbl(.List{K})) => false [function, anywhere]
 
 endmodule

@@ -18,7 +18,7 @@ ref: ${TEST_REFERENCE}
 	- python3.2 $< > /dev/null 2>&1 && touch $@
 
 python-compiled.maude: ?*.k
-	kompile python.k -v --transition "allocation"
+	kompile python.k -v
 
 clean: test-clean
 	rm -rf .k

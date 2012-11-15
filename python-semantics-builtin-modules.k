@@ -64,7 +64,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
            <oenv> .Map </oenv>
          ...</object>
        </store>
-       <symbols>(. => S |-> N) M</symbols> when notBool(S in keys(M)) [allocation]
+       <symbols>(. => S |-> N) M</symbols> when notBool(S in keys(M))
 
   rule <k> object N:Int((S:String => .),_,_,_) ...</k>
        <object>...
@@ -148,6 +148,6 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
          <id>N</id>
          <oattrs> "__dict__" |-> ref(id(O)) "__class__" |-> ref("module") </oattrs>
        ...</object>)
-       <symbols>... (. => S |-> N) ...</symbols> [allocation]
+       <symbols>... (. => S |-> N) ...</symbols>
 
 endmodule

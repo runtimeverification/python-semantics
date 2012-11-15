@@ -20,9 +20,6 @@ module PYTHON-SEMANTICS-COMMON
                       <oattrs> .Map </oattrs>
                     </object>
                   </store>
-                  <garbage> .Set </garbage>
-                  <gc> 1 </gc>
-                  <gcThreshold> $GCTHRESHOLD:Int </gcThreshold>
                   <symbols> .Map </symbols>
                   <references> .Map </references>
                   <bootstrapping> 3 </bootstrapped>
@@ -299,7 +296,7 @@ module PYTHON-SEMANTICS-COMMON
        (. => <object>...
          <id>N</id>
          <oattrs> "__dict__" |-> ref(id(Dict)) "__class__" |-> ref("module") </oattrs>
-       ...</object>) [allocation]
+       ...</object>)
 
 
   rule <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . String2Id("__dict__")), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells) ~> setArgs(Args) ~> getattr(CO, "co_code") ...</k>

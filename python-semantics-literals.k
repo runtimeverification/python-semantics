@@ -118,6 +118,6 @@ module PYTHON-SEMANTICS-LITERALS
        <object>...
          <id>N</id>
          <oattrs> "__class__" |-> ref(B) M </oattrs>
-       ...</object>) [allocation]
+       ...</object>)
 
 endmodule
