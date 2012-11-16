@@ -6,4 +6,5 @@ SIXTYFOUR_BIT="ListItem(64) ListItem(2305843009213693951) ListItem(314159) ListI
 DEBUG=true
 HASHINFO=$SIXTYFOUR_BIT
 OS=POSIX
-krun --parser=./parser --output-mode raw -cHASHINFO="$HASHINFO" -cDEBUG="$DEBUG" -cOS="$OS" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" $@
+GC_THRESHOLD=90
+krun --parser=./parser --output-mode raw -cHASHINFO="$HASHINFO" -cDEBUG="$DEBUG" -cOS="$OS" -cGCTHRESHOLD="$GC_THRESHOLD" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" $@
