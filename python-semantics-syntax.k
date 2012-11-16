@@ -16,7 +16,6 @@ module PYTHON-SEMANTICS-SYNTAX
   syntax Expression ::= ObjRef
                 | Null
                 | Undefined
-                | Builtin
                 | KList
                 | KMap
 
@@ -24,12 +23,13 @@ module PYTHON-SEMANTICS-SYNTAX
 
   syntax Undefined ::= "undefined" "(" String ")"
 
-  syntax KResult ::= Object
-                   | Bool
-                   | Null
-                   | Undefined
-                   | KList
-                   | KMap
+  rule isKResult(obj(_,_)) => true
+  rule isKResult(true) => true
+  rule isKResult(false) => true
+  rule isKResult(.Obj) => true
+  rule isKResult(undefined(_)) => true
+  rule isKResult(list(_)) => true
+  rule isKResult(map(_)) => true
 
   syntax Statement ::= Expression
 
