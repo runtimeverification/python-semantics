@@ -30,7 +30,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <references>... B |-> (1 => 0) ...</references>
        <bootstrapping> 1 </bootstrapping>
 
-  rule <k> (. => setref(B, "__bases__", mutable(list(L), ref("tuple")))) ~> resolve ...</k>
+  rule <k> (. => setref(B, "__bases__", immutable(list(L), ref("tuple")))) ~> resolve ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__bases__" |-> list(L:List) ...</oattrs>
@@ -38,7 +38,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <references>... B |-> (3 => 2) ...</references> 
        <bootstrapping> 3 </bootstrapping>
 
-  rule <k> (. => setref(B, "__mro__", mutable(getMro(ref(B), getref2(ref(B), "__bases__")), ref("tuple")))) ~> resolve ...</k>
+  rule <k> (. => setref(B, "__mro__", immutable(getMro(ref(B), getref2(ref(B), "__bases__")), ref("tuple")))) ~> resolve ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__mro__" |-> _ ...</oattrs>

@@ -20,6 +20,7 @@ module PYTHON-SEMANTICS-COMMON
                       <oattrs> .Map </oattrs>
                     </object>
                   </store>
+                  <literals> .Map </literals>
                   <symbols> .Map </symbols>
                   <references> .Map </references>
                   <bootstrapping> 3 </bootstrapped>
@@ -65,6 +66,8 @@ module PYTHON-SEMANTICS-COMMON
                   | "doCall" "(" Expression "," List "," Map ")"
                   | "mutable" "(" Value "," Expression ")" [strict(2)]
                   | "mutable" "(" Map "," Expression ")" [strict(2)]
+                  | "immutable" "(" Value "," Expression ")" [strict(2)]
+                  | "immutable" "(" Map "," Expression ")" [strict(2)]
                   | "name" "(" Expression ")"
                   | "codeObject" "(" Id "," Parameters "," K "," Bool ")"
                   | "class" "(" Arguments "," Expression ")" [strict]
