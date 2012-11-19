@@ -112,7 +112,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule <k> mutable(V:Value,O) => mutable("__value__" |-> V "__revision__" |-> 0, O) ...</k>
   rule <k> mutable(M,obj(B,ObjState)) => mutable(M,N,obj(B,ObjState)) ...</k>
-       <nextLoc> N => N +Int 1 </nextLoc>
+       <nextLoc> N => N +Int 1 </nextLoc> [allocation]
 
   rule <k> mutable(M:Map,N,obj(B,_)) => ref(N) ...</k>
        (. =>
@@ -131,6 +131,6 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule <k> immutable(M, obj(B,ObjState)) => mutable(M, N, obj(B,ObjState)) ...</k>
        <literals> Literals:Map (. => pair(M, B) |-> ref(N)) </literals>
-       <nextLoc> N => N +Int 1 </nextLoc> when notBool(pair(M, B) in keys(Literals))
+       <nextLoc> N => N +Int 1 </nextLoc> when notBool(pair(M, B) in keys(Literals)) [allocation]
 
 endmodule

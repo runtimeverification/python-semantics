@@ -42,10 +42,10 @@ module PYTHON-SEMANTICS-CALLS
   //leftover positional arguments get stored in vararg
   rule (. => addArg(Code . String2Id("co_varnames") [getattr(Code, "co_argcount") +Int getattr(Code, "co_kwonlyargcount")], tuple(DeListify(L:List)))) ~> matchArgs(_, Code:Object, (L => .), _, _, N) when N >=Int getattr(Code, "co_argcount") andBool (getattr(Code, "co_flags") &Int 4) =/=Int 0 andBool L =/=List .
 
-  rule (addArg(O:Object, O2:Object) => .) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> id(O2)), _)
-  rule (addArg(O:Object, O2:Object) => .) ~> addKwArg(_,_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> id(O2)), _)
-  rule (addArg(O:Object, O2:Object) => .) ~> addDefaults(_,_) ~> addKwDefaults(_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> id(O2)), _)
-  rule (addArg(O:Object, O2:Object) => .) ~> addKwDefaults(_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> id(O2)), _)
+  rule (addArg(O:Object, O2:Object) => .) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _)
+  rule (addArg(O:Object, O2:Object) => .) ~> addKwArg(_,_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _)
+  rule (addArg(O:Object, O2:Object) => .) ~> addDefaults(_,_) ~> addKwDefaults(_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _)
+  rule (addArg(O:Object, O2:Object) => .) ~> addKwDefaults(_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _)
 
   // if there is no vararg, leftover positional arguments raise TypeError
   rule matchArgs(Function:Object, Code:Object, ListItem(_) L, _, _, N) => raiseInternal("TypeError", name(Function) + "() takes at most " +String Int2String(getattr(Code, "co_argcount")) +String " positional arguments (" +String Int2String(N +Int lengthList L +Int 1) +String " given)") when N >=Int getattr(Code, "co_argcount") andBool (getattr(Code, "co_flags") &Int 4) ==Int 0
@@ -69,7 +69,7 @@ module PYTHON-SEMANTICS-CALLS
   context addKwArg(S, _, HOLE) ~> matchArgs(_, Code:Object, _, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
   rule (. => addArg(O, {.KeyData})) ~> addKwArg(S, _, O) ~> matchArgs(_, Code:Object, _, _, M, _) when notBool(String2Id(strvalue(O)) in keys(M)) andBool (getattr(Code, "co_flags") &Int 8) =/=Int 0
   rule addKwArg(S, _, _) ~> matchArgs(Function:Object, Code:Object, _, _, _, _) => raiseInternal("TypeError", name(Function) + "() got an unexpected keyword argument '" +String S +String "'") when (getattr(Code, "co_flags") &Int 8) ==Int 0
-  rule (addKwArg(S:String, O:Object, O2:Object) => (ref(M:Map(String2Id(strvalue(O2)))) [S], .Expressions) := O) ~> matchArgs(_, Code:Object, _, _, M, _) when String2Id(strvalue(O2)) in keys(M) andBool (getattr(Code, "co_flags") &Int 8) =/=Int 0
+  rule (addKwArg(S:String, O:Object, O2:Object) => (M:Map(String2Id(strvalue(O2))) [S], .Expressions) := O) ~> matchArgs(_, Code:Object, _, _, M, _) when String2Id(strvalue(O2)) in keys(M) andBool (getattr(Code, "co_flags") &Int 8) =/=Int 0
 
   rule <k> matchArgs(obj(B:Builtin,_),Code:Object,.,.,M,_) => invoke(ref(B), M) ...</k> when lengthMap M ==Int numArgs(Code)
 
@@ -86,7 +86,7 @@ module PYTHON-SEMANTICS-CALLS
          <fstack> . => (K, C, Frame, LL) ...</fstack>
          <lstack> LL => . </lstack>
          C:Bag
-       </control>
+       </control> [allocation]
 
   rule makeLocals(Free:Object, O:Object) => makeLocals(listvalue(Free), listvalue(O), {.KeyData})
   rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (((O[N]), .Expressions) := getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
@@ -99,7 +99,7 @@ module PYTHON-SEMANTICS-CALLS
        (. => <object>...
          <id>N2</id>
          <oattrs> "__class__" |-> ref("cell") "cell_contents" |-> .Obj "cell_frame" |-> ref(Frame) </oattrs>
-       ...</object>)
+       ...</object>) [allocation]
 
   rule makeCells(.List, .List, .List, O:Object, _) => ref(id(O))
 

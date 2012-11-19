@@ -11,10 +11,15 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
       <gcThreshold> N3 </gcThreshold>
     </T> when N2 <Int N andBool N -Int N2 >Int N3 [structural]
 
-
   rule [collect-garbage]:
     (<object>... <id>N</id> ...</object> => .)
-    <garbage>... SetItem(N) => . ...</SetItem>
+    <garbage>... SetItem(N) => . ...</garbage>
+    <literals> L </literals> when notBool(ref(N) in values(L))
+
+  rule [collect-garbage-interned]:
+    (<object>... <id>N</id> ...</object> => .)
+    <garbage>... SetItem(N) => . ...</garbage>
+    <literals>... _ |-> ref(N) => . ...</literals>
 
   syntax Set ::= refcount(Bag) [function]
                 | refcountbag(Bag) [function]
@@ -62,6 +67,7 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   rule refcountklabel(Map2KLabel M:Map) => refcountmap(M)
   rule refcountklabel(Set2KLabel S:Set) => refcountset(S)
   rule refcountklabel(List2KLabel L:List) => refcountlist(L)
+  rule refcountklabel(List{K}2KLabel Kl:List{K}) => refcountlistk(Kl)
 
   rule refcountmap(K |-> K2 M:Map) => refcountk(K ~> K2) refcountmap(M)
 

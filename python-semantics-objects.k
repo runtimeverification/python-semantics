@@ -18,7 +18,7 @@ module PYTHON-SEMANTICS-OBJECTS
        (. => <object>
          <id>N</id>
          <oattrs> "__class__" |-> ref(id(O)) </oattrs>
-       </object>)
+       </object>) [allocation]
 
   rule <k> invokeBuiltin(obj("init_object",_), _, _) => ref("None") ...</k>
 
