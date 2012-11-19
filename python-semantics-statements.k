@@ -22,7 +22,7 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   rule lmark ~> while Condition : Ss else: Ss2 => if Condition : (Ss ~> lmark ~> while Condition : Ss else: Ss2) else: Ss2
 
-  rule <k> popl ~> _ => K </k>
+  rule [terminate-loop]: <k> popl ~> _ => K </k>
        <control>
          <lstack> (K, _, C) => . ...</lstack>
          (_ => C)
@@ -53,13 +53,13 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   context for _ in (HOLE => ref("iter") (HOLE, .Arguments)) : _ else: _
 
-  rule <k> (. => lmark) ~> (for Targets:K in O : Ss else: Ss2) ~> (K => popl) </k>
+  rule [mark-for]: <k> (. => lmark) ~> (for Targets:K in O : Ss else: Ss2) ~> (K => popl) </k>
        <control>
          <lstack> . => (K, for Targets in O : Ss else: Ss2, C) ...</lstack>
          C:Bag
        </control>
 
-  rule lmark ~> for Targets in O : Ss else: Ss2 => try: (((Targets, .Expressions) := getmember(O, "__next__", true, false, true) (.Arguments)) ~> Ss ~> lmark ~> for Targets in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
+  rule [unroll-for]: lmark ~> for Targets in O : Ss else: Ss2 => try: (((Targets, .Expressions) := getmember(O, "__next__", true, false, true) (.Arguments)) ~> Ss ~> lmark ~> for Targets in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
 
   rule O:Object ; => .
 
