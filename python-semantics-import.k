@@ -9,7 +9,7 @@ module PYTHON-SEMANTICS-IMPORT
               | makeSymbol(String, Expression) [strict(2)]
               | doImportlib(Expression) [strict]
 
-  rule importlib => doImportlib({.KeyData})
+  rule importlib => doImportlib({.KeyData}) ~> ref("builtins") . String2Id("__import__"), .Expressions := ref("__import__")
   rule <k> doImportlib(Dict:Object) => Dict["path_sep"], .Expressions := pathSeparator(OS) ~> bootstrap(Dict, SetItem("_warnings") SetItem("imp") SetItem("sys") SetItem("marshal") SetItem("_os")) ~> executeModule(codeObject(String2Id("importlib._bootstrap"), .Parameters, Importlib, true), ref("builtins"), Dict) ~> makeSymbol("__import__", Dict["__import__"]) ...</k>
        <importlib> Importlib </importlib>
        <os> OS </os>
