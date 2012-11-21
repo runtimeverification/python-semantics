@@ -6,3 +6,4 @@ class B:
 
 assert B.x == 5
 assert getattr(B, "x") == 5
+assert hasattr(B, "x")
