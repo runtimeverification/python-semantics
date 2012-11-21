@@ -57,6 +57,14 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "dict_keys" ("type",ListItem("object"),
            "__iter__" |-> def "iter_dict_keys" (0, 0, true)
            ,.) ~>
+         object "float"("type",ListItem("object"),
+           "__eq__" |-> def "eq_float"(1, 1, true)
+           "__ge__" |-> def "ge_float" (1, 1, true)
+           "__gt__" |-> def "gt_float" (1, 1, true)
+           "__le__" |-> def "le_float" (1, 1, true)
+           "__lt__" |-> def "lt_float" (1, 1, true)
+           "__ne__" |-> def "ne_float" (1, 1, true)
+           ,.) ~>
          object "getattr" ( "builtin-function" ,.,.,
            "__call__" |-> def "call_getattr" (2, 3, false)
            ) ~>
@@ -126,15 +134,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__iter__" |-> def "iter_iter" (0, 0, true)
            "__next__" |-> def "iter_next" (0, 0, true)
            ,.) ~> 
-         object "float"("type",ListItem("object"),
-           "__eq__" |-> def "eq_float"(1, 1, true)
-           "__ge__" |-> def "ge_float" (1, 1, true)
-           "__gt__" |-> def "gt_float" (1, 1, true)
-           "__le__" |-> def "le_float" (1, 1, true)
-           "__lt__" |-> def "lt_float" (1, 1, true)
-           "__ne__" |-> def "ne_float" (1, 1, true)
-           ,.) ~>
-         object "len"( "builtin-function" ,.,.,
+        object "len"( "builtin-function" ,.,.,
            "__call__" |-> def "call_len" (1, 1, false)
            ) ~>
          object "list"("type",ListItem("object"),
@@ -146,6 +146,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__ne__" |-> def "ne_list" (1, 1, true)
            "__new__" |-> def "new_list" (1, -1, false)
            ,.) ~>
+         object "locals" ( "builtin-function" ,.,.,
+           "__call__" |-> def "call_locals" (0, 0, false)
+           ) ~>
          object "map"("type",ListItem("object"),
            "__iter__" |-> ref("iter_iter")
            "__new__" |-> def "new_map" (3, -1, false)

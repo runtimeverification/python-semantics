@@ -65,5 +65,8 @@ module PYTHON-SEMANTICS-ENVIRONMENT
 
   rule <k> invokeBuiltin(obj("call_globals",_), ., .) => ref(N) . String2Id("f_globals") ...</k>
        <currentFrame> N </currentFrame>
-    
+ 
+  rule <k> invokeBuiltin(obj("call_locals",_), ., .) => ref(N) . String2Id("f_locals") ...</k>
+       <currentFrame> N </currentFrame>
+   
 endmodule
