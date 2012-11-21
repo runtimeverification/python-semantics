@@ -71,6 +71,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "globals" ( "builtin-function" ,.,.,
            "__call__" |-> def "call_globals" (0, 0, false)
            ) ~>
+         object "hasattr" ( "builtin-function" ,.,.,
+           "__call__" |-> def "call_hasattr" (2, 2, false)
+           ) ~>
          object "hash"( "builtin-function" ,.,.,
            "__call__" |-> def "call_hash" (1, 1, false)
            ) ~>
@@ -335,6 +338,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "iter" : ref("iter")
          , "float" : ref("float")
          , "getattr" : ref("getattr")
+         , "hasattr" : ref("hasattr")
          , "len" : ref("len")
          , "list" : ref("list")
          , "map" : ref("map")
