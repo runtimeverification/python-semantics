@@ -2,15 +2,18 @@ TESTS = $(wildcard programs/test*.py)
 TEST_RESULTS = ${TESTS:.py=.out}
 TEST_REFERENCE = ${TESTS:.py=.ref}
 
-.PHONY: all test ref clean test-clean
+.PHONY: all test ref clean test-clean jenkins
 
 all:	python-compiled.maude
 
-test: ${TEST_RESULTS}
+test: jenkins
+
+jenkins: ${TEST_RESULTS}
+	./jenkins-integration.py ${TEST_RESULTS}
 
 ref: ${TEST_REFERENCE}
 
-%.out: %.py python-compiled.maude
+%.out: %.py python-compiled.maude kpython
 	./kpython $< > $@.tmp
 	-@ test "`grep "< k > (.).K </ k >" $@.tmp`" && cp $@.tmp $@
 
