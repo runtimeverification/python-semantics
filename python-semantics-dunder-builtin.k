@@ -194,6 +194,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "new_staticmethod"(2, 2, false)
            ,.) ~>
          object "str"("type",ListItem("object"),
+           "rpartition" |-> def "rpartition_str"(1, 1, true)
            "__add__" |-> def "add_str" (1, 1, true)
            "__eq__" |-> def "eq_str" (1, 1, true)
            "__hash__" |-> def "hash_str" (0, 0, true)
@@ -210,6 +211,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "new_tuple" (1, 2, false)
            ,.) ~>
          object "type"("type",ListItem("object"),
+           "mro" |-> def "mro_type"(0, 0, true)
            "__bases__" |-> ref("__bases__")
            "__call__" |-> def "call_type" (0, -1, true)
            "__getattribute__" |-> def "getattribute_type" (1, 1, true)
@@ -218,7 +220,6 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "new_type"(2, 4, false)
            "__prepare__" |-> def "prepare_type"(0, -1, false)
            "__setattr__" |-> def "setattr_type"(2, 2, true)
-           "mro" |-> def "mro_type"(0, 0, true)
            ,.) ~>
          object "__name__type" ("attribute",.,., "__get__" |-> "__name__") ~>
          object "__bases__" ("attribute",.,., "__get__" |-> "__bases__") ~>
