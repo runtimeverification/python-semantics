@@ -151,8 +151,8 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                      | "for" Targets "in" Expressions ":" Statements "else" ":" Statements
                      | "try" ":" Statements ExceptClauses "else" ":" Statements //"finally" ":" Statements
                      | "try" ":" Statements "finally" ":" Statements
-                     | "with" Expression "as" Target ":" Statements
-                     | "with" Expression ":" Statements
+                     | "with" Expression "as" Target ":" Statements [strict(1)]
+                     | "with" Expression ":" Statements [strict(1)]
                      | Decorated
 
   syntax Statements ::= Statement
