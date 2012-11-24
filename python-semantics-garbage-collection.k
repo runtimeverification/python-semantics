@@ -37,15 +37,16 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   rule [refcount]: refcount(<k> K </k> <control> C </control> <store> C2 </store> <symbols> Symbols </symbols> _:Bag) => (values Symbols) refcountk(K) refcountbag(C) refcountbag(C2)
   rule refcountbag(BI:BagItem BI2:BagItem C) => refcountbag(BI) refcountbag(BI2) refcountbag(C)
 
-  rule refcountbag(<xstack> (K, K2, C, K3, _) XL:List </xstack>) => refcountk(K ~> K2 ~> K3) refcountbag(C <xstack> XL </xstack>)
+  rule refcountbag(<xstack> (K, K2, C, K3, K4, _) XL:List </xstack>) => refcountk(K ~> K2 ~> K3 ~> K4) refcountbag(C <xstack> XL </xstack>)
 
   rule refcountbag(<xcontext> K </xcontext>) => refcountk(K)
+  rule refcountbag(<traceback> K </traceback>) => refcountk(K)
 
   rule refcountbag(<currentFrame> Frame </currentFrame>) => SetItem(Frame)
 
-  rule refcountbag(<xstack> (K, C, XL, LL, FL, K2) XL2:List </xstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL XL2 </xstack> <lstack> LL </lstack> <fstack> FL </fstack>)
-  rule refcountbag(<lstack> (K, C, XL, LL, FL, K2) LL2:List </lstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL </xstack> <lstack> LL LL2 </lstack> <fstack> FL </fstack>)
-  rule refcountbag(<fstack> (K, C, XL, LL, FL, K2) FL2:List </fstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL </xstack> <lstack> LL </lstack> <fstack> FL FL2 </fstack>)
+  rule refcountbag(<xstack> (K, C, XL, LL, FL, K2, K3) XL2:List </xstack>) => refcountk(K ~> K2 ~> K3) refcountbag(C <xstack> XL XL2 </xstack> <lstack> LL </lstack> <fstack> FL </fstack>)
+  rule refcountbag(<lstack> (K, C, XL, LL, FL, K2, K3) LL2:List </lstack>) => refcountk(K ~> K2 ~> K3) refcountbag(C <xstack> XL </xstack> <lstack> LL LL2 </lstack> <fstack> FL </fstack>)
+  rule refcountbag(<fstack> (K, C, XL, LL, FL, K2, K3) FL2:List </fstack>) => refcountk(K ~> K2 ~> K3) refcountbag(C <xstack> XL </xstack> <lstack> LL </lstack> <fstack> FL FL2 </fstack>)
 
   rule refcountbag(<lstack> (K, K2, C) LL:List </lstack>) => refcountk(K ~> K2) refcountbag(C <lstack> LL </lstack>)
 
