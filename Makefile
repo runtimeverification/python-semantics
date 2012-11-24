@@ -6,9 +6,9 @@ TEST_REFERENCE = ${TESTS:.py=.ref}
 
 all:	python-compiled.maude
 
-test: jenkins
+test: ${TEST_RESULTS}
 
-jenkins: ${TEST_RESULTS}
+jenkins:
 	./jenkins-integration.py ${TEST_RESULTS}
 
 ref: ${TEST_REFERENCE}
