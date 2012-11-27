@@ -32,6 +32,7 @@ clean: test-clean
 	rm -f out
 	rm -f IN.maude
 	rm -f *.k~
+	rm -f junit-results.xml
 
 test-clean:
 	rm -f programs/*.out programs/*.ref programs/*.out.tmp
