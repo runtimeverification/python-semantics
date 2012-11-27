@@ -3,8 +3,8 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-OPS
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= "coerceBinaryBase" "(" Expression "," Expression "," Expression "," Expression ")" [strict(1 2)]
-                  | "coerceBinary" "(" Expression "," Expression "," Expression "," Expression "," String ")" [strict(1 2)]
+  syntax ObjRef ::= "coerceBinaryBase" "(" Expression "," Expression "," Expression "," Expression ")" [strict(1, 2)]
+                  | "coerceBinary" "(" Expression "," Expression "," Expression "," Expression "," String ")" [strict(1, 2)]
                   | "coerceUnary" "(" Expression "," Expression "," String ")" [strict(1)]
                   | "coercion" "(" Expression ")" [strict]
 

@@ -7,13 +7,13 @@ module PYTHON-SEMANTICS-SLICING
                   | "slice2" "(" Expression "," Expression "," Expression ")" [strict]
                   | "slicepart" "(" Expression ")" [strict] 
                   | "indices" "(" Expression "," Expression "," Expression "," Expression ")" [strict]
-                  | "indices2" "(" Expression "," Expression "," Int "," Int ")" [strict(1 2)]
+                  | "indices2" "(" Expression "," Expression "," Int "," Int ")" [strict(1, 2)]
                   | "indices3" "(" Int "," Int "," Int "," Int ")"
                   | "indices4" "(" Int "," Int "," Int "," Int ")"
                   | "indices5" "(" Int "," Int "," Int ")"
                   | "index" "(" Expression ")" [strict]
                   | "iters" "(" List ")"
-                  | "makeMap" "(" Expression "," Expression "," List ")" [strict(1 2)]
+                  | "makeMap" "(" Expression "," Expression "," List ")" [strict(1, 2)]
                   | "range" "(" Expression "," Expression "," Expression "," Expression ")" [strict]
 
   syntax Arguments ::= "nexts" "(" List ")" [function]

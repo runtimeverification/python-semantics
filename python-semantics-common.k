@@ -42,13 +42,13 @@ module PYTHON-SEMANTICS-COMMON
              | "addPair" "(" Expression "," Expression ")"
              | "popx"
              | "setx" "(" K ")"
-             | "newHelper" "(" Expression "," Expression "," Set ")" [strict(1 2)]
+             | "newHelper" "(" Expression "," Expression "," Set ")" [strict(1, 2)]
              | "raiseInternal" "(" String "," Expression ")" [strict(2)]
              | "setattr" "(" Builtin "," String "," K ")"
              | "setref" "(" Builtin "," String "," Expression ")" [strict(3)]
-             | "setenv" "(" Builtin "," Expression "," Expression ")" [strict(2 3)]
+             | "setenv" "(" Builtin "," Expression "," Expression ")" [strict(2, 3)]
              | "executeModule" "(" Expression "," Expression "," Expression ")" [strict]
-             | "executeFrame" "(" Int "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression "," Map ")" [strict(2 3 4 5 6 7)]
+             | "executeFrame" "(" Int "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression "," Map ")" [strict(2, 3, 4, 5, 6, 7)]
              | "setArgs" "(" Map ")"
              | getMro(Expression, Expression) [strict]
 
@@ -59,9 +59,9 @@ module PYTHON-SEMANTICS-COMMON
                   | "builtin" "(" Id ")"
                   | "gettype" "(" Expression ")"
                   | "getbases" "(" Expression ")"
-                  | "getmember" "(" Expression "," Expression "," Bool "," Bool "," Bool ")" [strict(1 2)] 
+                  | "getmember" "(" Expression "," Expression "," Bool "," Bool "," Bool ")" [strict(1, 2)] 
                   | "setmember" "(" Expression "," Expression "," Expression ")" [strict] 
-                  | "binaryOp" "(" Expression "," Expression "," String "," String "," K ")" [strict(1 2)]
+                  | "binaryOp" "(" Expression "," Expression "," String "," String "," K ")" [strict(1, 2)]
                   | "unaryOp" "(" Expression "," String "," K ")" [strict(1)]
                   | "invoke" "(" Expression "," Map ")" [strict(1)]
                   | "invokeBuiltin" "(" Expression "," List "," Map ")" [strict(1)]
@@ -74,8 +74,8 @@ module PYTHON-SEMANTICS-COMMON
                   | "name" "(" Expression ")"
                   | "codeObject" "(" Id "," Parameters "," K "," Bool ")"
                   | "class" "(" Arguments "," Expression ")" [strict]
-                  | describe(Expression, Expression, Expression, String) [strict(1 2 3)]
-                  | doDescribe(Expression, Expression, Expression, String) [strict(1 2 3)]
+                  | describe(Expression, Expression, Expression, String) [strict(1, 2, 3)]
+                  | doDescribe(Expression, Expression, Expression, String) [strict(1, 2, 3)]
 
   syntax K ::= "iterate" "(" Expression "," K ")" [strict(1)]
 

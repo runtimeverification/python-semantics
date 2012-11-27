@@ -11,7 +11,7 @@ module PYTHON-SEMANTICS-LITERALS
              | "tableInsert" "(" Builtin "," Int "," Expression "," K ")" [strict(3)]
              | "tableLookup" "(" Builtin "," Int "," Expression ")" [strict(3)]
              | "tableDelete" "(" Builtin "," Int "," Expression ")" [strict(3)]
-             | "bucketInsert" "(" Builtin "," Int "," Expression "," Expression "," List "," List ")" [strict(3 4)]
+             | "bucketInsert" "(" Builtin "," Int "," Expression "," Expression "," List "," List ")" [strict(3, 4)]
              | "bucketLookup" "(" Expression "," List ")" [strict(1)]
              | "bucketDelete" "(" Builtin "," Int "," Expression "," List "," List ")" [strict(3)]
              | "setBucket" "(" Builtin "," Int "," List ")"

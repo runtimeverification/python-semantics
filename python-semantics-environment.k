@@ -3,9 +3,9 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-ENVIRONMENT
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= "envLookup" "(" String "," Expression "," Expression ")" [strict(2 3)]
+  syntax ObjRef ::= "envLookup" "(" String "," Expression "," Expression ")" [strict(2, 3)]
   syntax K ::= "doBind" "(" String "," Builtin "," Expression ")" [strict(3)]
-  syntax K ::= "doBind2" "(" String "," Builtin "," Expression "," Expression ")" [strict(3 4)]
+  syntax K ::= "doBind2" "(" String "," Builtin "," Expression "," Expression ")" [strict(3, 4)]
 
   rule unbind(X) => bind(X, 0) [macro, anywhere]
   rule <k> bind(X:Id, B:Builtin) => doBind(Id2String(X), B, ref(N)) ...</k>

@@ -9,7 +9,7 @@ module PYTHON-SEMANTICS-TRY
              | "setcause" "(" Expression "," Expression ")" [strict]
              | "doExcept" "(" Expression "," K "," NAME ")" [strict(1)]
              | "doExcepts" "(" List "," K "," NAME ")"
-             | "doRaise" "(" Expression "," Expression "," Bool ")" [strict(1 2)]
+             | "doRaise" "(" Expression "," Expression "," Bool ")" [strict(1, 2)]
              | "popfinally"
  
   rule <k> (try: Try:K ECs:K else: Else:K => Try ~> popx ~> Else) ~> K:K </k>

@@ -4,7 +4,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   imports PYTHON-SEMANTICS-OPS
 
   syntax ObjRef ::= "bool" "(" K ")" [strict]
-                  | "coerceBoolean" "(" Expression "," Expression "," Expression "," Expression "," String ")" [strict(1 2)]
+                  | "coerceBoolean" "(" Expression "," Expression "," Expression "," Expression "," String ")" [strict(1, 2)]
                   | "len" "(" Expression ")" [strict]
                   | "checkBool" "(" Expression ")" [strict]
                   | "checkInt" "(" Expression ")" [strict]

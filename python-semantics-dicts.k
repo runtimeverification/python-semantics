@@ -69,7 +69,7 @@ module PYTHON-SEMANTICS-DICTS
   rule invokeBuiltin(obj("init_dict",_), ListItem(_:Object), .) => ref("None")
   rule invokeBuiltin(obj("init_dict",_), ListItem(O) ListItem(O2:Object), .) => mapping(O2, .Obj) -> iterate(O2, .) ~> makeDict(0, O)
 
-  rule (. => O[Key], .Expressions := Value) ~> map((Key |-> Value => .) _) ~> makeDict(_, O) 
+  rule (. => O[Key:K], .Expressions := Value) ~> map((Key |-> Value => .) _) ~> makeDict(_, O) 
   rule map(.) ~> makeDict(_, O) => ref("None")
 
   rule <k> list(_) ~> (. => map(.)) ~> makeDict(_, _) ...</k>

@@ -3,7 +3,7 @@ require "python-semantics-boolean-ops.k"
 module PYTHON-SEMANTICS-OBJECTS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
-  syntax ObjRef ::= "init" "(" Expression "," Expression "," List "," Map ")" [strict(1 2)] 
+  syntax ObjRef ::= "init" "(" Expression "," Expression "," List "," Map ")" [strict(1, 2)] 
                   | "getMros" "(" List ")"
                   | "mroMerge" "(" List{K} ")"
   syntax Bool ::= "notInTail" "(" Builtin "," List ")" [function]

@@ -6,8 +6,8 @@ module PYTHON-SEMANTICS-CLASSES
   //TODO: staticmethod
 
   syntax ObjRef ::= makeType(Expression, Expression) [strict]
-                  | invokeClass(Expression, Expression, Expression, Map) [strict(1 2 3)]
-                  | executeClass(Expression, Expression, Expression, Expression, Expression, Expression, Map) [strict(1 2 3 4 5 6)] 
+                  | invokeClass(Expression, Expression, Expression, Map) [strict(1, 2, 3)]
+                  | executeClass(Expression, Expression, Expression, Expression, Expression, Expression, Map) [strict(1, 2, 3, 4, 5, 6)] 
                   | calculateMetaclass(Expression, Expression, Expression, Expression, Expression) [strict]
 
   syntax K ::= restoreContext(List, List, Int)

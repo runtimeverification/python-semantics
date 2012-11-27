@@ -3,9 +3,9 @@ require "python-semantics-literals.k"
 module PYTHON-SEMANTICS-CALLS
   imports PYTHON-SEMANTICS-LITERALS
 
-  syntax K ::= "processArgs" "(" List "," Map "," Expression "," Expression ")" [strict(3 4)]
+  syntax K ::= "processArgs" "(" List "," Map "," Expression "," Expression ")" [strict(3, 4)]
              | "sortArgs" "(" List ")"
-             | "matchArgs" "(" Expression "," Expression "," List "," Map "," Map "," Int ")" [strict(1 2)]
+             | "matchArgs" "(" Expression "," Expression "," List "," Map "," Map "," Int ")" [strict(1, 2)]
              | "addArg" "(" Expression "," Expression ")" [strict]
              | "addKwArg" "(" String "," Expression "," Expression ")" [strict(2)]
              | "addDefaults" "(" Int "," Expression ")" [strict(2)]
@@ -59,24 +59,24 @@ module PYTHON-SEMANTICS-CALLS
   // fill in default value for unspecified parameter
   rule (. => addDefaults(0, ref("len")(Function . String2Id("__defaults__")) if Function . String2Id("__defaults__") is not ref("None") else 0) ~> addKwDefaults(0, Function . String2Id("__kwdefaults__"))) ~> matchArgs(Function:Object,Code:Object, ., ., M, _) when lengthMap M <Int numArgs(Code)
   rule (addDefaults(N, _) => .) ~> addKwDefaults(_,_) ~> matchArgs(_,Code:Object, _, _ ,_ ,_) when N ==Int getattr(Code, "co_argcount")
-  rule (. => addDefault(Code . String2Id("co_varnames") [N])) ~> addDefaults(N, O) ~> addKwDefaults(_,_) ~> matchArgs(_,Code:Object, _, _, _, _) when N <Int getattr(Code, "co_argcount")
+  rule (. => addDefault(Code . String2Id("co_varnames") [N:Int])) ~> addDefaults(N, O) ~> addKwDefaults(_,_) ~> matchArgs(_,Code:Object, _, _, _, _) when N <Int getattr(Code, "co_argcount")
   rule addDefault(O) ~> addDefaults(N2:Int, O2) ~> addKwDefaults(_,_) ~> matchArgs(Function:Object, Code:Object, _, _, M, N) => raiseInternal("TypeError", name(Function) + "() takes at least " +String Int2String(getattr(Code, "co_argcount") -Int intvalue(O2)) +String " arguments (" +String Int2String(N) +String " given)") when notBool(String2Id(strvalue(O)) in keys(M)) andBool N2 <Int getattr(Code, "co_argcount") -Int intvalue(O2)
   rule (addDefault(O) => #if String2Id(strvalue(O)) in keys(M) #then . #else addArg(O, (Function . String2Id("__defaults__") [N -Int getattr(Code, "co_argcount") +Int intvalue(O2)])) #fi) ~> addDefaults((N => N +Int 1), O2) ~> addKwDefaults(_,_) ~> matchArgs(Function:Object, Code:Object, _, _, M, _) when N >=Int getattr(Code, "co_argcount") -Int intvalue(O2) orBool String2Id(strvalue(O)) in keys(M)
   rule (addKwDefaults(N, _) => .) ~> matchArgs(_, Code:Object, _, _, _, _) when N ==Int getattr(Code, "co_kwonlyargcount")
   rule (. => addKwDefault(Code . String2Id("co_varnames") [N +Int getattr(Code, "co_argcount")])) ~> addKwDefaults((N => N +Int 1), _) ~> matchArgs(_, Code:Object, _, _, _, _) when N <Int getattr(Code, "co_kwonlyargcount")
-  rule (addKwDefault(O) => #if String2Id(strvalue(O)) in keys(M) #then . #else if O in O2 : addArg(O, O2[O]) else: raiseInternal("TypeError", name(Function) + "() needs keyword-only argument " +String strvalue(O)) #fi) ~> addKwDefaults(_, O2) ~> matchArgs(Function:Object, Code:Object, _, _, M, _)
+  rule (addKwDefault(O:K) => #if String2Id(strvalue(O)) in keys(M) #then . #else if O in O2 : addArg(O, O2[O:K]) else: raiseInternal("TypeError", name(Function) + "() needs keyword-only argument " +String strvalue(O)) #fi) ~> addKwDefaults(_, O2) ~> matchArgs(Function:Object, Code:Object, _, _, M, _)
 
   context addKwArg(S, _, HOLE) ~> matchArgs(_, Code:Object, _, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
   rule (. => addArg(O, {.KeyData})) ~> addKwArg(S, _, O) ~> matchArgs(_, Code:Object, _, _, M, _) when notBool(String2Id(strvalue(O)) in keys(M)) andBool (getattr(Code, "co_flags") &Int 8) =/=Int 0
   rule addKwArg(S, _, _) ~> matchArgs(Function:Object, Code:Object, _, _, _, _) => raiseInternal("TypeError", name(Function) + "() got an unexpected keyword argument '" +String S +String "'") when (getattr(Code, "co_flags") &Int 8) ==Int 0
-  rule (addKwArg(S:String, O:Object, O2:Object) => (M:Map(String2Id(strvalue(O2))) [S], .Expressions) := O) ~> matchArgs(_, Code:Object, _, _, M, _) when String2Id(strvalue(O2)) in keys(M) andBool (getattr(Code, "co_flags") &Int 8) =/=Int 0
+  rule (addKwArg(S:String, O:Object, O2:Object) => (M:Map(String2Id(strvalue(O2))) [S:String], .Expressions) := O) ~> matchArgs(_, Code:Object, _, _, M, _) when String2Id(strvalue(O2)) in keys(M) andBool (getattr(Code, "co_flags") &Int 8) =/=Int 0
 
   rule <k> matchArgs(obj(B:Builtin,_),Code:Object,.,.,M,_) => invoke(ref(B), M) ...</k> when lengthMap M ==Int numArgs(Code)
 
   syntax ListItem ::= "(" K "," Bag "," Int "," List ")"
-  syntax ObjRef ::= "makeLocals" "(" Expression "," Expression ")" [strict(1 2)]
+  syntax ObjRef ::= "makeLocals" "(" Expression "," Expression ")" [strict(1, 2)]
                   | "makeLocals" "(" List "," List "," Expression ")" [strict(3)]
-                  | "makeCells" "(" Expression "," Expression "," Expression "," Int ")" [strict(1 2 3)]
+                  | "makeCells" "(" Expression "," Expression "," Expression "," Int ")" [strict(1, 2, 3)]
                   | "makeCells" "(" List "," List "," List "," Expression "," Int ")" [strict(4)]
 
   rule <k> invoke(obj(_:Int,<oattrs>... "__closure__" |-> Closure "__code__" |-> Code "__globals__" |-> Globals ...</oattrs>), M) ~> K:K => executeFrame(N, Code, ref(Frame), makeLocals(Code . String2Id("co_freevars"), Closure), Globals, Globals ["__builtins__"], makeCells(Code . String2Id("co_freevars"), Code . String2Id("co_cellvars"), Closure, N), M) ~> return </k>
@@ -89,12 +89,12 @@ module PYTHON-SEMANTICS-CALLS
        </control> [allocation]
 
   rule makeLocals(Free:Object, O:Object) => makeLocals(listvalue(Free), listvalue(O), {.KeyData})
-  rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (((O[N]), .Expressions) := getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
+  rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (((O[N:K]), .Expressions) := getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
   rule makeLocals(.List, .List, O:Object) => ref(id(O))
 
   rule makeCells(Free:Object, Cells:Object, O:Object, N) => makeCells(listvalue(Free), listvalue(Cells), listvalue(O), {.KeyData}, N)
-  rule (. => ((O[N]), .Expressions) := N2) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
-  rule <k> (. => ((O[N]), .Expressions) := ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O:Object, Frame:Int) ...</k>
+  rule (. => ((O[N:K]), .Expressions) := N2) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
+  rule <k> (. => ((O[N:K]), .Expressions) := ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O:Object, Frame:Int) ...</k>
        <nextLoc> N2 => N2 +Int 1 </nextLoc>
        (. => <object>...
          <id>N2</id>
