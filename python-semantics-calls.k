@@ -64,7 +64,7 @@ module PYTHON-SEMANTICS-CALLS
   rule (addDefault(O) => #if String2Id(strvalue(O)) in keys(M) #then . #else addArg(O, (Function . String2Id("__defaults__") [N -Int getattr(Code, "co_argcount") +Int intvalue(O2)])) #fi) ~> addDefaults((N => N +Int 1), O2) ~> addKwDefaults(_,_) ~> matchArgs(Function:Object, Code:Object, _, _, M, _) when N >=Int getattr(Code, "co_argcount") -Int intvalue(O2) orBool String2Id(strvalue(O)) in keys(M)
   rule (addKwDefaults(N, _) => .) ~> matchArgs(_, Code:Object, _, _, _, _) when N ==Int getattr(Code, "co_kwonlyargcount")
   rule (. => addKwDefault(Code . String2Id("co_varnames") [N +Int getattr(Code, "co_argcount")])) ~> addKwDefaults((N => N +Int 1), _) ~> matchArgs(_, Code:Object, _, _, _, _) when N <Int getattr(Code, "co_kwonlyargcount")
-  rule (addKwDefault(O:K) => #if String2Id(strvalue(O)) in keys(M) #then . #else if O in O2 : addArg(O, O2[O:K]) else: raiseInternal("TypeError", name(Function) + "() needs keyword-only argument " +String strvalue(O)) #fi) ~> addKwDefaults(_, O2) ~> matchArgs(Function:Object, Code:Object, _, _, M, _)
+  rule (addKwDefault(O) => #if String2Id(strvalue(O)) in keys(M) #then . #else if O in O2 : addArg(O, O2[O]) else: raiseInternal("TypeError", name(Function) + "() needs keyword-only argument " +String strvalue(O)) #fi) ~> addKwDefaults(_, O2) ~> matchArgs(Function:Object, Code:Object, _, _, M, _)
 
   context addKwArg(S, _, HOLE) ~> matchArgs(_, Code:Object, _, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
   rule (. => addArg(O, {.KeyData})) ~> addKwArg(S, _, O) ~> matchArgs(_, Code:Object, _, _, M, _) when notBool(String2Id(strvalue(O)) in keys(M)) andBool (getattr(Code, "co_flags") &Int 8) =/=Int 0
