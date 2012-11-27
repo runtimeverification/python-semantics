@@ -1,3 +1,6 @@
+require "python-semantics-common.k"
+require "python-semantics-boolean-ops.k"
+
 module PYTHON-SEMANTICS-LITERALS
   imports PYTHON-SEMANTICS-COMMON
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
