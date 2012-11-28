@@ -8,7 +8,10 @@ all:	python-compiled.maude
 
 test: ${TEST_RESULTS}
 
-jenkins: clean test
+jenkins: clean
+	$(MAKE) jenkins-test
+
+jenkins-test: ${TEST_RESULTS}
 	./jenkins-integration.py ${TEST_RESULTS}
 
 ref: ${TEST_REFERENCE}
