@@ -26,7 +26,7 @@ module PYTHON-SEMANTICS-COMMON
                   <literals> .Map </literals>
                   <symbols> .Map </symbols>
                   <references> .Map </references>
-                  <bootstrapping> 3 </bootstrapped>
+                  <bootstrapping> 3 </bootstrapping>
                   <nextLoc> 1 </nextLoc>
                   <debug> $DEBUG:Bool </debug>
                   <hashInfo> $HASHINFO:List </hashInfo>
