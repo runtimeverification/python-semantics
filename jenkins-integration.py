@@ -22,7 +22,10 @@ for filename in sys.argv[1:]:
     else:
       raise IOError("test results not found for " + filename)
     testcase.set("time", str(int(re.match(r".*\(([0-9]*)ms real\)", outfile).group(1)) // 1000))
-    testcase.set("status", "unstable" if fail else "success")
+    testcase.set("status", "failed" if fail else "success")
+    if fail:
+      error = ET.SubElement(testcase, "error");
+      failure = ET.SubElement(testcase, "failure");
     system_out = ET.SubElement(testcase, "system-out")
     system_out.text = outfile
   except:
