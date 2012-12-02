@@ -1,6 +1,6 @@
 def f():
   try: 
-    1/0
+    raise
   finally:
     return 5
 assert f() == 5
