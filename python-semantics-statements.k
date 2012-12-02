@@ -67,7 +67,7 @@ module PYTHON-SEMANTICS-STATEMENTS
   rule with O:Object : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), ., Ss)
   rule with O:Object as T:Target : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), T, Ss)
   
-  syntax K ::= doWith(Expression, Expression, K, K) [seqstrict(1 2)]
+  syntax K ::= doWith(Expression, Expression, K, K) [seqstrict(1, 2)]
 
   // we copy from python-semantics-try.k so we can reuse finally functionality and still choose whether we suppress a raised exception
   rule <k> (doWith(Exit:Object, Enter:Object, T, Ss) => #if T ==K . #then . #else T, .Expressions := Enter #fi ~> Ss ~> popfinally ~> Exit(* ref("sys_excinfo")(.Arguments)) ;) ~> K </k>
