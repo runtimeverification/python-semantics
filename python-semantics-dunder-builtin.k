@@ -6,6 +6,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
   rule <k> builtins => (
 
          // module "builtins"
+         object "ArithmeticError"("type",ListItem("Exception"),.,.) ~>
          object "AssertionError"("type",ListItem("Exception"),.,.) ~>
          object "AttributeError"("type",ListItem("Exception"),.,.) ~>
          object "BaseException"("type",ListItem("object"),
@@ -34,6 +35,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "TypeError"("type",ListItem("Exception"),.,.) ~>
          object "UnboundLocalError"("type",ListItem("NameError"),.,.) ~>
          object "ValueError"("type",ListItem("Exception"),.,.) ~>
+         object "ZeroDivisionError"("type", ListItem("ArithmeticError"),.,.) ~>
          object "bool"("type",ListItem("int"),
            "__new__" |-> def "new_bool" (1, 2, false)
            ,.) ~>
@@ -330,6 +332,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "RuntimeError" : ref("RuntimeError")
          , "StopIteration" : ref("StopIteration")
          , "SyntaxError" : ref("SyntaxError")
+         , "ZeroDivisionError" : ref("ZeroDivisionError")
          , "True" : ref("True")
          , "TypeError" : ref("TypeError")
          , "UnboundLocalError" : ref("UnboundLocalError")
