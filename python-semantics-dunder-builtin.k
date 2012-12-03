@@ -387,7 +387,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            }
          , .KeyData
          }) ~>
-         (ref("sys") . String2Id("modules") ["sys"], .Expressions := ref("sys"))
+         ref("sys") . String2Id("modules") ["sys"], .Expressions := ref("sys")
        ) ...</k>
        <debug> T:Bool </debug>
        <hashInfo> ListItem(N1:Int) ListItem(N2:Int) ListItem(N3:Int) ListItem(N4:Int) ListItem(N5:Int) </hashInfo>
