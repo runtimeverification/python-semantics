@@ -67,18 +67,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__lt__" |-> def "lt_float" (1, 1, true)
            "__ne__" |-> def "ne_float" (1, 1, true)
            ,.) ~>
-         object "getattr" ( "builtin-function" ,.,.,
-           "__call__" |-> def "call_getattr" (2, 3, false)
-           ) ~>
-         object "globals" ( "builtin-function" ,.,.,
-           "__call__" |-> def "call_globals" (0, 0, false)
-           ) ~>
-         object "hasattr" ( "builtin-function" ,.,.,
-           "__call__" |-> def "call_hasattr" (2, 2, false)
-           ) ~>
-         object "hash"( "builtin-function" ,.,.,
-           "__call__" |-> def "call_hash" (1, 1, false)
-           ) ~>
+         (def "getattr" (2, 3, false) ;) ~>
+         (def "globals" (0, 0, false) ;) ~>
+	 (def "hasattr" (2, 2, false) ;) ~>
+         (def "hash" (1, 1, false) ;) ~>
          object "int"("type",ListItem("object"),
            "__abs__" |-> def "abs_int" (0, 0, true)
            "__add__" |-> def "add_int" (1, 1, true)
@@ -132,16 +124,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            //TODO: bit_length, conjugate, denominator, from_bytes, imag,
            //        numerator, real, to_bytes
            ,.) ~>
-         object "iter"( "builtin-function" ,.,.,
-           "__call__" |-> def "call_iter" (1, 2, false)
-           ) ~>
+         (def "iter" (1, 2, false) ;) ~>
          object "iterator"("type",ListItem("object"),
            "__iter__" |-> def "iter_iter" (0, 0, true)
            "__next__" |-> def "iter_next" (0, 0, true)
            ,.) ~> 
-        object "len"( "builtin-function" ,.,.,
-           "__call__" |-> def "call_len" (1, 1, false)
-           ) ~>
+         (def "len" (1, 1, false) ;) ~>
          object "list"("type",ListItem("object"),
            "__eq__" |-> def "eq_list" (1, 1,  true)
            "__init__" |-> def "init_list" (0, 1, true)
@@ -151,9 +139,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__ne__" |-> def "ne_list" (1, 1, true)
            "__new__" |-> def "new_list" (1, -1, false)
            ,.) ~>
-         object "locals" ( "builtin-function" ,.,.,
-           "__call__" |-> def "call_locals" (0, 0, false)
-           ) ~>
+         (def "locals" (0, 0, false) ;) ~>
          object "map"("type",ListItem("object"),
            "__iter__" |-> ref("iter_iter")
            "__new__" |-> def "new_map" (3, -1, false)
@@ -177,9 +163,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__iter__" |-> def "iter_range" (0, 0, true)
            "__new__" |-> def "new_range" (1, 4, false)
            ,.) ~>
-         object "setattr" ( "builtin-function" ,.,.,
-           "__call__" |-> def "call_setattr" (3, 3, false)
-           ) ~>
+         (def "setattr" (3, 3, false) ;) ~>
          object "slice" ("type",ListItem("object"),
            "indices" |-> def "indices_slice" (1, 1, true)
            "start" |-> ref("start")
@@ -231,11 +215,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__get__" |-> def "get_attr" (1, 2, true)
            "__set__" |-> def "set_attr" (2, 2, true)
            , "__name__" |-> undefined("internal type name")) ~>
-         object "builtin-function" ("type",ListItem("object"),
-           "__call__" |-> def "call_builtin_function" (0, -1, true)
+         object "builtin-function" ("type",ListItem("object"),.
            , "__name__" |-> undefined("internal type name")) ~>
          object "builtin-method" ("type",ListItem("object"),
-           "__call__" |-> ref("call_builtin_function")
            "__get__" |-> def "get_builtin_method" (1, 2, true)
            , "__name__" |-> undefined("internal type name")) ~>
          object "code"("type",ListItem("object"),
@@ -309,7 +291,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          // misc builtins
          object "cell"("type",ListItem("object"),
            ., .) ~>
-         object "cell_contents" ("attribute",.,., "__get__" |-> "cell_contents")) ...</k>
+         object "cell_contents" ("attribute",.,., "__get__" |-> "cell_contents") ~>
+         (def "sys_exc_info" (0, 0, false) ;) ~>
+         (def "imp_acquire_lock" (0, 0, false) ;) ~>
+         (def "imp_release_lock" (0, 0, false) ;) 
+       )
+       ...</k>
 
   rule <k> modules => (
 
@@ -363,13 +350,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , .KeyData
          }) ~>
          module "errno"({.KeyData}) ~>
-         module "imp"({.KeyData}) ~>
-         module "marshal"({.KeyData}) ~>
-         module "sys"({
-           "hash_info" : tuple(N1, N2, N3, N4, N5, .Expressions)
-         , "exc_info" : def "sys_excinfo"(0, 0, false)
+         module "imp"({
+           "acquire_lock" : ref("imp_acquire_lock")
+         , "release_lock" : ref("imp_release_lock")
          , .KeyData
          }) ~>
+         module "marshal"({.KeyData}) ~>
          module "types"({
            "BuiltinFunctionType" : ref("builtin-function")
          , "BuiltinMethodType" : ref("builtin-method")
@@ -383,7 +369,24 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "ModuleType" : ref("module")
          , "TracebackType" : ref("traceback")
          , .KeyData
-         })
+         }) ~>
+         module "sys"({
+           "exc_info" : ref("sys_exc_info")
+         , "hash_info" : tuple(N1, N2, N3, N4, N5, .Expressions)
+         , "modules" : {
+             "_io" : ref("_io")
+           , "_os" : ref("_os")
+           , "_warnings" : ref("_warnings")
+           , "builtins" : ref("builtins")
+           , "errno" : ref("errno")
+           , "imp" : ref("imp")
+           , "marshal" : ref("marshal")
+           , "types" : ref("types")
+	   , .KeyData
+           }
+         , .KeyData
+         }) ~>
+         (ref("sys") . String2Id("modules") ["sys"], .Expressions := ref("sys"))
        ) ...</k>
        <debug> T:Bool </debug>
        <hashInfo> ListItem(N1:Int) ListItem(N2:Int) ListItem(N3:Int) ListItem(N4:Int) ListItem(N5:Int) </hashInfo>

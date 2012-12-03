@@ -28,7 +28,7 @@ module PYTHON-SEMANTICS-ITERATORS
 
   syntax ObjRef ::= "checkIter" "(" Expression ")" [strict]
 
-  rule <k> invokeBuiltin(obj("call_iter",_), ListItem(O), .) => checkIter(getmember(O, "__iter__", true, false, false) (.Arguments) -> test(getmember(O, "__getitem__", true, false, false) =/=Obj .Obj, mutable("__index__" |-> 0 "__value__" |-> ref(id(O)), ref("iterator")), .Obj) -> (raiseInternal("TypeError", "object is not iterable"))) ...</k>
+  rule <k> invokeBuiltin(obj("iter",_), ListItem(O), .) => checkIter(getmember(O, "__iter__", true, false, false) (.Arguments) -> test(getmember(O, "__getitem__", true, false, false) =/=Obj .Obj, mutable("__index__" |-> 0 "__value__" |-> ref(id(O)), ref("iterator")), .Obj) -> (raiseInternal("TypeError", "object is not iterable"))) ...</k>
 
   rule <k> checkIter(O) => test(getmember(O, "__next__", true, false, false) ==Obj .Obj, raiseInternal("TypeError", "iter() returned non-iterator"), O) ...</k>
   //TODO: sentinels

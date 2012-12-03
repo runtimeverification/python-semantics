@@ -43,7 +43,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   syntax K ::= "checkHash" "(" Expression ")" [strict]
 
-  rule <k> invokeBuiltin(obj("call_hash",_), ListItem(O:Object), .) => checkHash(getmember(O, "__hash__", true, false, false) (.Arguments) -> (raiseInternal("TypeError", "unhashable type"))) ...</k>
+  rule <k> invokeBuiltin(obj("hash",_), ListItem(O:Object), .) => checkHash(getmember(O, "__hash__", true, false, false) (.Arguments) -> (raiseInternal("TypeError", "unhashable type"))) ...</k>
 
   rule <k> checkHash(O:Object) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__hash__ method should return an integer")) ...</k>
 
