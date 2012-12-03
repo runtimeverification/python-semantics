@@ -22,6 +22,8 @@ module PYTHON-SEMANTICS-METHODS
   rule doCall(., _, _ (S:String |-> K => .)) ~> _:Object (Args:K => (String2Id(S) = K, Args))
   rule doCall(., ., .) => .
 
+  rule invokeBuiltin(obj("call_builtin_function",_), ListItem(Func) L:List, M:Map) => doCall(Func, L, M)
+
   rule invokeBuiltin(obj("new_classmethod",_), ListItem(Class) ListItem(Method), .) => newHelper(Class, ref("classmethod"), .) ~> mutable("__func__" |-> ref("None"), Class)
   rule invokeBuiltin(obj("init_classmethod",_), ListItem(Self) ListItem(Method), .) => setref(id(Self), "__func__", Method) ~> ref("None")
   rule invokeBuiltin(obj("get_classmethod",_), ListItem(Self) ListItem(Instance) ListItem(Owner), .) => describe(Self, Instance, Owner, "get_classmethod")

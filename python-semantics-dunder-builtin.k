@@ -215,7 +215,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__get__" |-> def "get_attr" (1, 2, true)
            "__set__" |-> def "set_attr" (2, 2, true)
            , "__name__" |-> undefined("internal type name")) ~>
-         object "builtin-function" ("type",ListItem("object"),.
+         object "builtin-function" ("type",ListItem("object"),
+             "__call__" |-> def "call_builtin_function" (0, -1, true)
            , "__name__" |-> undefined("internal type name")) ~>
          object "builtin-method" ("type",ListItem("object"),
            "__get__" |-> def "get_builtin_method" (1, 2, true)
