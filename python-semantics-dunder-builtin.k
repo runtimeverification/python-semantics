@@ -374,6 +374,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          module "sys"({
            "exc_info" : ref("sys_exc_info")
          , "hash_info" : tuple(N1, N2, N3, N4, N5, .Expressions)
+         , "meta_path": [.Expressions]
          , "modules" : {
              "_io" : ref("_io")
            , "_os" : ref("_os")
