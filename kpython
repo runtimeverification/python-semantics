@@ -7,4 +7,5 @@ DEBUG=true
 HASHINFO=$SIXTYFOUR_BIT
 OS=POSIX
 GC_THRESHOLD=100
-krun --parser=./parser --output-mode raw -cHASHINFO="$HASHINFO" -cDEBUG="$DEBUG" -cOS="$OS" -cGCTHRESHOLD="$GC_THRESHOLD" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" $@
+SYS_PATH="ListItem(\"\") ListItem(\"$PYTHON_LIB\")"
+krun --parser=./parser --output-mode raw -cHASHINFO="$HASHINFO" -cDEBUG="$DEBUG" -cOS="$OS" -cGCTHRESHOLD="$GC_THRESHOLD" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" -cSYSPATH="$SYS_PATH" $@

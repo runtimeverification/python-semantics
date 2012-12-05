@@ -148,6 +148,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
          <id>N</id>
          <oattrs> "__dict__" |-> ref(id(O)) "__class__" |-> ref("module") </oattrs>
        ...</object>)
-       <symbols>... (. => S |-> N) ...</symbols> [allocation]
+       <symbols>... (. => S |-> N) ...</symbols>
+       <builtinModules>... (. => S |-> N) ...</builtinModules> [allocation]
 
 endmodule

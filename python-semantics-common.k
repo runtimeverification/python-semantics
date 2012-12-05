@@ -26,11 +26,13 @@ module PYTHON-SEMANTICS-COMMON
                   <gcThreshold> $GCTHRESHOLD:Int </gcThreshold>
                   <literals> .Map </literals>
                   <symbols> .Map </symbols>
+                  <builtinModules> .Map </builtinModules>
                   <references> .Map </references>
                   <bootstrapping> 3 </bootstrapping>
                   <nextLoc> 1 </nextLoc>
                   <debug> $DEBUG:Bool </debug>
                   <hashInfo> $HASHINFO:List </hashInfo>
+                  <sysPath> $SYSPATH:List </sysPath>
                   <importlib> $IMPORTLIB:K </importlib>
                   <os> $OS:K </os>
                 </T>

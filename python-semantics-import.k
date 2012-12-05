@@ -24,6 +24,14 @@ module PYTHON-SEMANTICS-IMPORT
 
   rule invokeBuiltin(obj("imp_acquire_lock",_), ., .) => ref("None")
   rule invokeBuiltin(obj("imp_release_lock",_), ., .) => ref("None")
+  rule <k> invokeBuiltin(obj("imp_is_builtin",_), ListItem(O), .) => test(istype(O, ref("str")), bool(strvalue(O) in M), raiseInternal("TypeError", "must be str")) ...</k>
+       <builtinModules> M </builtinModules>
+  rule <k> invokeBuiltin(obj("imp_init_builtin",_), ListItem(O), .) => test(istype(O, ref("str")), test(strvalue(O) in M, ref(M(strvalue(O))), ref("None")), raiseInternal("TypeError", "must be str"))  ...</k>
+       <builtinModules> M </builtinModules>
+  rule invokeBuiltin(obj("imp_is_frozen",_), ListItem(O), .) => test(istype(O, ref("str")), ref("False"), raiseInternal("TypeError", "must be str"))
+  rule invokeBuiltin(obj("imp_init_frozen",_), ListItem(O), .) => test(istype(O, ref("str")), ref("None"), raiseInternal("TypeError", "must be str"))
+  rule invokeBuiltin(obj("imp_get_frozen_object",_), ListItem(O), .) => test(istype(O, ref("str")), raiseInternal("ImportError", "no such frozen object named " +String strvalue(O)), raiseInternal("TypeError", "must be str"))
+  rule invokeBuiltin(obj("imp_is_frozen_package",_), ListItem(O), .) => test(istype(O, ref("str")), raiseInternal("ImportError", "no such frozen object named " +String strvalue(O)), raiseInternal("TypeError", "must be str"))
 
   // import statement
 

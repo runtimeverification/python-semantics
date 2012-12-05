@@ -295,7 +295,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "cell_contents" ("attribute",.,., "__get__" |-> "cell_contents") ~>
          (def "sys_exc_info" (0, 0, false) ;) ~>
          (def "imp_acquire_lock" (0, 0, false) ;) ~>
-         (def "imp_release_lock" (0, 0, false) ;) 
+         (def "imp_release_lock" (0, 0, false) ;) ~>
+         (def "imp_is_builtin" (1, 1, false) ;) ~>
+         (def "imp_init_builtin" (1, 1, false) ;) ~>
+         (def "imp_is_frozen" (1, 1, false) ;) ~>
+         (def "imp_init_frozen" (1, 1, false) ;)
+         (def "imp_is_frozen_package" (1, 1, false) ;) ~>
+         (def "imp_get_frozen_object" (1, 1, false) ;) ~>
        )
        ...</k>
 
@@ -354,6 +360,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          module "imp"({
            "acquire_lock" : ref("imp_acquire_lock")
          , "release_lock" : ref("imp_release_lock")
+         , "is_builtin" : ref("imp_is_builtin")
+         , "init_builtin" : ref("imp_init_builtin")
+         , "is_frozen" : ref("imp_is_frozen")
+         , "init_frozen" : ref("imp_init_frozen")
+         , "is_frozen_package" : ref("imp_is_frozen_package")
+         , "get_frozen_object" : ref("imp_get_frozen_object")
          , .KeyData
          }) ~>
          module "marshal"({.KeyData}) ~>
@@ -375,22 +387,15 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "exc_info" : ref("sys_exc_info")
          , "hash_info" : tuple(N1, N2, N3, N4, N5, .Expressions)
          , "meta_path": [.Expressions]
-         , "modules" : {
-             "_io" : ref("_io")
-           , "_os" : ref("_os")
-           , "_warnings" : ref("_warnings")
-           , "builtins" : ref("builtins")
-           , "errno" : ref("errno")
-           , "imp" : ref("imp")
-           , "marshal" : ref("marshal")
-           , "types" : ref("types")
-	   , .KeyData
-           }
+         , "modules" : {.KeyData}
+         , "path" : [DeListify(L)]
+         , "path_hooks" : [.Expressions]
+         , "path_importer_cache" : {.KeyData}
          , .KeyData
-         }) ~>
-         (ref("sys") . String2Id("modules") ["sys"], .Expressions := ref("sys"))
+         })
        ) ...</k>
        <debug> T:Bool </debug>
        <hashInfo> ListItem(N1:Int) ListItem(N2:Int) ListItem(N3:Int) ListItem(N4:Int) ListItem(N5:Int) </hashInfo>
+       <sysPath> L:List </sysPath>
 
 endmodule
