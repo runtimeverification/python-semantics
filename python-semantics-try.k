@@ -6,7 +6,6 @@ module PYTHON-SEMANTICS-TRY
   syntax ListItem ::= "(" K "," K "," Bag "," K "," K "," Bool ")"
 
   syntax K ::= savex(Expression) [strict]
-             | savetb(Expression) [strict]
              | setcause(Expression, Expression) [strict]
              | doExcept(Expression, K, NAME) [strict(1)]
              | doExcepts(List, K, NAME)

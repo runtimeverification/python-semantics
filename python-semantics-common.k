@@ -44,7 +44,8 @@ module PYTHON-SEMANTICS-COMMON
              | "addItem" "(" Expression ")" [strict]
              | "addPair" "(" Expression "," Expression ")"
              | "popx"
-             | "setx" "(" K ")"
+             | setx(K)
+             | savetb(Expression) [strict]
              | "newHelper" "(" Expression "," Expression "," Set ")" [strict(1, 2)]
              | "raiseInternal" "(" String "," Expression ")" [strict(2)]
              | "setattr" "(" Builtin "," String "," K ")"
@@ -205,10 +206,6 @@ module PYTHON-SEMANTICS-COMMON
 
   syntax Set ::= Set "&Set" Set [function]
   rule St1:Set &Set St2:Set => St1 -Set (St1 -Set St2) [function, anywhere]
-
-  syntax Set ::= "values" Map [function]
-  rule values (K |-> K2 M) => SetItem(K2) values M [function, anywhere]
-  rule values . => . [function, anywhere]
 
   syntax Bool ::= "all" "(" List "," KLabel ")" [function]
   rule all(ListItem(K) L:List, Lbl:KLabel) => Lbl(K) andBool all(L, Lbl) [function, anywhere]

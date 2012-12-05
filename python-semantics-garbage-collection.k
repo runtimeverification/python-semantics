@@ -1,5 +1,11 @@
+require "python-semantics-calls.k"
+require "python-semantics-functions.k"
+require "python-semantics-statements.k"
+
 module PYTHON-SEMANTICS-GARBAGE-COLLECTION
-  imports PYTHON-SEMANTICS-COMMON
+  imports PYTHON-SEMANTICS-CALLS
+  imports PYTHON-SEMANTICS-FUNCTIONS
+  imports PYTHON-SEMANTICS-STATEMENTS
 
   rule [run-garbage-collection]:
     <T>

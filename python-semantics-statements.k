@@ -1,7 +1,9 @@
 require "python-semantics-boolean-ops.k"
+require "python-semantics-try.k"
 
 module PYTHON-SEMANTICS-STATEMENTS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
+  imports PYTHON-SEMANTICS-TRY
 
   syntax K ::= "lmark"
 
