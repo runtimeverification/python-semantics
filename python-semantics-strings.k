@@ -32,6 +32,6 @@ module PYTHON-SEMANTICS-STRINGS
 
   rule invokeBuiltin(obj("rpartition_str",_), ListItem(O) ListItem(Sep), .) => test(istype(Sep, ref("str")), #if rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) ==Int -1 #then tuple("", "", strvalue(O), .Expressions) #else tuple(substrString(strvalue(O), 0, rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O)))), strvalue(Sep), substrString(strvalue(O), rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) +Int lengthString(strvalue(Sep)), lengthString(strvalue(O))), .Expressions) #fi, raiseInternal("TypeError", "Cannot convert object to str implicitly"))
 
-  rule invokeBuiltin(obj("ord",_), ListItem(O), .) => test(istype(O, ref("str")), test(length(strvalue(O), UTF-8) != 1, raiseInternal("TypeError", "ord() expected a character, but string of length " +String Int2String(length(strvalue(O), UTF-8)) +String " found"), codePoint(strvalue(O), UTF-8, 0)), raiseInternal("TypeError", "ord() expected string of length 1"))
+  rule invokeBuiltin(obj("ord",_), ListItem(O), .) => test(istype(O, ref("str")), test(length(strvalue(O), UTF-8) =/=Int 1, raiseInternal("TypeError", "ord() expected a character, but string of length " +String Int2String(length(strvalue(O), UTF-8)) +String " found"), codePoint(strvalue(O), UTF-8, 0)), raiseInternal("TypeError", "ord() expected string of length 1"))
 
 endmodule

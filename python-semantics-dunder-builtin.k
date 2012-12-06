@@ -352,6 +352,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "list" : ref("list")
          , "map" : ref("map")
          , "object" : ref("object")
+         , "ord" : ref("ord")
          , "range" : ref("range")
          , "setattr" : ref("setattr")
          , "slice" : ref("slice")
