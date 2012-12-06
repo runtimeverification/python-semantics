@@ -1,9 +1,11 @@
 require "python-semantics-boolean-ops.k"
 require "machine-integers.k"
+require "unicode.k"
 
 module PYTHON-SEMANTICS-STRINGS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
   imports MACHINE-INTEGERS
+  imports UNICODE
 
   rule <k> invokeBuiltin(obj("add_str",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("str")), strvalue(O) +String strvalue(O2), raiseInternal("TypeError", ("Can't convert '" + name(gettype(O2)) + "' object to str implicitly"))) ...</k>
 
@@ -28,8 +30,8 @@ module PYTHON-SEMANTICS-STRINGS
        <hashSeed> Seed:Int </hashSeed>
        <hashInfo> ListItem(Width:Int) ...</hashInfo>
 
-  
-
   rule invokeBuiltin(obj("rpartition_str",_), ListItem(O) ListItem(Sep), .) => test(istype(Sep, ref("str")), #if rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) ==Int -1 #then tuple("", "", strvalue(O), .Expressions) #else tuple(substrString(strvalue(O), 0, rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O)))), strvalue(Sep), substrString(strvalue(O), rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) +Int lengthString(strvalue(Sep)), lengthString(strvalue(O))), .Expressions) #fi, raiseInternal("TypeError", "Cannot convert object to str implicitly"))
+
+  rule invokeBuiltin(obj("ord",_), ListItem(O), .) => test(istype(O, ref("str")), test(length(strvalue(O), UTF-8) != 1, raiseInternal("TypeError", "ord() expected a character, but string of length " +String Int2String(length(strvalue(O), UTF-8)) +String " found"), codePoint(strvalue(O), UTF-8, 0)), raiseInternal("TypeError", "ord() expected string of length 1"))
 
 endmodule
