@@ -113,7 +113,8 @@ module PYTHON-SEMANTICS-TRY
   rule <k> doExcept(Type:Object, Except, X) => test(istype(B, Type), test(Id2String(X) ==String "", except: Except, (X, .Expressions := B ~> except: (try: Except finally: unbind(X)))), .) ...</k>
        <xcontext> B </xcontext>
 
-  rule <k> invokeBuiltin(obj("sys_exc_info",_), ., .) => tuple(#if Ex ==K ref("None") #then ref("None") #else Ex . String2Id("__class__") #fi, Ex, Ex . String2Id("__traceback__"), .Expressions) ...</k>
+  rule <k> invokeBuiltin(obj("sys_exc_info",_), ., .) => tuple(#if Ex ==K ref("None") #then ref("None") #else Ex . String2Id("__class__") #fi, Ex, #if Ex ==K ref("None") 
+#then ref("None") #else Ex . String2Id("__traceback__") #fi, .Expressions) ...</k>
        <xcontext> Ex </xcontext>
 
 endmodule

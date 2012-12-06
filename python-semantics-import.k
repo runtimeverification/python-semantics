@@ -37,13 +37,13 @@ module PYTHON-SEMANTICS-IMPORT
 
   // import statement
 
-  rule (. => moduleTarget(Module), .Expressions := doImport(Module, .ModuleAliases) ) ~> import (Module , Rest => Rest)
-  rule import .ModuleAliases => .
+  rule (. => moduleTarget(Module), .Expressions := doImport(Module, .Aliases) ) ~> import (Module , Rest => Rest)
+  rule import .Aliases => .
 
-  rule from Module:RelativeModule import Fromlist:ModuleAliases => moduleTargets(Fromlist) := tuple(importFrom(doImport(Module, Fromlist), moduleNameIds(Fromlist)))
+  rule from Module:RelativeModule import Fromlist:Aliases => moduleTargets(Fromlist) := tuple(importFrom(doImport(Module, Fromlist), moduleNameIds(Fromlist)))
 
   syntax ObjRef ::= doImport(K, K)
-  rule doImport(Module, Fromlist) => ref("builtins") . String2Id("__import__") (moduleName(Module), ref("globals")(.Arguments), ref("locals")(.Arguments), test(Fromlist ==K .ModuleAliases, ref("None"), tuple(moduleNames(Fromlist))), moduleLevel(Module), .Arguments)
+  rule doImport(Module, Fromlist) => ref("builtins") . String2Id("__import__") (moduleName(Module), ref("globals")(.Arguments), ref("locals")(.Arguments), test(Fromlist ==K .Aliases, ref("None"), tuple(moduleNames(Fromlist))), moduleLevel(Module), .Arguments)
 
   syntax NAME ::= moduleTarget(K) [function]
   rule moduleTarget(_ as Name) => Name
@@ -63,18 +63,18 @@ module PYTHON-SEMANTICS-IMPORT
   rule moduleLevel(_ as _) => 0
   rule moduleLevel(_:Expression) => 0
 
-  syntax Expressions ::= moduleNames(ModuleAliases) [function]
+  syntax Expressions ::= moduleNames(Aliases) [function]
   rule moduleNames(Module, Rest) => moduleName(Module) , moduleNames(Rest)
-  rule moduleNames(.ModuleAliases) => .Expressions
+  rule moduleNames(.Aliases) => .Expressions
 
-  syntax Expressions ::= moduleTargets(ModuleAliases) [function]
+  syntax Expressions ::= moduleTargets(Aliases) [function]
   rule moduleTargets(Module, Rest) => moduleName(Module) , moduleTargets(Rest)
-  rule moduleTargets(.ModuleAliases) => .Expressions
+  rule moduleTargets(.Aliases) => .Expressions
 
-  syntax Expressions ::= moduleNameIds(ModuleAliases) [function]
+  syntax Expressions ::= moduleNameIds(Aliases) [function]
   rule moduleNameIds(Name:Id, Rest) => Name , moduleNameIds(Rest)
   rule moduleNameIds(Name:Id as _, Rest) => Name , moduleNameIds(Rest)
-  rule moduleNameIds(.ModuleAliases) => .Expressions
+  rule moduleNameIds(.Aliases) => .Expressions
 
   syntax Expressions ::= importFrom (Expression, Expressions) [strict(1)]
   rule importFrom(O:Object, Name , Rest) => O . Name , importFrom(O, Rest)

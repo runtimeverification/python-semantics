@@ -108,8 +108,8 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax Targets ::= Expressions 
   syntax Target ::= Expression
   
-  syntax ModuleAliases ::= List{ModuleAlias,","}
-  syntax ModuleAlias ::= Expression
+  syntax Aliases ::= List{Alias,","}
+  syntax Alias ::= Expression
                        | Expression "as" NAME
   syntax RelativeModule ::= ".dir"
                           | Expression
@@ -141,8 +141,8 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                      | "raise" Expression "from" Expression [seqstrict]
                      | "break"
                      | "continue"
-                     | "import" ModuleAliases
-                     | "from" RelativeModule "import" ModuleAliases
+                     | "import" Aliases
+                     | "from" RelativeModule "import" Aliases
                      | "from" Expression "import" "*"
                      | "global" NAMES
                      | "nonlocal" NAMES
@@ -152,8 +152,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                      | "try" ":" Statements ExceptClauses "else" ":" Statements //"finally" ":" Statements
                      | "try" ":" Statements ExceptClauses "else" ":" Statements "finally" ":" Statements
                      | "try" ":" Statements "finally" ":" Statements
-                     | "with" Expression "as" Target ":" Statements [strict(1)]
-                     | "with" Expression ":" Statements [strict(1)]
+                     | "with" Aliases ":" Statements [strict(1)]
                      | Decorated
 
   syntax Statements ::= Statement

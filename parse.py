@@ -109,10 +109,13 @@ class KPythonVisitor(ast.NodeVisitor):
             + self.visit_list(node.body,"'_newline_") + ",," + (self.visit_list(node.orelse,"'_newline_") if node.orelse else "'pass(.List{K})") + ")")
 
   def visit_With(self, node):
+    return "'with_:_(" + self.visit_list(node.items, "'_`,_", "`,") + ",," + self.visit_list(node.body, "'_newline_") + ")"
+
+  def visit_withitem(self, node):
     if node.optional_vars:
-      return "'with_as_:_(" + self.visit(node.context_expr) + ",," + self.visit(node.optional_vars) + ",," + self.visit_list(node.body, "'_newline_") + ")"
+      return "'_as_(" + self.visit(node.context_expr) + ",," + self.visit(node.optional_vars) + ")"
     else:
-      return "'with_:_(" + self.visit(node.context_expr) + ",," + self.visit_list(node.body, "'_newline_") + ")"
+      return self.visit(node.context_expr)
 
   def visit_Raise(self, node):
     if not node.exc:
