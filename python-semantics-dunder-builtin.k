@@ -163,6 +163,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__setattr__" |-> def "setattr_object"(2, 2, true)
            ,.) ~>
          object "__class__" ("attribute",.,., "__get__" |-> "__class__") ~>
+         (def "ord" (1, 1, false) ;) ~>
          object "range" ("type",ListItem("object"),
            "__iter__" |-> def "iter_range" (0, 0, true)
            "__new__" |-> def "new_range" (1, 4, false)
