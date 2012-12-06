@@ -12,7 +12,7 @@ assert x == 5
 assert "5" .__class__ is str
 assert str .__class__ is type
 assert str.__name__ == "str"
-assert hash("hello world") == -2324238377118044897, hash("hello world")
+assert hash("hello world") == 4477797451044935522, hash("hello world")
 
 assert "abc abc abc foo".rpartition("abc") == ("abc abc ", "abc", " foo")
 assert "abc abc abc foo".rpartition("def") == ("", "", "abc abc abc foo")

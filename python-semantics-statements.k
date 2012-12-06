@@ -31,10 +31,9 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   rule <k> (. => Finally:K) ~> break ...</k>
        <control>
-         <lstack> (Finally, C, XL:List, _, FL:List, Ex:K, Tb) => . ...</lstack>
+         <lstack> (Finally, C, XL:List, _, FL:List, Ex:K) => . ...</lstack>
          <xstack> _ => XL </xstack>
          <xcontext> _ => Ex </xcontext>
-         <traceback> _ => Tb </traceback>
          <fstack> _ => FL </fstack>
          (_ => C)
        </control>
@@ -44,10 +43,9 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   rule <k> (. => Finally) ~> continue ...</k>
        <control>
-         <lstack> (Finally, C, XL, _, FL, Ex, Tb) => . ...</lstack>
+         <lstack> (Finally, C, XL, _, FL, Ex) => . ...</lstack>
          <xstack> _ => XL </xstack>
          <xcontext> _ => Ex </xcontext>
-         <traceback> _ => Tb </traceback>
          <fstack> _ => FL </fstack>
          (_ => C)
        </control>
@@ -74,11 +72,10 @@ module PYTHON-SEMANTICS-STATEMENTS
   // we copy from python-semantics-try.k so we can reuse finally functionality and still choose whether we suppress a raised exception
   rule <k> (doWith(Exit:Object, Enter:Object, T, Ss) => #if T ==K . #then . #else T, .Expressions := Enter #fi ~> Ss ~> popfinally ~> Exit(* ref("sys_exc_info")(.Arguments)) ;) ~> K </k>
        <control>
-         <xstack> (. => (if not Exit(* ref("sys_exc_info")(.Arguments)): raise else: (setx(Ex) ~> savetb(Tb) ~> K), C, XL, LL, FL, Ex, Tb)) XL:List </xstack> 
-         <lstack> (. => (Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex, Tb)) LL:List </lstack>
-         <fstack> (. => (Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex, Tb)) FL:List </fstack>
+         <xstack> (. => (if not Exit(* ref("sys_exc_info")(.Arguments)): raise else: (setx(Ex) ~> K), C, XL, LL, FL, Ex)) XL:List </xstack> 
+         <lstack> (. => (Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex)) LL:List </lstack>
+         <fstack> (. => (Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex)) FL:List </fstack>
          <xcontext> Ex </xcontext>
-         <traceback> Tb </traceback>
          C:Bag
        </control>
 

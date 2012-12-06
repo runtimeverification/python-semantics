@@ -8,7 +8,6 @@ module PYTHON-SEMANTICS-COMMON
                   <control>
                     <xstack> .List </xstack>
                     <xcontext> ref("None") </xcontext>
-                    <traceback> ref("None") </traceback>
                     <currentFrame> .K </currentFrame>
                     <lstack> .List </lstack>
                     <fstack> .List </fstack>
@@ -32,6 +31,7 @@ module PYTHON-SEMANTICS-COMMON
                   <nextLoc> 1 </nextLoc>
                   <debug> $DEBUG:Bool </debug>
                   <hashInfo> $HASHINFO:List </hashInfo>
+                  <hashSeed> $HASHSEED:Int </hashSeed>
                   <sysPath> $SYSPATH:List </sysPath>
                   <importlib> $IMPORTLIB:K </importlib>
                   <os> $OS:K </os>
@@ -233,7 +233,7 @@ module PYTHON-SEMANTICS-COMMON
          <oenv> Env => Env [ id(O2) / id(O) ] </oenv>
        ...</object>
 
-  syntax ListItem ::= "(" K "," Bag "," List "," List "," List "," K "," K ")"
+  syntax ListItem ::= "(" K "," Bag "," List "," List "," List "," K ")"
 
   rule binaryOp(O, O2:Object, S, S2, K:K) => test(and(istype(O, ref(S)), istype(O2, ref(S2))), K, ref("NotImplemented"))
   rule unaryOp(O, S, K) => test(istype(O, ref(S)), K, ref("NotImplemented"))
@@ -283,7 +283,7 @@ module PYTHON-SEMANTICS-COMMON
   rule iterate(O, K) => try: (list(.) ~> iterate(ref("iter") (O, .Arguments), K)) except ref("TypeError") : test(K ==K ., raise, K) else: pass
   rule list(L:List) ~> iterate(O:Object, K) => try: addItem(getmember(O, "__next__", true, false, false) (.Arguments)) except ref("StopIteration") : list(L) else: (list(L) ~> iterate(O, K))
   rule (addItem(O:Object) => .) ~> popx ~> list(_ (. => ListItem(O)))
-  rule Lbl:KLabel(Kl:List{K}) ~> setx(K2) ~> savetb(K3) => setx(K2) ~> savetb(K3) ~> Lbl(Kl) when isKResult(Lbl(Kl))
+  rule Lbl:KLabel(Kl:List{K}) ~> setx(K2)  => setx(K2) ~> Lbl(Kl) when isKResult(Lbl(Kl))
   rule Lbl:KLabel(Kl:List{K}) ~> popx => popx ~> Lbl(Kl) when isKResult(Lbl(Kl))
 
   rule <k> mapping(O, K) => iterate(getmember(O, "keys", true, false, false) (.Arguments) -> K, raiseInternal("TypeError", "o.keys() are not iterable")) ~> map(.) ~> mapping(O, K) ...</k>

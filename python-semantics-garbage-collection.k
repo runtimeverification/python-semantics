@@ -46,7 +46,6 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   rule refcountbag(<xstack> (K, K2, C, K3, K4, _) XL:List </xstack>) => refcountk(K ~> K2 ~> K3 ~> K4) refcountbag(C <xstack> XL </xstack>)
 
   rule refcountbag(<xcontext> K </xcontext>) => refcountk(K)
-  rule refcountbag(<traceback> K </traceback>) => refcountk(K)
 
   rule refcountbag(<currentFrame> Frame </currentFrame>) => SetItem(Frame)
 

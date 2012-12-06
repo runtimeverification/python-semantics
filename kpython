@@ -1,5 +1,7 @@
 #!/bin/bash
-PYTHON_LIB=/usr/lib/python3.2
+PYTHON_BINARY=`which python3.3`
+PYTHON_PREFIX=${PYTHON_BINARY%/bin/python3.3}
+PYTHON_LIB=$PYTHON_PREFIX/lib/python3.3
 #IMPORTLIB=$PYTHON_LIB/importlib/_bootstrap.py
 IMPORTLIB=fake-importlib.py
 SIXTYFOUR_BIT="ListItem(64) ListItem(2305843009213693951) ListItem(314159) ListItem(0) ListItem(1000003)"
@@ -8,4 +10,5 @@ HASHINFO=$SIXTYFOUR_BIT
 OS=POSIX
 GC_THRESHOLD=100
 SYS_PATH="ListItem(\"\") ListItem(\"$PYTHON_LIB\")"
-krun --parser=./parser --output-mode raw -cHASHINFO="$HASHINFO" -cDEBUG="$DEBUG" -cOS="$OS" -cGCTHRESHOLD="$GC_THRESHOLD" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" -cSYSPATH="$SYS_PATH" $@
+HASHSEED=1
+krun --parser "./parser" --output-mode raw -cHASHINFO="$HASHINFO" -cDEBUG="$DEBUG" -cOS="$OS" -cGCTHRESHOLD="$GC_THRESHOLD" -cSYSPATH="$SYS_PATH" -cHASHSEED="$HASHSEED" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" $@

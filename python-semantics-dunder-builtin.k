@@ -13,9 +13,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__cause__" |-> ref("__cause__")
            "__context__" |-> ref("__context__")
            "__init__" |-> def "init_baseexception" (0, -1, true)
+           "__suppress_context__" |-> ref("__suppress_context__")
+           "__traceback__" |-> ref("__traceback__")
            ,.) ~>
          object "__cause__" ("attribute",.,., "__get__" |-> "__cause__") ~>
          object "__context__" ("attribute",.,., "__get__" |-> "__context__") ~>
+         object "__suppress_context__" ("attribute",.,., "__get__" |-> "__suppress_context__") ~>
+         object "__traceback__" ("attribute",.,., "__get__" |-> "__traceback__") ~>
          object "Exception"("type",ListItem("BaseException"),.,.) ~>
          object "False"("bool",.,.,
            "__value__" |-> 0) ~>
@@ -299,9 +303,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          (def "imp_is_builtin" (1, 1, false) ;) ~>
          (def "imp_init_builtin" (1, 1, false) ;) ~>
          (def "imp_is_frozen" (1, 1, false) ;) ~>
-         (def "imp_init_frozen" (1, 1, false) ;)
+         (def "imp_init_frozen" (1, 1, false) ;) ~>
          (def "imp_is_frozen_package" (1, 1, false) ;) ~>
-         (def "imp_get_frozen_object" (1, 1, false) ;) ~>
+         (def "imp_get_frozen_object" (1, 1, false) ;)
        )
        ...</k>
 
@@ -357,7 +361,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , .KeyData
          }) ~>
          module "errno"({.KeyData}) ~>
-         module "imp"({
+         module "_imp"({
            "acquire_lock" : ref("imp_acquire_lock")
          , "release_lock" : ref("imp_release_lock")
          , "is_builtin" : ref("imp_is_builtin")

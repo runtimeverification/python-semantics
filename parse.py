@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.2
+#!/usr/bin/env python3.3
 
 import ast
 import re
@@ -122,8 +122,8 @@ class KPythonVisitor(ast.NodeVisitor):
     else:
       return "'raise_from_(" + self.visit(node.exc) + ",," + self.visit(node.cause) + ")"
 
-  def visit_TryExcept(self, node):
-    return "'try:__else:_(" + self.visit_list(node.body, "'_newline_") + ",," + self.visit_list(node.handlers, "'_except_","except") + ",," + (self.visit_list(node.orelse, "'_newline_") if len(node.orelse) > 0 else "'pass(.List{K})") + ")"
+  def visit_Try(self, node):
+    return "'try:__else:_finally:_(" + self.visit_list(node.body, "'_newline_") + ",," + self.visit_list(node.handlers, "'_except_","except") + ",," + (self.visit_list(node.orelse, "'_newline_") if len(node.orelse) > 0 else "'pass(.List{K})") + ",," + (self.visit_list(node.finalbody, "'_newline_") if len(node.finalbody) > 0 else "'pass(.List{K})") + ")"
 
   def visit_ExceptHandler(self, node):
     if not node.type:
@@ -132,9 +132,6 @@ class KPythonVisitor(ast.NodeVisitor):
       return "'except_:_(" + self.visit(node.type) + ",," + self.visit_list(node.body, "'_newline_") + ")"
     else:
       return "'except_as_:_(" + self.visit(node.type) + ",," + self.getid(node.name) + ",," + self.visit_list(node.body, "'_newline_") + ")"
-
-  def visit_TryFinally(self, node):
-    return "'try:_finally:_(" + self.visit_list(node.body, "'_newline_") + ",," + self.visit_list(node.finalbody, "'_newline_") + ")"
 
   def visit_Assert(self, node):
     return ("'assert_('_`,_(" + self.visit(node.test)

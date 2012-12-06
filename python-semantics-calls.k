@@ -113,10 +113,9 @@ module PYTHON-SEMANTICS-CALLS
 
   rule <k> (. => Finally:K) ~> return O ...</k>
        <control>
-         <fstack> (Finally, C, XL:List, LL:List, _, Ex:K, Tb) => . ...</fstack>
+         <fstack> (Finally, C, XL:List, LL:List, _, Ex:K) => . ...</fstack>
          <xstack> _ => XL </xstack>
          <xcontext> _ => Ex </xcontext>
-         <traceback> _ => Tb </traceback>
          <lstack> _ => LL </lstack>
          (_ => C)
        </control>

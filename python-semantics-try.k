@@ -3,7 +3,7 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-TRY
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ListItem ::= "(" K "," K "," Bag "," K "," K "," Bool ")"
+  syntax ListItem ::= "(" K "," K "," Bag "," K "," Bool ")"
 
   syntax K ::= savex(Expression) [strict]
              | setcause(Expression, Expression) [strict]
@@ -14,19 +14,17 @@ module PYTHON-SEMANTICS-TRY
  
   rule <k> (try: Try:K ECs:K else: Else:K => Try ~> popx ~> Else) ~> K:K </k>
        <control>
-         <xstack> . => (ECs, K, C, Ex, Tb, true) ...</xstack>
+         <xstack> . => (ECs, K, C, Ex, true) ...</xstack>
          <xcontext> Ex:K </xcontext>
-         <traceback> Tb:K </traceback>
          C:Bag
        </control>
 
   rule <k> (try: Try finally: Finally:K => Try ~> popfinally ~> Finally) ~> K </k>
        <control>
-         <xstack> (. => (Finally ~> raise, C, XL, LL, FL, Ex, Tb)) XL:List </xstack>
-         <lstack> (. => (Finally, C, XL, LL, FL, Ex, Tb)) LL:List </lstack>
-         <fstack> (. => (Finally, C, XL, LL, FL, Ex, Tb)) FL:List </fstack>
+         <xstack> (. => (Finally ~> raise, C, XL, LL, FL, Ex)) XL:List </xstack>
+         <lstack> (. => (Finally, C, XL, LL, FL, Ex)) LL:List </lstack>
+         <fstack> (. => (Finally, C, XL, LL, FL, Ex)) FL:List </fstack>
          <xcontext> Ex </xcontext>
-         <traceback> Tb </traceback>
          C:Bag
        </control>
 
@@ -44,16 +42,14 @@ module PYTHON-SEMANTICS-TRY
   rule <k> (. => ECs) ~> raise ...</k>
        <control>
          <xcontext> B </xcontext>
-         <traceback> _ </traceback>
-         <xstack> (ECs, _, C, _, _, (true => false)) ...</xstack>
+         <xstack> (ECs, _, C, _, (true => false)) ...</xstack>
          (_ => C)
        </control> when B =/=K ref("None")
 
   rule <k> raise ~> _ => Finally </k>
        <control>
          <xcontext> B </xcontext>
-         <traceback> _ </traceback>
-         <xstack> (Finally, C, _, LL, FL, _, _) => . ...</xstack>
+         <xstack> (Finally, C, _, LL, FL, _) => . ...</xstack>
          <lstack> _ => LL </lstack>
          <fstack> _ => FL </fstack>
          (_ => C:Bag)
@@ -61,10 +57,14 @@ module PYTHON-SEMANTICS-TRY
 
   rule <k> (. => savetb(mutable("tb_next" |-> Tb "tb_frame" |-> ref(Frame), ref("traceback")))) ~> raise ...</k>
        <control>...
-         <traceback> Tb </traceback>
+         <xcontext> ref(B) </xcontext>
          <currentFrame> Frame </currentFrame>
-         <xstack> (_, _, _:Bag, _, _, false) => . ...</xstack>
+         <xstack> (_, _, _:Bag, _, false) => . ...</xstack>
        ...</control>
+       <object>...
+         <id>B</id>
+         <oattrs>... "__traceback__" |-> Tb ...</oattrs>
+       ...</object>
 
   rule <k> EC:K except ECs => EC ~> ECs ...</k> when notBool(getKLabel EC ==KLabel 'except:_ andBool ECs =/=K .ExceptClauses)
   rule <k> .ExceptClauses => . ...</k>
@@ -73,8 +73,9 @@ module PYTHON-SEMANTICS-TRY
 
   rule <k> raise O:Object from O2:Object => doRaise(test(istype(O, ref("type")), O(.Arguments), O), test(istype(O2, ref("type")), O2(.Arguments), O2), false) ...</k>
 
-  rule <k> doRaise(O, O2, T:Bool) => test(istype(O, ref("BaseException")), test(or(T,istype(O2, ref("BaseException"))), (setcause(O, O2) ~> savex(O) ~> savetb(mutable("tb_next" |-> ref("None") "tb_frame" |-> ref(Frame), ref("traceback"))) ~> raise) , raiseInternal("TypeError", "exception causes must derive from BaseException")), raiseInternal("TypeError", "exceptions must derive from BaseException")) ...</k>
+  rule <k> doRaise(O, O2, T:Bool) => test(istype(O, ref("BaseException")), test(or(id(O2) ==K NoneId,istype(O2, ref("BaseException"))), (setcause(O, O2) ~> setref(id(O), "__suppress_context__", test(T, ref("False"), test(id(O2) ==K NoneId, ref("True"), ref("False")))) ~> savex(O) ~> savetb(mutable("tb_next" |-> ref("None") "tb_frame" |-> ref(Frame), ref("traceback"))) ~> raise) , raiseInternal("TypeError", "exception causes must derive from BaseException")), raiseInternal("TypeError", "exceptions must derive from BaseException")) ...</k>
        <currentFrame> Frame </currentFrame>
+       <symbols>... "None" |-> NoneId ...</symbols>
 
   rule <k> savex(obj(B,_)) => . ...</k>
        <xcontext> B2 => ref(B) </xcontext>
@@ -83,8 +84,8 @@ module PYTHON-SEMANTICS-TRY
          <oattrs> OAttrs:Map => OAttrs[B2 / "__context__"] </oattrs>
        ...</object>
 
-  rule <k> savetb(O:Object) => . ...</k>
-       <traceback> _ => ref(id(O)) </traceback>
+  rule <k> savetb(O:Object) => setref(B, "__traceback__", O) ...</k>
+       <xcontext> ref(B) </xcontext>
 
   rule <k> setx(Ex) => . ...</k>
        <xcontext> _ => Ex </xcontext>
@@ -97,9 +98,9 @@ module PYTHON-SEMANTICS-TRY
 
   //TODO: handle traceback line numbers
 
-  rule <k> except: Except:K ~> _ => Except ~> setx(Ex) ~> savetb(Tb) ~> K </k>
+  rule <k> except: Except:K ~> _ => Except ~> setx(Ex) ~> K </k>
        <control>...
-         <xstack> (_, K, _:Bag, Ex, Tb, false) => . ...</xstack>
+         <xstack> (_, K, _:Bag, Ex, false) => . ...</xstack>
        ...</control>
 
   rule except O: Except => except O as String2Id(""): Except
@@ -112,8 +113,7 @@ module PYTHON-SEMANTICS-TRY
   rule <k> doExcept(Type:Object, Except, X) => test(istype(B, Type), test(Id2String(X) ==String "", except: Except, (X, .Expressions := B ~> except: (try: Except finally: unbind(X)))), .) ...</k>
        <xcontext> B </xcontext>
 
-  rule <k> invokeBuiltin(obj("sys_exc_info",_), ., .) => tuple(#if Ex ==K ref("None") #then ref("None") #else Ex . String2Id("__class__") #fi, Ex, Tb, .Expressions) ...</k>
+  rule <k> invokeBuiltin(obj("sys_exc_info",_), ., .) => tuple(#if Ex ==K ref("None") #then ref("None") #else Ex . String2Id("__class__") #fi, Ex, Ex . String2Id("__traceback__"), .Expressions) ...</k>
        <xcontext> Ex </xcontext>
-       <traceback> Tb </traceback>
 
 endmodule

@@ -20,8 +20,9 @@ ref: ${TEST_REFERENCE}
 	./kpython $< > $@.tmp
 	-@ test "`grep "< k > (.).K </ k >" $@.tmp`" && cp $@.tmp $@
 
+
 %.ref: %.py
-	- python3.2 $< > /dev/null 2>&1 && touch $@
+	-PYTHONHASHSEED=1 python3.3 $< > /dev/null 2>&1 && touch $@
 
 python-compiled.maude: ?*.k
 	kompile python.k -v --transition "allocation"
