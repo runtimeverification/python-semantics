@@ -12,6 +12,7 @@ module PYTHON-SEMANTICS-SLICING
                   | "indices4" "(" Int "," Int "," Int "," Int ")"
                   | "indices5" "(" Int "," Int "," Int ")"
                   | "index" "(" Expression ")" [strict]
+                  | "checkIndex" "(" Expression ")" [strict]
                   | "iters" "(" List ")"
                   | "makeMap" "(" Expression "," Expression "," List ")" [strict(1, 2)]
                   | "range" "(" Expression "," Expression "," Expression "," Expression ")" [strict]
@@ -38,7 +39,7 @@ module PYTHON-SEMANTICS-SLICING
 
   rule invokeBuiltin(obj("new_range",_), ListItem(O) ListItem(O2) ListItem(O3), .) => newHelper(O, ref("range"), .) ~> ref("new_range") (O, O2, O3, 1, .Arguments)
 
-  rule invokeBuiltin(obj("new_range",_), ListItem(O) ListItem(O2) ListItem(O3) ListItem(O4), .) => newHelper(O, ref("range"), .) ~> range(index(O2), index(O3), index(O4), O)
+  rule invokeBuiltin(obj("new_range",_), ListItem(O) ListItem(O2) ListItem(O3) ListItem(O4), .) => newHelper(O, ref("range"), .) ~> range(ref("index")(O2), ref("index")(O3), ref("index")(O4), O)
 
   rule invokeBuiltin(obj("iter_range",_), ListItem(O), .) => mutable("current" |-> getattr(O, "start") "stop" |-> getattr(O, "stop") "step" |-> getattr(O, "step"), ref("iterator"))
 
@@ -48,7 +49,10 @@ module PYTHON-SEMANTICS-SLICING
          <oattrs>... "current" |-> (Current:Int => Current +Int Step) "stop" |-> Stop "step" |-> Step ...</oattrs>
        ...</object>
 
-  rule index(O) => getmember(O, "__index__", true, false, false) (.Arguments)
+  rule index(O) => checkIndex(getmember(O, "__index__", true, false, false) (.Arguments))
+  rule checkIndex(O:Object) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__index__ returned non-int"))
+  rule checkIndex(.Obj) => .Obj
+  rule invokeBuiltin(obj("index",_), ListItem(O), .) => index(O) -> raiseInternal("TypeError", "object cannot be interpreted as an integer")
   rule range(O, O2, O3, O4) => mutable("start" |-> intvalue(O) "stop" |-> intvalue(O2) "step" |-> intvalue(O3), O4) when intvalue(O3) =/=Int 0
 
   rule range(_, _, O3, _) => raiseInternal("ValueError", "range() arg 3 must not be zero") when intvalue(O3) ==Int 0
@@ -59,7 +63,7 @@ module PYTHON-SEMANTICS-SLICING
 
  rule invokeBuiltin(obj("new_slice",_), ListItem(O) ListItem(O2) ListItem(O3) ListItem(O4:Object), .) => newHelper(O, ref("slice"), .) ~> mutable("start" |-> ref(id(O2)) "stop" |-> ref(id(O3)) "step" |-> ref(id(O4)), O)
 
-  rule invokeBuiltin(obj("indices_slice",_), ListItem(O) ListItem(O2), .) => indices(slicepart(getref(O, "start")), slicepart(getref(O, "stop")), slicepart(getref(O, "step")), index(O2) -> raiseInternal("TypeError","object cannot be interpreted as an integer"))
+  rule invokeBuiltin(obj("indices_slice",_), ListItem(O) ListItem(O2), .) => indices(slicepart(getref(O, "start")), slicepart(getref(O, "stop")), slicepart(getref(O, "step")), ref("index")(O2))
 
   rule slicepart(O) => test(plbool(O is ref("None")), O, index(O) -> raiseInternal("TypeError", "slice indices must be integers or None or have an __index__ method"))
 

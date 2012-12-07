@@ -21,8 +21,8 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule invokeBuiltin(obj("new_bool",_), ListItem(O), .) => newHelper(O, ref("bool"), .) ~> ref("False")
   rule invokeBuiltin(obj("new_bool",_), ListItem(O:Object) ListItem(O2:Object), .) => newHelper(O, ref("bool"), .) ~> bool(O2)
 
-  rule len(O) => checkLen(getmember(O, "__len__", true, false, false) (.Arguments))
-  rule checkLen(O:Object) => test(istype(O, ref("int")), test(intvalue(O) >=Int 0, O, raiseInternal("ValueError", "__len__() should return >= 0")), raiseInternal("TypeError", "object cannot be interpreted as an integer"))
+  rule len(O) => checkLen(ref("index")(getmember(O, "__len__", true, false, false) (.Arguments)))
+  rule checkLen(O:Object) => test(intvalue(O) >=Int 0, O, raiseInternal("ValueError", "__len__() should return >= 0"))
   rule checkLen(.Obj) => .Obj
   rule invokeBuiltin(obj("len",_), ListItem(O), .) => len(O) -> raiseInternal("TypeError", "object has no len()")
 
