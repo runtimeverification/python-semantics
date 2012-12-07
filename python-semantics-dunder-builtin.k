@@ -43,6 +43,17 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "bool"("type",ListItem("int"),
            "__new__" |-> def "new_bool" (1, 2, false)
            ,.) ~>
+         object "bytes"("type",ListItem("object"),
+           "__eq__" |-> def "eq_bytes"(1, 1, true)
+           "__ge__" |-> def "ge_bytes" (1, 1, true)
+           "__gt__" |-> def "gt_bytes" (1, 1, true)
+           "__le__" |-> def "le_bytes" (1, 1, true)
+           "__lt__" |-> def "lt_bytes" (1, 1, true)
+           "__mul__" |-> def "mul_bytes" (1, 1, true)
+           "__ne__" |-> def "ne_bytes" (1, 1, true)
+           "__new__" |-> def "new_bytes" (0, 3, true)
+           "__rmul__" |-> def "rmul_bytes" (1, 1, true)
+           ,.) ~>
          object "classmethod"("type", ListItem("object"),
            "__get__" |-> def "get_classmethod"(1, 2, true)
            "__init__" |-> def "init_classmethod"(1, 1, true)

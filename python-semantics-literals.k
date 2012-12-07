@@ -27,6 +27,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule <k> I:Int => immutable(I,ref("int")) ...</k>
   rule <k> S:String => immutable(S,ref("str")) ...</k>
+  rule <k> b S:String => immutable(S, ref("bytes")) ...</k>
   rule <k> F:Float => immutable(F,ref("float")) ...</k>
   rule <k> tuple(Osc:Expressions) => immutable(list(Refify(Idify(Listify(Osc)))), ref("tuple")) ...</k>
   rule <k> [ Osc:Expressions ] => mutable(list(Refify(Idify(Listify(Osc)))), ref("list")) ...</k>
