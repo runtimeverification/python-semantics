@@ -39,7 +39,7 @@ module PYTHON-SEMANTICS-SLICING
 
   rule invokeBuiltin(obj("new_range",_), ListItem(O) ListItem(O2) ListItem(O3), .) => newHelper(O, ref("range"), .) ~> ref("new_range") (O, O2, O3, 1, .Arguments)
 
-  rule invokeBuiltin(obj("new_range",_), ListItem(O) ListItem(O2) ListItem(O3) ListItem(O4), .) => newHelper(O, ref("range"), .) ~> range(ref("index")(O2), ref("index")(O3), ref("index")(O4), O)
+  rule invokeBuiltin(obj("new_range",_), ListItem(O) ListItem(O2) ListItem(O3) ListItem(O4), .) => newHelper(O, ref("range"), .) ~> range(ref("index")(O2, .Arguments), ref("index")(O3, .Arguments), ref("index")(O4, .Arguments), O)
 
   rule invokeBuiltin(obj("iter_range",_), ListItem(O), .) => mutable("current" |-> getattr(O, "start") "stop" |-> getattr(O, "stop") "step" |-> getattr(O, "step"), ref("iterator"))
 
@@ -63,7 +63,7 @@ module PYTHON-SEMANTICS-SLICING
 
  rule invokeBuiltin(obj("new_slice",_), ListItem(O) ListItem(O2) ListItem(O3) ListItem(O4:Object), .) => newHelper(O, ref("slice"), .) ~> mutable("start" |-> ref(id(O2)) "stop" |-> ref(id(O3)) "step" |-> ref(id(O4)), O)
 
-  rule invokeBuiltin(obj("indices_slice",_), ListItem(O) ListItem(O2), .) => indices(slicepart(getref(O, "start")), slicepart(getref(O, "stop")), slicepart(getref(O, "step")), ref("index")(O2))
+  rule invokeBuiltin(obj("indices_slice",_), ListItem(O) ListItem(O2), .) => indices(slicepart(getref(O, "start")), slicepart(getref(O, "stop")), slicepart(getref(O, "step")), ref("index")(O2, .Arguments))
 
   rule slicepart(O) => test(plbool(O is ref("None")), O, index(O) -> raiseInternal("TypeError", "slice indices must be integers or None or have an __index__ method"))
 

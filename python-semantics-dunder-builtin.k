@@ -88,6 +88,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          (def "globals" (0, 0, false) ;) ~>
 	 (def "hasattr" (2, 2, false) ;) ~>
          (def "hash" (1, 1, false) ;) ~>
+         (def "index" (1, 1, false) ;) ~>
          object "int"("type",ListItem("object"),
            "__abs__" |-> def "abs_int" (0, 0, true)
            "__add__" |-> def "add_int" (1, 1, true)
@@ -352,6 +353,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "__debug__" : #if T #then ref("True") #else ref("False") #fi
          , "__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."
          , "bool" : ref("bool")
+         , "bytes" : ref("bytes")
          , "classmethod" : ref("classmethod")
          , "complex" : ref("complex")
          , "dict" : ref("dict")

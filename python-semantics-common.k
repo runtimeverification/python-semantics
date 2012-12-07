@@ -211,6 +211,10 @@ module PYTHON-SEMANTICS-COMMON
   rule all(ListItem(K) L:List, Lbl:KLabel) => Lbl(K) andBool all(L, Lbl) [function, anywhere]
   rule all(., _) => true [function, anywhere]
 
+  syntax String ::= String "*String" Int [function]
+  rule S:String *String 0 => ""
+  rule S:String *String I:Int => S +String (S *String (I -Int 1)) when I >Int 0
+
   rule <k> setattr(B, S, K) => . ...</k>
        <object>...
          <id>B</id>
