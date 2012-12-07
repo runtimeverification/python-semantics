@@ -6,10 +6,18 @@ module PYTHON-SEMANTICS-BYTES
   //TODO: memoryview
 
   rule invokeBuiltin(obj("new_bytes",_), ListItem(Cls), .) => newHelper(Cls, ref("bytes"), .Set) ~> immutable(b "", Cls)
-  rule invokeBuiltin(obj("new_bytes",_), ListItem(Cls) ListItem(Source), .) => test(istype(Source, ref("str")), raiseInternal("TypeError", "string argument without an encoding"), test(istype(Source, ref("int")), immutable(b "\0", Cls) * Source, iterate(Source, .) ~> makebytes))
+  rule invokeBuiltin(obj("new_bytes",_), ListItem(Cls) ListItem(Source), .) => test(istype(Source, ref("str")), raiseInternal("TypeError", "string argument without an encoding"), test(istype(Source, ref("int")), immutable(b charString(0), Cls) * Source, iterate(Source, .) ~> makebytes(.List)))
   rule invokeBuiltin(obj("new_bytes",_), ListItem(Cls) ListItem(Source) ListItem(Encoding), .) => test(istype(Source, ref("str")), Source . String2Id("encode") (Encoding), invokeBuiltin(ref("new_bytes"), ListItem(Cls) ListItem(Source), .))
   rule invokeBuiltin(obj("new_bytes",_), ListItem(Cls) ListItem(Source) ListItem(Encoding) ListItem(Errors), .) => test(istype(Source, ref("str")), Source . String2Id("encode") (Encoding, Errors), invokeBuiltin(ref("new_bytes"), ListItem(Cls) ListItem(Source), .))
 
+  syntax K ::= makeBytes(List)
+  rule list((ListItem(O) => .) _) ~> makebytes(_ (. => ListItem(ref("index")(O))))
+  context makebytes(ListItem(HOLE) _)
+  rule makeBytes(ListItem(O) L) => b charString(intvalue(O)) +String makeBytes(L)
+  rule makeBytes(.) => b ""
+
+  rule invokeBuiltin(obj("add_bytes",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "bytes", "bytes", strvalue(O) +String strvalue(O2))
+  rule invokeBuiltin(obj("radd_bytes",_), ListItem(O) ListItem(O2), .) => invokeBuiltin(ref("add_bytes"), ListItem(O) ListItem(O2), .)
   rule invokeBuiltin(obj("mul_bytes",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "bytes", "int", strvalue(O) *String intvalue(O2))
   rule invokeBuiltin(obj("rmul_bytes",_), ListItem(O) ListItem(O2), .) => invokeBuiltin(ref("mul_bytes"), ListItem(O) ListItem(O2), .)
 

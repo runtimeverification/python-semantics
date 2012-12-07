@@ -18,6 +18,7 @@ require "python-semantics-arithmetic-ops.k"
 require "python-semantics-assignment.k"
 require "python-semantics-attribute-ref.k"
 require "python-semantics-augmented-assignment.k"
+require "python-semantics-bytes.k"
 require "python-semantics-classes.k"
 require "python-semantics-dicts.k"
 require "python-semantics-dunder-builtin.k"
@@ -44,6 +45,7 @@ module PYTHON
   imports PYTHON-SEMANTICS-AUGMENTED-ASSIGNMENT
   imports PYTHON-SEMANTICS-ATTRIBUTE-REF
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
+  imports PYTHON-SEMANTICS-BYTES
   imports PYTHON-SEMANTICS-CLASSES
   imports PYTHON-SEMANTICS-DICTS
   imports PYTHON-SEMANTICS-DUNDER-BUILTIN
