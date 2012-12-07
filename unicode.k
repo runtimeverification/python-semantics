@@ -24,6 +24,7 @@ module UNICODE
   rule codePointLength(S) => 3 when asciiString(S) >=Int 224 andBool asciiString(S) <Int 239
   rule codePointLength(S) => 4 when asciiString(S) >=Int 240 andBool asciiString(S) <Int 247
 
-  rule length(S, UTF-8) => 1 +Int length(substrString(S, 0, codePointLength(substrString(S, 0, 1))), UTF-8)
+  rule length(S, UTF-8) => 1 +Int length(substrString(S, 0, codePointLength(substrString(S, 0, 1))), UTF-8) when S =/=String ""
+  rule length("", _) => 0
 
 endmodule
