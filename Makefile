@@ -18,7 +18,7 @@ ref: ${TEST_REFERENCE}
 
 %.out: %.py python-compiled.maude kpython
 	./kpython $< > $@.tmp
-	-@ test "`grep "< k > (.).K </ k >" $@.tmp`" && cp $@.tmp $@
+	- test "`grep "< k > (.).K </ k >" $@.tmp`" && cp $@.tmp $@
 
 
 %.ref: %.py
