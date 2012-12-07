@@ -110,7 +110,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   
   syntax Aliases ::= List{Alias,","}
   syntax Alias ::= Expression
-                       | Expression "as" NAME
+                       | Expression "as" NAME [strict(1)]
   syntax RelativeModule ::= ".dir"
                           | Expression
                           | "." RelativeModule
