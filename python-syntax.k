@@ -16,7 +16,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax CompFor ::= "for" Targets "in" Expressions
   syntax CompIf ::= "if" Expression
   syntax Comp ::= CompFor
-                    | Comp "@" CompIf
+                | CompIf
   syntax Comps ::= List{Comp,"@"}
 
 
@@ -110,7 +110,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   
   syntax Aliases ::= List{Alias,","}
   syntax Alias ::= Expression
-                       | Expression "as" NAME [strict(1)]
+                       | Expression "as" Expression [strict(1)]
   syntax RelativeModule ::= ".dir"
                           | Expression
                           | "." RelativeModule

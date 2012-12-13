@@ -183,12 +183,12 @@ class KPythonVisitor(ast.NodeVisitor):
     result += "'.List`{\"`,\"`}(.List{K})"
     result += ")" * (len(node.keys) + 1)
     return result
- 
-  def visit_ListComp(self, node):
-    return "'`[__`](" + self.visit(node.elt) + ",," + self.visit_list(node.generators, "'_@_", "@") + ")"
 
   def visit_GeneratorExp(self, node):
-    return "'generator`(__`)(" + self.visit(node.elt) + ",," + self.visit_list(node.generators, "'_@_", "@") + ")"
+    l = []
+    for g in node.generators:
+      l += self.visit(g)
+    return "'generator`(__`)(" + self.visit(node.elt) + ",," + "'_@_(" + ",,'_@_(".join(l) + ",,'.List`{\"@\"`}(.List{K}))" + ")"*len(l) + ")"
 
   def visit_Compare(self, node):
     return self.visit(node.ops[0]) + "(" + self.visit(node.left) + ",," + self.visit_ops(node.comparators, [self.visit(n) for n in node.ops[1:]]) + ")"
@@ -339,7 +339,7 @@ class KPythonVisitor(ast.NodeVisitor):
     return "'_notin_"
 
   def visit_comprehension(self, node):
-    return "'_@_(" * len(node.ifs) + "'for_in_(" + self.visit(node.target) + ",," + self.visit(node.iter) + ")" + "".join(map(lambda x: ",,'if_(" + self.visit(x) + "))", node.ifs))
+    return ["'for_in_(" + self.visit(node.target) + ",," + self.visit(node.iter) + ")"] + ["'if_(" + self.visit(i) + ")" for i in node.ifs]
 
   def visit_alias(self, node):
     if node.asname:

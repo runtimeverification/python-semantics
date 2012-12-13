@@ -11,6 +11,7 @@ module PYTHON-SEMANTICS-MACROS
   rule pass => .K [macro, anywhere]
 
   rule return => return ref("None") [macro, anywhere]
+  rule yield => yield ref("None") [macro, anywhere]
 
   rule : : => (ref("slice") (ref("None"), ref("None"), ref("None"), .Expressions)) [macro, anywhere]
   rule E : : => (ref("slice") (E, ref("None"), ref("None"), .Expressions)) [macro, anywhere]

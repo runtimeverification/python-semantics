@@ -55,7 +55,7 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
 
   rule refcountbag(<lstack> (K, K2, C) LL:List </lstack>) => refcountk(K ~> K2) refcountbag(C <lstack> LL </lstack>)
 
-  rule refcountbag(<fstack> (K, C, Frame, LL) FL:List </fstack>) => refcountk(K ~> ref(Frame)) refcountbag(C <lstack> LL </lstack> <fstack> FL </fstack>)
+  rule refcountbag(<fstack> (K, C, Frame, LL, K2) FL:List </fstack>) => refcountk(K ~> ref(Frame) ~> K2) refcountbag(C <lstack> LL </lstack> <fstack> FL </fstack>)
 
   rule refcountbag(<scope> (CO, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, _) SL:List </scope>) => refcountk(ref(CO)) refcountbag(<scope> SL </scope>)
 

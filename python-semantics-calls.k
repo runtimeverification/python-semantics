@@ -73,20 +73,24 @@ module PYTHON-SEMANTICS-CALLS
 
   rule <k> matchArgs(obj(B:Builtin,_),Code:Object,.,.,M,_) => invoke(ref(B), M) ...</k> when lengthMap M ==Int numArgs(Code)
 
-  syntax ListItem ::= "(" K "," Bag "," Int "," List ")"
-  syntax ObjRef ::= "makeLocals" "(" Expression "," Expression ")" [strict(1, 2)]
-                  | "makeLocals" "(" List "," List "," Expression ")" [strict(3)]
-                  | "makeCells" "(" Expression "," Expression "," Expression "," Int ")" [strict(1, 2, 3)]
-                  | "makeCells" "(" List "," List "," List "," Expression "," Int ")" [strict(4)]
+  syntax ListItem ::= (K, Bag, Int, List)
+  syntax ObjRef ::= makeLocals(Expression, Expression) [strict(1, 2)]
+                  | makeLocals(List, List, Expression) [strict(3)]
+                  | makeCells(Expression, Expression, Expression, Int) [strict(1, 2, 3)]
+                  | makeCells(List, List, List, Expression, Int) [strict(4)]
 
-  rule <k> invoke(obj(_:Int,<oattrs>... "__closure__" |-> Closure "__code__" |-> Code "__globals__" |-> Globals ...</oattrs>), M) ~> K:K => executeFrame(N, Code, ref(Frame), makeLocals(Code . String2Id("co_freevars"), Closure), Globals, Globals ["__builtins__"], makeCells(Code . String2Id("co_freevars"), Code . String2Id("co_cellvars"), Closure, N), M) ~> return </k>
+  rule <k> invoke(obj(_:Int,<oattrs>... "__closure__" |-> Closure "__code__" |-> ref(Code) "__globals__" |-> Globals ...</oattrs>), M) ~> K:K => executeFrame(N, ref(Code), ref(Frame), makeLocals(ref(Code) . String2Id("co_freevars"), Closure), Globals, Globals ["__builtins__"], makeCells(ref(Code) . String2Id("co_freevars"), ref(Code) . String2Id("co_cellvars"), Closure, N), M) ~> return </k>
        <nextLoc> N => N +Int 1 </nextLoc>
        <control>
          <currentFrame> Frame:Int => N </currentFrame>
          <fstack> . => (K, C, Frame, LL) ...</fstack>
          <lstack> LL => . </lstack>
          C:Bag
-       </control> [allocation]
+       </control>
+       <object>...
+         <id>Code</id>
+         <oattrs>... "co_flags" |-> Flags ...</oattrs>
+       ...</object> when Flags &Int 32 ==Int 0 [allocation]
 
   rule makeLocals(Free:Object, O:Object) => makeLocals(listvalue(Free), listvalue(O), {.KeyData})
   rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (((O[N:K]), .Expressions) := getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)

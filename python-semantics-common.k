@@ -309,15 +309,17 @@ module PYTHON-SEMANTICS-COMMON
        ...</object>) [allocation]
 
 
-  rule <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . String2Id("__dict__")), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells) ~> setArgs(Args) ~> getattr(CO, "co_code") ...</k>
+  rule <k> makeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . String2Id("__dict__")), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells)  ~> setArgs(N, Args) ...</k>
        <currentFrame> _ => N </currentFrame>
        (. => <object>...
          <id>N</id>
          <oattrs> "__class__" |-> ref("frame") </oattrs>
-       ...</object>)
+       ...</object>) [allocation]
 
-  rule (. => X:Id, .Expressions := B) ~> setArgs((X |-> B => .) _)
-  rule setArgs(.) => .
+  rule <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => makeFrame(N, CO, Back, Locals, Globals, Builtins, Cells, Args) ~> getattr(CO, "co_code") ...</k>
+
+  rule (. => doBind(Id2String(X), B, N) ~> setArgs(N, (X |-> B => .) _)
+  rule setArgs(_, .) => .
 
   rule <k> describe(Self, Instance, Owner, S) => doDescribe(Self, Instance, gettype(Instance), S) ...</k>
        <symbols>... "None" |-> NoneId ...</symbols> when id(Owner) ==K NoneId orBool id(Instance) =/=K NoneId
