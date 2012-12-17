@@ -101,7 +101,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
 
                       > Expression "if" Expression "else" Expression [strict(2), right]
                       > "lambda" Parameters ":" Expression
-                      | "*" Expression [strict, hybrid]
+                      | "*" Expression [strict, hybrid, non-assoc]
 
   syntax Expressions ::= List{Expression,","}
 
