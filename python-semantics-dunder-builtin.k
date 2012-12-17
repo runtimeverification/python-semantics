@@ -10,12 +10,14 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "AssertionError"("type",ListItem("Exception"),.,.) ~>
          object "AttributeError"("type",ListItem("Exception"),.,.) ~>
          object "BaseException"("type",ListItem("object"),
+           "args" |-> ref("args")
            "__cause__" |-> ref("__cause__")
            "__context__" |-> ref("__context__")
            "__init__" |-> def "init_baseexception" (0, -1, true)
            "__suppress_context__" |-> ref("__suppress_context__")
            "__traceback__" |-> ref("__traceback__")
            ,.) ~>
+         object "args" ("attribute",.,., "__get__" |-> "args") ~>
          object "__cause__" ("attribute",.,., "__get__" |-> "__cause__") ~>
          object "__context__" ("attribute",.,., "__get__" |-> "__context__") ~>
          object "__suppress_context__" ("attribute",.,., "__get__" |-> "__suppress_context__") ~>
@@ -294,6 +296,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "__kwdefaults__" ("attribute",.,., "__get__" |-> "__kwdefaults__") ~>
          object "__module__" ("attribute",.,., "__get__" |-> "__module__" "__set__" |-> def "set_ref_default"(3, 3, false)) ~>
          object "__name__function"("attribute",.,., "__get__" |-> "__name__" "__set__" |-> def "set_attr_string"(3, 3, false)) ~>
+         object "generator"("type",ListItem("object"),
+           "send" |-> def "send_generator"(1, 1, true)
+           "throw" |-> def "throw_generator"(1, 3, true)
+           "__iter__" |-> def "iter_generator"(0, 0, true)
+           "__next__" |-> def "next_generator"(0, 0, true)
+           ,.) ~>
          object "method" ("type", ListItem("object"),
            "__call__" |-> def "call_method" (0, -1, true)
            "__func__" |-> ref("__func__")

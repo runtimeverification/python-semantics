@@ -190,6 +190,12 @@ class KPythonVisitor(ast.NodeVisitor):
       l += self.visit(g)
     return "'generator`(__`)(" + self.visit(node.elt) + ",," + "'_@_(" + ",,'_@_(".join(l) + ",,'.List`{\"@\"`}(.List{K}))" + ")"*len(l) + ")"
 
+  def visit_Yield(self, node):
+    if node.value:
+      return "'yield_(" + self.visit(node.value) + ")"
+    else:
+      return "'yield(.List{K})"
+
   def visit_Compare(self, node):
     return self.visit(node.ops[0]) + "(" + self.visit(node.left) + ",," + self.visit_ops(node.comparators, [self.visit(n) for n in node.ops[1:]]) + ")"
 

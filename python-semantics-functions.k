@@ -29,7 +29,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
            setref(N, "__frame__", ref(N2)) ~>
            makeFunction(N, Listify(Ps), Return, false) ~> ref(N) ...</k>
        <nextLoc> N:Int => N +Int 1 </nextLoc>
-       <currentFrame> N2 </currentFrame>
+       <frameObject> N2 </frameObject>
        (. => <object>
          <id>N</id>
          <oattrs> "__code__" |-> ref(id(O)) "__class__" |-> ref("function") </oattrs>
@@ -91,7 +91,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule makeClosure(O:Object) => makeClosure(list(listvalue(O)))
   rule makeClosure(list(.)) => tuple(.Expressions)
   rule <k> makeClosure(list(ListItem(N) L)) => tuple((getref2(ref(Frame), "f_cells")[N]), .Expressions) + makeClosure(list(L)) ...</k>
-       <currentFrame> Frame:Int </currentFrame>
+       <frameObject> Frame:Int </frameObject>
 
   syntax K ::= createFunction(Id, K, K, Expression) [strict(4)]
              | createLambda(K, Expression) [strict(2)]
@@ -106,7 +106,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   syntax ListItem ::= "(" K "," Set "," Set "," Set "," Set "," Set "," List "," Bool "," Bool ")"
 
   rule <k> makescope (K, T:Bool) => . ...</k>
-       <scope> . => (K, .Set, .Set, .Set, .Set, .Set, .List, T, fakse) ...</scope>
+       <scope> . => (K, .Set, .Set, .Set, .Set, .Set, .List, T, false) ...</scope>
 
   rule <k> visited(_) ~> storescope => . ...</k>
        <scope> (.K, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, _, _) ...</scope>
@@ -127,7 +127,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
              ((Uses Globals) -Set
              FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L)) -Set
              LOCAL(Defs, Globals, Nonlocals, Params))))) ~>
-           #if T #then setattr(N, "co_code", getattr(ref(N), "co_code") |Int 32) #else . #fi ...</k>
+           #if T #then setattr(N, "co_flags", getattr(ref(N), "co_flags") |Int 32) #else . #fi ...</k>
        <scope> (N, Defs:Set, Uses:Set, Nonlocals:Set, Globals:Set, ChildFree:Set, Params:List, _, T:Bool) L</scope>
 
   rule <k> propscope => . ...</k>

@@ -4,15 +4,14 @@ module PYTHON-SEMANTICS-ENVIRONMENT
   imports PYTHON-SEMANTICS-COMMON
 
   syntax ObjRef ::= "envLookup" "(" String "," Expression "," Expression ")" [strict(2, 3)]
-  syntax K ::= "doBind" "(" String "," Builtin "," Expression ")" [strict(3)]
   syntax K ::= "doBind2" "(" String "," Builtin "," Expression "," Expression ")" [strict(3, 4)]
 
   rule unbind(X) => bind(X, 0) [macro, anywhere]
   rule <k> bind(X:Id, B:Builtin) => doBind(Id2String(X), B, ref(N)) ...</k>
-       <currentFrame> N </currentFrame>
+       <frameObject> N </frameObject>
 
   rule <k> X:Id => envLookup(Id2String(X),ref(N),ref(N) . String2Id("f_code")) ...</k>
-       <currentFrame> N:Int </currentFrame>
+       <frameObject> N:Int </frameObject>
 
   rule envLookup(S:String, Frame:Object, Code:Object) =>
                 (Frame . String2Id("f_locals") [S]
@@ -64,9 +63,9 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                          else: pass
 
   rule <k> invokeBuiltin(obj("globals",_), ., .) => ref(N) . String2Id("f_globals") ...</k>
-       <currentFrame> N </currentFrame>
+       <frameObject> N </frameObject>
  
   rule <k> invokeBuiltin(obj("locals",_), ., .) => ref(N) . String2Id("f_locals") ...</k>
-       <currentFrame> N </currentFrame>
+       <frameObject> N </frameObject>
    
 endmodule

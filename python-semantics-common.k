@@ -6,13 +6,16 @@ module PYTHON-SEMANTICS-COMMON
   configuration <T>
                   <k> initialize($PGM:K) </k>
                   <control>
-                    <xstack> .List </xstack>
-                    <xcontext> ref("None") </xcontext>
-                    <currentFrame> .K </currentFrame>
-                    <lstack> .List </lstack>
-                    <fstack> .List </fstack>
-                    <scope> .List </scope>
+                    <currentFrame>
+                      <frameObject> .K </frameObject>
+                      <xstack> .List </xstack>
+                      <xcontext> ref("None") </xcontext>
+                      <lstack> .List </lstack>
+                      <fstack> .List </fstack>
+                    </currentFrame>
+                    <cstack> .List </cstack>
                   </control>
+                  <scope> .List </scope>
                   <store>
                     <object multiplicity="*">
                       <id> 0 </id>
@@ -52,9 +55,11 @@ module PYTHON-SEMANTICS-COMMON
              | "setref" "(" Builtin "," String "," Expression ")" [strict(3)]
              | "setenv" "(" Builtin "," Expression "," Expression ")" [strict(2, 3)]
              | "executeModule" "(" Expression "," Expression "," Expression ")" [strict]
-             | "executeFrame" "(" Int "," Expression "," Expression "," Expression "," Expression "," Expression "," Expression "," Map ")" [strict(2, 3, 4, 5, 6, 7)]
-             | "setArgs" "(" Map ")"
+             | executeFrame(Int, Expression, Expression, Expression, Expression, Expression, Expression, Map) [strict(2, 3, 4, 5, 6, 7)]
+             | makeFrame(Int, Expression, Expression, Expression, Expression, Expression, Expression, Map) [strict(2, 3, 4, 5, 6, 7)]
+             | setArgs(Int, Map)
              | getMro(Expression, Expression) [strict]
+             | doBind(String, Builtin, Expression) [strict(3)]
 
   syntax Test ::= "istype" "(" Expression "," Expression ")" [strict]
                 | "hasbase" "(" K "," Expression ")" [strict]
@@ -165,8 +170,9 @@ module PYTHON-SEMANTICS-COMMON
   rule DeMapify(.) => .NAMES [function, anywhere]
 
   syntax Builtin ::= "id" "(" Expression ")" [function]
-  rule id(obj(B,_)) => B [function, anywhere]
-  rule id(undefined(S)) => undefined(S) [function, anywhere]
+  rule id(obj(B,_)) => B
+  rule id(undefined(S)) => undefined(S)
+  rule id(ref(B)) => B
 
   syntax Int ::= "intvalue" "(" Expression ")" [function]
   rule intvalue(obj(_,<oattrs>... "__value__" |-> I:Int ...</oattrs>)) => I [function, anywhere]
@@ -237,7 +243,9 @@ module PYTHON-SEMANTICS-COMMON
          <oenv> Env => Env [ id(O2) / id(O) ] </oenv>
        ...</object>
 
-  syntax ListItem ::= "(" K "," Bag "," List "," List "," List "," K ")"
+  syntax ListItem ::= (K, Bag, List, List, List, K)
+                    | (K, Bag, List, K, K)
+                    | (K, Bag, List, K, K, Builtin)
 
   rule binaryOp(O, O2:Object, S, S2, K:K) => test(and(istype(O, ref(S)), istype(O2, ref(S2))), K, ref("NotImplemented"))
   rule unaryOp(O, S, K) => test(istype(O, ref(S)), K, ref("NotImplemented"))
@@ -310,15 +318,15 @@ module PYTHON-SEMANTICS-COMMON
 
 
   rule <k> makeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . String2Id("__dict__")), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells)  ~> setArgs(N, Args) ...</k>
-       <currentFrame> _ => N </currentFrame>
        (. => <object>...
          <id>N</id>
          <oattrs> "__class__" |-> ref("frame") </oattrs>
        ...</object>) [allocation]
 
   rule <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => makeFrame(N, CO, Back, Locals, Globals, Builtins, Cells, Args) ~> getattr(CO, "co_code") ...</k>
+       <frameObject> _ => N </frameObject>
 
-  rule (. => doBind(Id2String(X), B, N) ~> setArgs(N, (X |-> B => .) _)
+  rule (. => doBind(Id2String(X), B, ref(N))) ~> setArgs(N, (X |-> ref(B) => .) _)
   rule setArgs(_, .) => .
 
   rule <k> describe(Self, Instance, Owner, S) => doDescribe(Self, Instance, gettype(Instance), S) ...</k>

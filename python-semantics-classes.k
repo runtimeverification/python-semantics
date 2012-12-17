@@ -18,14 +18,14 @@ module PYTHON-SEMANTICS-CLASSES
 
   rule <k> executeClass(Metaclass:Object, CO:Object, Bases:Object, Builtins:Object, Globals:Object, Locals:Object, M:Map) => executeFrame(N, CO, ref(Back), Locals, Globals, Builtins, makeCells(CO . String2Id("co_freevars"), CO . String2Id("co_cellvars"), ref("tuple")(ref("map")(getref2(ref(Back), "f_cells") . String2Id("__getitem__"), CO . String2Id("co_freevars"), .Arguments)), N), .) ~> ((Locals["__module__"], .Expressions) := ref("globals")(.Arguments)["__name__"]) ~> (if CO . String2Id("co_consts")[0] is not ref("None") : (Locals["__doc__"], .Expressions) := CO . String2Id("co_consts")[0] else: pass) ~> restoreContext(LL, FL, Back) ~> doCall(Metaclass, ListItem(CO . String2Id("co_name")) ListItem(Bases) ListItem(Locals), M) ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
-       <currentFrame> Back:Int </currentFrame>
+       <frameObject> Back:Int </frameObject>
        <fstack> FL => . </fstack>
        <lstack> LL => . </lstack> [allocation]
 
  rule <k> restoreContext(LL, FL, N) => . ...</k>
       <fstack> _ => FL </fstack>
       <lstack> _ => LL </lstack>
-      <currentFrame> _ => N </currentFrame>
+      <frameObject> _ => N </frameObject>
 
   rule (processArgs(L:List, M:Map, .Obj, .Obj) => .) ~> invokeClass(_, _, (.Obj => immutable(list(Refify(Idify(L))), ref("tuple"))), (. => stripMetaclass(M)))
 

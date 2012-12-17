@@ -81,16 +81,22 @@ module PYTHON-SEMANTICS-CALLS
 
   rule <k> invoke(obj(_:Int,<oattrs>... "__closure__" |-> Closure "__code__" |-> ref(Code) "__globals__" |-> Globals ...</oattrs>), M) ~> K:K => executeFrame(N, ref(Code), ref(Frame), makeLocals(ref(Code) . String2Id("co_freevars"), Closure), Globals, Globals ["__builtins__"], makeCells(ref(Code) . String2Id("co_freevars"), ref(Code) . String2Id("co_cellvars"), Closure, N), M) ~> return </k>
        <nextLoc> N => N +Int 1 </nextLoc>
-       <control>
-         <currentFrame> Frame:Int => N </currentFrame>
-         <fstack> . => (K, C, Frame, LL) ...</fstack>
-         <lstack> LL => . </lstack>
-         C:Bag
-       </control>
+       <control>...
+         <currentFrame>
+           <frameObject> Frame:Int => N </frameObject> 
+           <fstack> FL => . </fstack>
+           <xcontext> XC </xcontext>
+           (C:Bag => newFrame)
+         </currentFrame>
+         <cstack> . => (Frame, C, FL, XC, K) ...</cstack>
+       ...</control>
        <object>...
          <id>Code</id>
          <oattrs>... "co_flags" |-> Flags ...</oattrs>
        ...</object> when Flags &Int 32 ==Int 0 [allocation]
+
+  syntax Bag ::= "newFrame"
+  rule newFrame => <xstack> .List </xstack> <lstack> .List </lstack>
 
   rule makeLocals(Free:Object, O:Object) => makeLocals(listvalue(Free), listvalue(O), {.KeyData})
   rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (((O[N:K]), .Expressions) := getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
@@ -108,20 +114,23 @@ module PYTHON-SEMANTICS-CALLS
   rule makeCells(.List, .List, .List, O:Object, _) => ref(id(O))
 
   rule <k> return O ~> _ => O ~> K </k>
-       <control>
-         <currentFrame> _ => N </currentFrame>
-         <fstack> (K, C, N, LL) => . ...</fstack>
-         <lstack> _ => LL </lstack>
-         (_ => C)
-       </control>
+       <control>...
+         <cstack> (Frame, C, FL, XC, K) => . ...</cstack>
+         <currentFrame>
+           <frameObject> _ => Frame </frameObject>
+           <fstack> . => FL </fstack>
+           <xcontext> _ => XC </xcontext>
+           (_ => C)
+         </currentFrame>
+       ...</control>
 
   rule <k> (. => Finally:K) ~> return O ...</k>
-       <control>
-         <fstack> (Finally, C, XL:List, LL:List, _, Ex:K) => . ...</fstack>
+       <currentFrame>
+         <fstack> (Finally, C, XL:List, LL:List, _, Ex) => . ...</fstack>
          <xstack> _ => XL </xstack>
-         <xcontext> _ => Ex </xcontext>
          <lstack> _ => LL </lstack>
+         <xcontext> _ => Ex </xcontext>
          (_ => C)
-       </control>
+       </currentFrame>
 
 endmodule
