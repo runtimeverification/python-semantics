@@ -26,9 +26,8 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule checkLen(.Obj) => .Obj
   rule invokeBuiltin(obj("len",_), ListItem(O), .) => len(O) -> raiseInternal("TypeError", "object has no len()")
 
-  syntax Test ::= "plbool" "(" Expression ")" [function]
+  syntax Test ::= plbool(Expression) [strict]
   rule plbool(obj(_, <oattrs>... "__value__" |-> I:Int ...</oattrs>)) => I =/=Int 0 [function, anywhere]
-  context plbool(HOLE)  
 
   rule not O:Object => bool(negate(plbool(bool(O))))
   rule O:Object and K:K => test(plbool(bool(O)), K, O)

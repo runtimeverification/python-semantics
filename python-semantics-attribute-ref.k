@@ -11,7 +11,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
                   | checkData(Expression, Expression) [strict]
                   | checkDataSet(Expression, Expression, Expression) [strict]
 
-  rule O:Object . X:Id => ref("getattr")(O, Id2String(X), .Arguments)
+  rule [attribute]: O:Object . X:Id => ref("getattr")(O, Id2String(X), .Arguments)
 
   rule invokeBuiltin(obj("getattr",_), ListItem(O) ListItem(S:Object), .) => try: (getmember(O, "__getattribute__", true, false, true) (S)) except ref("AttributeError") : (getmember(O, "__getattr__", true, false, false) (S) -> raise) else: pass
   rule invokeBuiltin(obj("hasattr",_), ListItem(O) ListItem(S), .) => try: (ref("getattr")(O, S, .Arguments) ; ~> ref("True")) except ref("AttributeError") : ref("False") else: pass

@@ -12,7 +12,7 @@ module PYTHON-SEMANTICS-STRINGS
   rule <k> invokeBuiltin(obj("eq_str",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "str", "str", bool(strvalue(O) ==String strvalue(O2))) ...</k>
   rule <k> invokeBuiltin(obj("ne_str",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "str", "str", bool(strvalue(O) =/=String strvalue(O2))) ...</k>
 
-  rule <k> invokeBuiltin(obj("hash_str",_), ListItem(O), .) => test(lengthString(strvalue(O)) ==Int 0, 0, accumulate(strvalue(O), (asciiString(substrString(strvalue(O), 0, 1)) <<Int 7) xorInt hashPrefix(Seed, Width), lengthString(strvalue(O)))) ...</k>
+  rule [hash-str]: <k> invokeBuiltin(obj("hash_str",_), ListItem(O), .) => test(lengthString(strvalue(O)) ==Int 0, 0, accumulate(strvalue(O), (asciiString(substrString(strvalue(O), 0, 1)) <<Int 7) xorInt hashPrefix(Seed, Width), lengthString(strvalue(O)))) ...</k>
        <hashSeed> Seed:Int </hashSeed>
        <hashInfo> ListItem(Width:Int) ...</hashInfo>
 

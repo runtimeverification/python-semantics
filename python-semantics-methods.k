@@ -13,7 +13,7 @@ module PYTHON-SEMANTICS-METHODS
   rule method(obj(FuncId,_), obj(SelfId,_)) => immutable("__func__" |-> ref(FuncId) "__self__" |-> ref(SelfId), ref("method"))
 
   //can't use descriptors because method descriptors use it
-  rule obj(N:Nat,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), "__call__", false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable"))
+  rule [call]: obj(N:Nat,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), "__call__", false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable"))
 
   rule invokeBuiltin(obj("call_method",_), ListItem(obj(N, <oattrs>... "__func__" |-> Func "__self__" |-> Self ...</oattrs>)) L:List, M:Map) => doCall(Func, ListItem(Self) L, M)
 

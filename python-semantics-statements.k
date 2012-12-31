@@ -50,9 +50,10 @@ module PYTHON-SEMANTICS-STATEMENTS
          (_ => C)
        </currentFrame>
 
-  context for _ in (HOLE => ref("iter") (HOLE, .Arguments)) : _ else: _
+  rule for T in E : S1 else: S2 => ref("iter") (E, .Arguments) ~> #freezer (for T in HOLE : S1 else: S2) (.List{K}) when isKResult(E) =/=K true [heat]
+  rule O:KResult ~> #freezer (for T in HOLE : S1 else: S2)(.List{K}) => for T in O : S1 else: S2 [cool]
 
-  rule [mark-for]: <k> (. => lmark) ~> (for Targets:K in O : Ss else: Ss2) ~> (K => break) </k>
+  rule [mark-for]: <k> (. => lmark) ~> (for Targets:K in O:Object : Ss else: Ss2) ~> (K => break) </k>
        <currentFrame>
          <lstack> . => (K, for Targets in O : Ss else: Ss2, C) ...</lstack>
          C:Bag

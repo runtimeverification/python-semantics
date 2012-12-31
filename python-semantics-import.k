@@ -21,7 +21,7 @@ module PYTHON-SEMANTICS-IMPORT
   rule (. => Dict[S], .Expressions := ref(S)) ~> bootstrap(Dict, (SetItem(S) => .) _)
   rule bootstrap(_, .) => .
 
-  rule <k> makeSymbol(S, O:Object) => . ...</k>
+  rule [makeSymbol]: <k> makeSymbol(S, O:Object) => . ...</k>
        <symbols>... . => S |-> id(O) ...</symbols>
 
   rule invokeBuiltin(obj("imp_acquire_lock",_), ., .) => ref("None")

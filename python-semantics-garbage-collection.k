@@ -77,6 +77,7 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   rule refcountklabel(Set2KLabel S:Set) => refcountset(S)
   rule refcountklabel(List2KLabel L:List) => refcountlist(L)
   rule refcountklabel(List{K}2KLabel Kl:List{K}) => refcountlistk(Kl)
+  rule refcountklabel(#freezer K) => refcountk(K)
 
   rule refcountmap(K |-> K2 M:Map) => refcountk(K ~> K2) refcountmap(M)
 

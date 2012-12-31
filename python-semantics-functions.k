@@ -16,7 +16,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   syntax ObjRef ::= "function" "(" Parameters "," Expression "," K ")" [strict(2)]
 
-  rule <k> function(Ps:K, O:Object, Return:K) =>
+  rule [evaluate-function-object]: <k> function(Ps:K, O:Object, Return:K) =>
            setref(N, "__doc__", (O . String2Id("co_consts") [0])) ~> 
            setref(N, "__name__", O . String2Id("co_name")) ~> 
            setref(N, "__module__", (ref("globals")(.Arguments)["__name__"])) ~> 
@@ -69,13 +69,13 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule makeCodeObject(_, ((ListItem(X = _) => ListItem(X)) _), _, _)
 
-  rule (. => setref(N, "__defaults__", test(plbool(getref2(ref(N), "__defaults__") is ref("None")), tuple(O), (getref2(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, false)
-  rule (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), setref(N, "__kwdefaults__", {Id2String(X) : O}), (getref2(ref(N), "__kwdefaults__")[Id2String(X)] := O))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, true)
-  rule makeFunction(_, ((ListItem(X:Id) => .) _), _, _)
+  rule [makeFunction-defaults]: (. => setref(N, "__defaults__", test(plbool(getref2(ref(N), "__defaults__") is ref("None")), tuple(O), (getref2(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, false)
+  rule [makeFunction-kwdefaults]: (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), setref(N, "__kwdefaults__", {Id2String(X) : O}), (getref2(ref(N), "__kwdefaults__")[Id2String(X)] := O))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, true)
+  rule [makeFunction-parameter]: makeFunction(_, ((ListItem(X:Id) => .) _), _, _)
 
   rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 4)) ~> addParam(* X)) ~> makeCodeObject(N, ((ListItem(* X:Id) => ListItem(*)) L), _, false) 
   context setattr(_, _, (getattr(HOLE, _) |Int _:Int))
-  rule makeFunction(N, ((ListItem(* X:Id) => ListItem(*)) L), _, _)
+  rule [makeFunction-vararg]: makeFunction(N, ((ListItem(* X:Id) => ListItem(*)) L), _, _)
   rule makeFunction(_, ((ListItem(*) => .) L), _, (false => true))
   rule makeCodeObject(_, ((ListItem(*) => .) L), _, (false => true))
   rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 8)) ~> addParam(** X)) ~> makeCodeObject(N, ((ListItem(** X:Id) => .) L), _, _)
@@ -87,7 +87,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   syntax ObjRef ::= "makeClosure" "(" Expression ")" [strict]
                   | "cellNum" "(" Expression "," Expression "," Expression ")" [strict]
 
-  rule makeFunction(N, ., .Obj, _) => setref(N, "__closure__", makeClosure(ref(N) . String2Id("__code__") . String2Id("co_freevars")))
+  rule [dissolve-makeFunction]: makeFunction(N, ., .Obj, _) => setref(N, "__closure__", makeClosure(ref(N) . String2Id("__code__") . String2Id("co_freevars")))
   rule makeClosure(O:Object) => makeClosure(list(listvalue(O)))
   rule makeClosure(list(.)) => tuple(.Expressions)
   rule <k> makeClosure(list(ListItem(N) L)) => tuple((getref2(ref(Frame), "f_cells")[N]), .Expressions) + makeClosure(list(L)) ...</k>
@@ -111,7 +111,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule <k> visited(_) ~> storescope => . ...</k>
        <scope> (.K, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, _, _) ...</scope>
 
-  rule <k> visited(K) ~> storescope => 
+  rule [storescope]: <k> visited(K) ~> storescope => 
            setattr(N, "co_code", K) ~>
            setref(N, "co_freevars", tuple(DeListify(DeSetify(
              FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) -Set 
@@ -148,7 +148,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule BOUND(Bound:Set, L (_, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, true, _)) => BOUND(Bound, L)
   rule BOUND(Bound, .) => Bound [function, anywhere]
   rule PARAMS(ListItem(X:Id) Params) => ListItem(Id2String(X)) PARAMS(Params) [function, anywhere]
-  rule PARAMS(ListItem(* X:Id) Params) => PARAMS(Params ListItem(* X)) [function, anywhere]
+  rule PARAMS(ListItem(* X:Id) Params) => PARAMS(Params ListItem(* X)) when Params =/=List . [function, anywhere]
   rule PARAMS(ListItem(** X:Id) ListItem(* Y:Id)) => ListItem(Id2String(Y)) ListItem(Id2String(X)) [function, anywhere]
   rule PARAMS(ListItem(* X:Id)) => ListItem(Id2String(X)) [function, anywhere]
   rule PARAMS(ListItem(** X:Id)) => ListItem(Id2String(X)) [function, anywhere]

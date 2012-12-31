@@ -328,7 +328,7 @@ module PYTHON-SEMANTICS-COMMON
          <oattrs> "__class__" |-> ref("frame") </oattrs>
        ...</object>) [allocation]
 
-  rule <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => makeFrame(N, CO, Back, Locals, Globals, Builtins, Cells, Args) ~> getattr(CO, "co_code") ...</k>
+  rule [executeFrame]: <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => makeFrame(N, CO, Back, Locals, Globals, Builtins, Cells, Args) ~> getattr(CO, "co_code") ...</k>
        <frameObject> _ => N </frameObject>
 
   rule (. => doBind(Id2String(X), B, ref(N))) ~> setArgs(N, (X |-> ref(B) => .) _)

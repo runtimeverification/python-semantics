@@ -31,7 +31,7 @@ module PYTHON-SEMANTICS-LITERALS
   rule <k> F:Float => immutable(F,ref("float")) ...</k>
   rule <k> tuple(Osc:Expressions) => immutable(list(Refify(Idify(Listify(Osc)))), ref("tuple")) ...</k> when isKResult(Osc)
   rule <k> [ Osc:Expressions ] => mutable(list(Refify(Idify(Listify(Osc)))), ref("list")) ...</k> when isKResult(Osc)
-  rule <k> { Osc:Expressions } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k> when isKResult(Osc)
+  rule [set]: <k> { Osc:Expressions } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k> when isKResult(Osc)
   rule <k> { OPs:KeyData } => processDict(mutable(map(.),ref("dict")), Mapify(OPs)) ...</k> when isKResult(OPs)
 
   rule <k> (. => processDictElement(Dict:Object, Key:Object, (ref("hash")(Key, .Arguments)), Value:K)) ~> processDict(Dict, _ (Key |-> Value => .)) ...</k>
@@ -47,7 +47,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule <k> invokeBuiltin(obj("hash",_), ListItem(O:Object), .) => checkHash(getmember(O, "__hash__", true, false, false) (.Arguments) -> (raiseInternal("TypeError", "unhashable type"))) ...</k>
 
-  rule <k> checkHash(O:Object) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__hash__ method should return an integer")) ...</k>
+  rule [checkHash]: <k> checkHash(O:Object) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__hash__ method should return an integer")) ...</k>
 
   rule <k> processDictElement(obj(B:Builtin,_), Key:Object, Hash:Object, Value:K) => tableInsert(B, intvalue(Hash), Key, ref(id(Key)) : ref(id(Value))) ...</k>
 

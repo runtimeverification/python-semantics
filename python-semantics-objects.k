@@ -25,13 +25,13 @@ module PYTHON-SEMANTICS-OBJECTS
   rule <k> invokeBuiltin(obj("eq_object",_), ListItem(O) ListItem(O2:Object), .) => test(plbool(O is O2), ref("True"), ref("NotImplemented")) ...</k>
   rule <k> invokeBuiltin(obj("ne_object",_), ListItem(O) ListItem(O2), .) => test(plbool(O is not O2), ref("True"), ref("NotImplemented")) ...</k>
  
-  rule getMro(O:Object, Bases:Object) => mroMerge(list(ListItem(list(ListItem(O)))),,getMros(listvalue(Bases)),,list(ListItem(list(listvalue(Bases)))))
+  rule [getMro]: getMro(O:Object, Bases:Object) => mroMerge(list(ListItem(list(ListItem(O)))),,getMros(listvalue(Bases)),,list(ListItem(list(listvalue(Bases)))))
   context mroMerge(_,,HOLE,,_)
-  context mroMerge(_,,list(ListItem(HOLE)),,_)
-  context list(_) ~> _:Int ~> mroMerge(_,,list(_ ListItem(list(_ ListItem(HOLE) _)) _),,_)
+  context mroMerge(_,,list(_ ListItem(HOLE) _),,_)
+  context mroMerge(_,,list(_ ListItem(list(_ ListItem(HOLE) _)) _),,_)
   rule getMros(ListItem(B) L:List) => list(ListItem(getMro(B, getref2(B, "__bases__")))) ,, getMros(L)
   rule getMros(.List) => .List{K}
-  rule mroMerge(((list(L:List),,list(L2:List)) => list(L L2)),,_) when all(L L2, isKList)
+  rule mroMerge(((list(L:List),,list(L2:List)) => list(L L2)),,_) when all(L L2, 'isMroReady)
   rule (. => list(.) ~> 0) ~> mroMerge(list(L))
   rule list(_ (. => ListItem(B))) ~> (N:Int => 0) ~> mroMerge(list((L:List => trimHead(L, B)) ListItem(list((ListItem(B:Object) => .) _)) (L2:List => trimHead(L2, B)))) when lengthList L ==Int N andBool notInTail(B, L L2)
   rule notInTail(B, ListItem(list(ListItem(_) L)) L2) => notBool(B in Setify(L)) andBool notInTail(B, L2) [function, anywhere]
@@ -41,9 +41,13 @@ module PYTHON-SEMANTICS-OBJECTS
   rule list(_) ~> _ ~> mroMerge(list(_ (ListItem(list(.)) => .) _))
   rule list(_) ~> (N:Int => N +Int 1) ~> mroMerge(list(L:List ListItem(list(ListItem(B:Object) _)) L2:List)) when lengthList L ==Int N andBool notBool notInTail(B, L L2)
   rule list(_) ~> N:Int ~> mroMerge(list(L)) => raiseInternal("TypeError", "Cannot create a consistent method resolution order (MRO)") when N ==Int lengthList(L) andBool L =/=List .
-  rule list(L => Refify(Idify(L))) ~> (_:Int ~> mroMerge(list(.)) => .)
+  rule [getMro-finish]: list(L => Refify(Idify(L))) ~> (_:Int ~> mroMerge(list(.)) => .)
   context mutable(HOLE,_) when getKLabel HOLE ==KLabel 'getMro
   context immutable(HOLE,_) when getKLabel HOLE ==KLabel 'getMro
+
+  syntax Bool ::= isMroReady(K) [function]
+
+  rule isMroReady(list(L:List)) => all(L, isObject)
 
   rule invokeBuiltin(obj("mro_type",_), ListItem(Type), .) => mutable(getMro(Type, getref(Type, "__bases__")), ref("list"))
 
