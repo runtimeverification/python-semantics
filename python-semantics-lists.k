@@ -3,7 +3,7 @@ require "python-semantics-slicing.k"
 module PYTHON-SEMANTICS-LISTS
   imports PYTHON-SEMANTICS-SLICING
 
-  syntax K ::= "setvalue" "(" Object ")"
+  syntax K ::= setValue(Object)
 
   rule invokeBuiltin(obj("add_list",_), ListItem(O:Object) ListItem(O2:Object), .) => test(and(istype(O, ref("list")), istype(O2, ref("list"))), mutable(list(listvalue(O) listvalue(O2)),ref("list")), raiseInternal("TypeError", "can only concatenate list to list"))
 
@@ -13,9 +13,9 @@ module PYTHON-SEMANTICS-LISTS
 
   rule invokeBuiltin(obj("new_list",_), ListItem(O) _, .) => newHelper(O, ref("list"), .) ~> mutable(list(.), O)
   rule invokeBuiltin(obj("init_list",_), ListItem(_:Object), .) => ref("None")
-  rule invokeBuiltin(obj("init_list",_), ListItem(O) ListItem(O2), .) => iterate(O2, .) ~> setvalue(O)
+  rule invokeBuiltin(obj("init_list",_), ListItem(O) ListItem(O2), .) => iterate(O2, .) ~> setValue(O)
 
-  rule <k> list(L:List) ~> setvalue(obj(B:Builtin,_)) => ref("None") ...</k>
+  rule <k> list(L:List) ~> setValue(obj(B:Builtin,_)) => ref("None") ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> (_ => list(Refify(Idify(L)))) ...</oattrs>

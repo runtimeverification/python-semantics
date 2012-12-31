@@ -28,7 +28,7 @@ module PYTHON-SEMANTICS-OBJECTS
   rule getMro(O:Object, Bases:Object) => mroMerge(list(ListItem(list(ListItem(O)))),,getMros(listvalue(Bases)),,list(ListItem(list(listvalue(Bases)))))
   context mroMerge(_,,HOLE,,_)
   context mroMerge(_,,list(ListItem(HOLE)),,_)
-  context mroMerge(_,,list(_ ListItem(list(_ ListItem(HOLE) _)) _),,_)
+  context list(_) ~> _:Int ~> mroMerge(_,,list(_ ListItem(list(_ ListItem(HOLE) _)) _),,_)
   rule getMros(ListItem(B) L:List) => list(ListItem(getMro(B, getref2(B, "__bases__")))) ,, getMros(L)
   rule getMros(.List) => .List{K}
   rule mroMerge(((list(L:List),,list(L2:List)) => list(L L2)),,_) when all(L L2, isKList)
@@ -39,7 +39,7 @@ module PYTHON-SEMANTICS-OBJECTS
   rule trimHead(ListItem(list(ListItem(B) L:List)) L2:List, B2) => ListItem(#if B ==K B2 #then list(L) #else list(ListItem(B) L) #fi) trimHead(L2, B2) [function, anywhere]
   rule trimHead(., _) => . [function, anywhere]
   rule list(_) ~> _ ~> mroMerge(list(_ (ListItem(list(.)) => .) _))
-  rule list(_) ~> (N:Int => N +Int 1) ~> mroMerge(list(L:List ListItem(list(ListItem(B) _)) L2:List)) when lengthList L ==Int N andBool notBool notInTail(B, L L2)
+  rule list(_) ~> (N:Int => N +Int 1) ~> mroMerge(list(L:List ListItem(list(ListItem(B:Object) _)) L2:List)) when lengthList L ==Int N andBool notBool notInTail(B, L L2)
   rule list(_) ~> N:Int ~> mroMerge(list(L)) => raiseInternal("TypeError", "Cannot create a consistent method resolution order (MRO)") when N ==Int lengthList(L) andBool L =/=List .
   rule list(L => Refify(Idify(L))) ~> (_:Int ~> mroMerge(list(.)) => .)
   context mutable(HOLE,_) when getKLabel HOLE ==KLabel 'getMro

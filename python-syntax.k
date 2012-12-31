@@ -51,7 +51,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                 | "{" Expression ":" Expression Comps "}"
                 | "[" Expressions "]" [strict]
                 | "{" KeyData "}" [strict]
-                | "{" Expressions "}" [strict]
+                | "{" Expressions "}" [strict, klabel('Set)]
                 | YieldExpression
                 | "..."
 

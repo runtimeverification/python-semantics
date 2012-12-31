@@ -68,6 +68,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "keys" |-> def "keys_dict" (0, 0, true)
            "update" |-> ref("init_dict")
            "__delitem__" |-> def "delitem_dict" (1, 1, true)
+           "__eq__" |-> def "eq_dict" (1, 1, true)
            "__getitem__" |-> def "getitem_dict" (1, 1, true)
            "__init__" |-> def "init_dict" (0, 1, true)
            "__iter__" |-> def "iter_dict" (0, 0, true)
@@ -184,7 +185,17 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__iter__" |-> def "iter_range" (0, 0, true)
            "__new__" |-> def "new_range" (1, 4, false)
            ,.) ~>
-         (def "setattr" (3, 3, false) ;) ~>
+         object "set" ("type", ListItem("object"),
+           "__contains__" |-> def "contains_set" (1, 1, true)
+           "__eq__" |-> def "eq_set" (1, 1, true)
+           "__init__" |-> def "init_set" (0, 1, true)
+           "__ior__" |-> def "ior_set"(1, 1, true)
+           "__le__" |-> def "le_set"(1, 1, true)
+           "__lt__" |-> def "lt_set"(1, 1, true)
+           "__ne__" |-> def "ne_set"(1, 1, true)
+           "__new__" |-> def "new_set" (1, -1, false)
+           ,.) ~>
+	 (def "setattr" (3, 3, false) ;) ~>
          object "slice" ("type",ListItem("object"),
            "indices" |-> def "indices_slice" (1, 1, true)
            "start" |-> ref("start")
@@ -377,6 +388,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "object" : ref("object")
          , "ord" : ref("ord")
          , "range" : ref("range")
+         , "set" : ref("set")
          , "setattr" : ref("setattr")
          , "slice" : ref("slice")
          , "staticmethod" : ref("staticmethod")

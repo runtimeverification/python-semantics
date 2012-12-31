@@ -57,7 +57,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule comparison(O:Object, O2:Object, '_>_) => coerceBoolean(O, O2, "__gt__", "__lt__", ">")
   rule comparison(O:Object, O2:Object, '_<=_) => coerceBoolean(O, O2, "__le__", "__ge__", "<=")
   rule comparison(O:Object, O2:Object, '_>=_) => coerceBoolean(O, O2, "__ge__", "__le__", ">=")
-  rule comparison(O:Object, O2:Object, '_!=_) => coerceBinaryBase(O, O2, "__ne__", "__ne__") -> (O is not O2)
+  rule comparison(O:Object, O2:Object, '_!=_) => coerceBinaryBase(O, O2, "__ne__", "__ne__") -> (not (O == O2))
   rule comparison(O:Object, O2:Object, '_==_) => coerceBinaryBase(O, O2, "__eq__", "__eq__") -> (O is O2)
   rule comparison(O:Object, O2:Object, '_in_) => bool((getmember(O2, "__contains__", true, false, false) (O)) -> contains(iterate(O2, .), O))
   rule comparison(O:Object, O2:Object, '_notin_) => not O in O2

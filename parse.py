@@ -184,11 +184,32 @@ class KPythonVisitor(ast.NodeVisitor):
     result += ")" * (len(node.keys) + 1)
     return result
 
+  def visit_Set(self, node):
+    return "'Set(" + self.visit_list(node.elts, "'_`,_", "`,") + ")"
+
+  def visit_ListComp(self, node):
+    l = []
+    for g in node.generators:
+      l += self.visit(g)
+    return "'`[__`](" + self.visit(node.elt) + ",," + "'_@_(" + ",,'_@_(".join(l) + ",,'.List`{\"@\"`}(.List{K}))" + ")"*len(l)
+
+  def visit_SetComp(self, node):
+    l = []
+    for g in node.generators:
+      l += self.visit(g)
+    return "'`{__`}(" + self.visit(node.elt) + ",," + "'_@_(" + ",,'_@_(".join(l) + ",,'.List`{\"@\"`}(.List{K}))" + ")"*len(l)
+
+  def visit_DictComp(self, node):
+    l = []
+    for g in node.generators:
+      l += self.visit(g)
+    return "'`{_:__`}(" + self.visit(node.key) + ",," + self.visit(node.value) + ",," + "'_@_(" + ",,'_@_(".join(l) + ",,'.List`{\"@\"`}(.List{K}))" + ")"*len(l)
+
   def visit_GeneratorExp(self, node):
     l = []
     for g in node.generators:
       l += self.visit(g)
-    return "'generator`(__`)(" + self.visit(node.elt) + ",," + "'_@_(" + ",,'_@_(".join(l) + ",,'.List`{\"@\"`}(.List{K}))" + ")"*len(l) + ")"
+    return "'generator`(__`)(" + self.visit(node.elt) + ",," + "'_@_(" + ",,'_@_(".join(l) + ",,'.List`{\"@\"`}(.List{K}))" + ")"*len(l)
 
   def visit_Yield(self, node):
     if node.value:

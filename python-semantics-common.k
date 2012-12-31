@@ -191,6 +191,11 @@ module PYTHON-SEMANTICS-COMMON
   rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ (_ |-> list(.) => .)) ...</oattrs>)) [function, anywhere]
   rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(.) ...</oattrs>)) => . [function, anywhere]
 
+  syntax List ::= setvalue(Object) [function]
+  rule setvalue(obj(_,<oattrs>... "__value__" |-> map(_ _ |-> list(_ (ListItem(K) => .) _)) ...</oattrs>)) (.List => ListItem(K)) [function, anywhere]
+  rule setvalue(obj(_,<oattrs>... "__value__" |-> map(_ (_ |-> list(.) => .)) ...</oattrs>)) [function, anywhere]
+  rule setvalue(obj(_,<oattrs>... "__value__" |-> map(.) ...</oattrs>)) => . [function, anywhere]
+
   syntax K ::= "get" "(" List "," Int ")" [function]
   rule get(ListItem(K) _, 0) => K [function, anywhere]
   rule get(ListItem(_) L, N) => get(L, N -Int 1) when N >Int 0 [function, anywhere]

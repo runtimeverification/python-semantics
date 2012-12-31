@@ -3,13 +3,13 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-ATTRIBUTE-REF
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= "mapLookup" "(" Expression "," Expression ")" [strict]
-                  | "mapInsert" "(" Expression "," Expression "," Expression ")" [strict]
-                  | "basesLookup" "(" Expression "," Expression ")" [strict]
-                  | "basesLookup" "(" List "," Expression ")" [strict(2)]
-                  | "descriptor" "(" Expression "," Expression "," Expression "," Test ")" [strict]
-                  | "checkData" "(" Expression "," Expression ")" [strict]
-                  | "checkDataSet" "(" Expression "," Expression "," Expression ")" [strict]
+  syntax ObjRef ::= mapLookup(Expression, Expression) [strict]
+                  | mapInsert(Expression, Expression, Expression) [strict]
+                  | basesLookup(Expression, Expression) [strict]
+                  | basesLookup(List, Expression) [strict(2), klabel('basesLookup2)]
+                  | descriptor(Expression, Expression, Expression, Test) [strict]
+                  | checkData(Expression, Expression) [strict]
+                  | checkDataSet(Expression, Expression, Expression) [strict]
 
   rule O:Object . X:Id => ref("getattr")(O, Id2String(X), .Arguments)
 

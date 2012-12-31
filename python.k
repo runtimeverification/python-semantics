@@ -35,6 +35,7 @@ require "python-semantics-lists.k"
 require "python-semantics-macros.k"
 require "python-semantics-methods.k"
 require "python-semantics-objects.k"
+require "python-semantics-sets.k"
 require "python-semantics-statements.k"
 require "python-semantics-strings.k"
 require "python-semantics-tuples.k"
@@ -63,6 +64,7 @@ module PYTHON
   imports PYTHON-SEMANTICS-MACROS
   imports PYTHON-SEMANTICS-METHODS
   imports PYTHON-SEMANTICS-OBJECTS
+  imports PYTHON-SEMANTICS-SETS
   imports PYTHON-SEMANTICS-STATEMENTS
   imports PYTHON-SEMANTICS-STRINGS
   imports PYTHON-SEMANTICS-TUPLES

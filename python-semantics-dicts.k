@@ -78,4 +78,12 @@ module PYTHON-SEMANTICS-DICTS
   rule <k> list(L) ~> list(_) ~> map(_) ~> makeDict(N, _) => raiseInternal("ValueError", "dictionary update sequence element #" +String Int2String(N) +String " has length " +String Int2String(lengthList L) +String "; 2 is required") ...</k>
   rule <k> (list(.) => .) ~> map(_) ~> makeDict(_, _) ...</k>
 
+  rule invokeBuiltin(obj("eq_dict",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "dict", "dict", equalDict(O, O2))
+
+  syntax ObjRef ::= equalDict(Expression, Expression) [strict]
+  rule equalDict(O:Object, O2) => bool(lengthList DeSetify(keys(mapvalue(O))) ==Int lengthList DeSetify(keys(mapvalue(O2)))) and equalDict(mapvalue(O), O2)
+  syntax ObjRef ::= equalDict(Map, Expression) [strict(2)]
+  rule equalDict(Key |-> Value M, Dict) => Key in Dict and Dict[Key] == Value and equalDict(M, Dict)
+  rule equalDict(.Map, _) => ref("True")
+
 endmodule

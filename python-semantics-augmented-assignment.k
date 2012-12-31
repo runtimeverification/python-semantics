@@ -3,8 +3,9 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-AUGMENTED-ASSIGNMENT
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax K ::= "augAssign" "(" Target "," Object "," KLabel "," Expression ")"
-  syntax K ::= "augAssign2" "(" Target "," Expression "," Object "," KLabel "," Id ")" [strict(2)]
+  syntax K ::= augAssign(Target, Object, KLabel, Expression)
+  syntax K ::= augAssign2(Target, Expression, Object, KLabel, Id) [strict(2)]
+  syntax K ::= augAssign3(Target, Object, Object, KLabel, Expression) [strict(5)]
 
   rule T:Target += O:Object => augAssign(T, O, '_+_ , "__iadd__")
   rule T -= O:Object => augAssign(T, O, '_-_ , "__isub__")
@@ -24,6 +25,7 @@ module PYTHON-SEMANTICS-AUGMENTED-ASSIGNMENT
   context augAssign((K:K [ HOLE ]), _, _, _) when isKResult(K)
 
   rule augAssign(T, O, Lbl:KLabel, IX) => augAssign2(T, T, O, Lbl, IX)
-  rule augAssign2(T, O, O2:Object, Lbl, IX) => (getmember(O, IX, true, false, false) (O2)) -> ((T, .Expressions) := Lbl(O,,O2))
+  rule augAssign2(T, O, O2:Object, Lbl, IX) => augAssign3(T, O, O2, Lbl, getmember(O, IX, true, false, false)) 
+  rule augAssign3(T, O, O2:Object, Lbl, IO) => test(IO =/=K .Obj, IO(O2) ;, ((T, .Expressions) := Lbl(O,,O2)))
 
 endmodule

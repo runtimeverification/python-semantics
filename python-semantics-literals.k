@@ -29,16 +29,17 @@ module PYTHON-SEMANTICS-LITERALS
   rule <k> S:String => immutable(S,ref("str")) ...</k>
   rule <k> b S:String => immutable(S, ref("bytes")) ...</k>
   rule <k> F:Float => immutable(F,ref("float")) ...</k>
-  rule <k> tuple(Osc:Expressions) => immutable(list(Refify(Idify(Listify(Osc)))), ref("tuple")) ...</k>
-  rule <k> [ Osc:Expressions ] => mutable(list(Refify(Idify(Listify(Osc)))), ref("list")) ...</k>
-  rule <k> { Osc:Expressions } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k>
-  rule <k> { OPs:KeyData } => processDict(mutable(map(.),ref("dict")), Mapify(OPs)) ...</k>
+  rule <k> tuple(Osc:Expressions) => immutable(list(Refify(Idify(Listify(Osc)))), ref("tuple")) ...</k> when isKResult(Osc)
+  rule <k> [ Osc:Expressions ] => mutable(list(Refify(Idify(Listify(Osc)))), ref("list")) ...</k> when isKResult(Osc)
+  rule <k> { Osc:Expressions } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k> when isKResult(Osc)
+  rule <k> { OPs:KeyData } => processDict(mutable(map(.),ref("dict")), Mapify(OPs)) ...</k> when isKResult(OPs)
 
   rule <k> (. => processDictElement(Dict:Object, Key:Object, (ref("hash")(Key, .Arguments)), Value:K)) ~> processDict(Dict, _ (Key |-> Value => .)) ...</k>
 
   rule <k> processDict(Dict:Object, .) => ref(id(Dict)) ...</k>
 
   rule <k> (. => processSetElement(SetObj:Object, Element:Object, (ref("hash")(Element, .Arguments)))) ~> processSet(SetObj, (ListItem(Element) => .) _) ...</k>
+  context processSet(_, ListItem(HOLE) _) when getKLabel HOLE ==KLabel 'ref`(_`)
 
   rule <k> processSet(SetObj:Object, .) => ref(id(SetObj)) ...</k>
 
@@ -50,7 +51,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule <k> processDictElement(obj(B:Builtin,_), Key:Object, Hash:Object, Value:K) => tableInsert(B, intvalue(Hash), Key, ref(id(Key)) : ref(id(Value))) ...</k>
 
-  rule <k> processSetElement(obj(B,_), Element, Hash) => tableInsert(B, intvalue(Hash), Element, id(Element)) ...</k>
+  rule <k> processSetElement(obj(B,_), Element:Object, Hash:Object) => tableInsert(B, intvalue(Hash), Element, ref(id(Element))) ...</k>
 
   rule <k> tableInsert(B, H:Int, Key, K:K) => . ...</k>
        <object>...
