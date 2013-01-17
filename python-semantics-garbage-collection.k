@@ -32,7 +32,7 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   syntax Set ::= refcount(Bag) [function]
                 | refcountbag(Bag) [function]
                 | refcountk(K) [function]
-                | refcountlistk(List{K}) [function]
+                | refcountlistk(KList) [function]
                 | refcountklabel(KLabel) [function]
                 | refcountmap(Map) [function]
                 | refcountset(Set) [function]
@@ -65,18 +65,18 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   rule refcountbag(<object>... <oenv> Env:Map </oenv> <oattrs> Attrs:Map </oattrs> ...</object>) => refcountset(values Env) refcountset(values Attrs)
   rule refcountbag(<object>... <oattrs> Attrs:Map </oattrs> ...</object>) => refcountset(values Attrs)
 
-  rule refcountk(Lbl:KLabel(Kl:List{K}) ~> Lbl2:KLabel(Kl2:List{K}) ~> K2) => refcountk(Lbl(Kl)) refcountk(Lbl2(Kl2)) refcountk(K2)
-  rule refcountk(Lbl:KLabel(Kl:List{K})) => refcountklabel(Lbl) refcountlistk(Kl) when Lbl =/=KLabel 'obj`(_`,_`) andThenBool Lbl =/=KLabel 'ref`(_`)
+  rule refcountk(Lbl:KLabel(Kl:KList) ~> Lbl2:KLabel(Kl2:KList) ~> K2) => refcountk(Lbl(Kl)) refcountk(Lbl2(Kl2)) refcountk(K2)
+  rule refcountk(Lbl:KLabel(Kl:KList)) => refcountklabel(Lbl) refcountlistk(Kl) when Lbl =/=KLabel 'obj`(_`,_`) andThenBool Lbl =/=KLabel 'ref`(_`)
 
   rule refcountk(obj(N,_)) => SetItem(N)
   rule refcountk(ref(N)) => SetItem(N)
 
-  rule refcountlistk(K,,Kl:List{K}) => refcountk(K) refcountlistk(Kl)
+  rule refcountlistk(K,,Kl:KList) => refcountk(K) refcountlistk(Kl)
 
   rule refcountklabel(Map2KLabel M:Map) => refcountmap(M)
   rule refcountklabel(Set2KLabel S:Set) => refcountset(S)
   rule refcountklabel(List2KLabel L:List) => refcountlist(L)
-  rule refcountklabel(List{K}2KLabel Kl:List{K}) => refcountlistk(Kl)
+  rule refcountklabel(KList2KLabel Kl:KList) => refcountlistk(Kl)
   rule refcountklabel(#freezer K) => refcountk(K)
 
   rule refcountmap(K |-> K2 M:Map) => refcountk(K ~> K2) refcountmap(M)

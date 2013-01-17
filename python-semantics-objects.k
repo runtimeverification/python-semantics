@@ -5,7 +5,7 @@ module PYTHON-SEMANTICS-OBJECTS
 
   syntax ObjRef ::= "init" "(" Expression "," Expression "," List "," Map ")" [strict(1, 2)] 
                   | "getMros" "(" List ")"
-                  | "mroMerge" "(" List{K} ")"
+                  | "mroMerge" "(" KList ")"
   syntax Bool ::= "notInTail" "(" ObjId "," List ")" [function]
   syntax List ::= "trimHead" "(" List "," ObjId ")" [function] 
 
@@ -30,7 +30,7 @@ module PYTHON-SEMANTICS-OBJECTS
   context mroMerge(_,,list(_ ListItem(HOLE) _),,_)
   context mroMerge(_,,list(_ ListItem(list(_ ListItem(HOLE) _)) _),,_)
   rule getMros(ListItem(B) L:List) => list(ListItem(getMro(B, getref2(B, "__bases__")))) ,, getMros(L)
-  rule getMros(.List) => .List{K}
+  rule getMros(.List) => .KList
   rule mroMerge(((list(L:List),,list(L2:List)) => list(L L2)),,_) when all(L L2, isMroReady)
   rule (. => list(.) ~> 0) ~> mroMerge(list(L))
   rule list(_ (. => ListItem(B))) ~> (N:Int => 0) ~> mroMerge(list((L:List => trimHead(L, B)) ListItem(list((ListItem(B:Object) => .) _)) (L2:List => trimHead(L2, B)))) when lengthList L ==Int N andBool notInTail(B, L L2)

@@ -4,7 +4,7 @@ TEST_REFERENCE = ${TESTS:.py=.ref}
 
 .PHONY: all test ref clean test-clean jenkins
 
-all:	python-kompiled
+all:	python-kompiled/base.maude
 
 test: ${TEST_RESULTS}
 
@@ -16,7 +16,7 @@ jenkins-test: ${TEST_RESULTS}
 
 ref: ${TEST_REFERENCE}
 
-%.out: %.py python-kompiled kpython
+%.out: %.py python-kompiled/base.maude kpython
 	@echo "Testing $<"
 	@./kpython $< > $@.tmp
 	@- test "`grep "< k > (.).K </ k >" $@.tmp`" && cp $@.tmp $@ && echo "$< passed"
@@ -25,12 +25,12 @@ ref: ${TEST_REFERENCE}
 %.ref: %.py
 	-PYTHONHASHSEED=1 python3.3 $< > /dev/null 2>&1 && touch $@
 
-python-kompiled: ?*.k
+python-kompiled/base.maude: ?*.k
 	kompile python.k -v --transition "allocation"
 
 clean: test-clean
 	rm -rf .k
-	rm -f python-compiled.maude
+	rm -rf python-kompiled
 	rm -f kompile_*
 	rm -f all_tokens.tok
 	rm -f kmain-python.maude python.maude shared.maude
