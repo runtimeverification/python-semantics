@@ -16,7 +16,7 @@ jenkins-test: ${TEST_RESULTS}
 
 ref: ${TEST_REFERENCE}
 
-%.out: %.py python-compiled.maude kpython
+%.out: %.py python-kompiled kpython
 	@echo "Testing $<"
 	@./kpython $< > $@.tmp
 	@- test "`grep "< k > (.).K </ k >" $@.tmp`" && cp $@.tmp $@ && echo "$< passed"
