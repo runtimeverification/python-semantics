@@ -41,7 +41,7 @@ module PYTHON-SEMANTICS-COMMON
                 </T>
 
   syntax K ::= "initialize" "(" K ")"
-             | "bind" "(" NAME "," Builtin ")" 
+             | "bind" "(" NAME "," ObjId ")" 
              | "unbind" "(" NAME ")"
              | "mapping" "(" Expression "," K ")" [strict(1)]
              | "addItem" "(" Expression ")" [strict]
@@ -51,15 +51,15 @@ module PYTHON-SEMANTICS-COMMON
              | savetb(Expression) [strict]
              | "newHelper" "(" Expression "," Expression "," Set ")" [strict(1, 2)]
              | "raiseInternal" "(" String "," Expression ")" [strict(2)]
-             | "setattr" "(" Builtin "," String "," K ")"
-             | "setref" "(" Builtin "," String "," Expression ")" [strict(3)]
-             | "setenv" "(" Builtin "," Expression "," Expression ")" [strict(2, 3)]
+             | "setattr" "(" ObjId "," String "," K ")"
+             | "setref" "(" ObjId "," String "," Expression ")" [strict(3)]
+             | "setenv" "(" ObjId "," Expression "," Expression ")" [strict(2, 3)]
              | "executeModule" "(" Expression "," Expression "," Expression ")" [strict]
              | executeFrame(Int, Expression, Expression, Expression, Expression, Expression, Expression, Map) [strict(2, 3, 4, 5, 6, 7)]
              | makeFrame(Int, Expression, Expression, Expression, Expression, Expression, Expression, Map) [strict(2, 3, 4, 5, 6, 7)]
              | setArgs(Int, Map)
              | getMro(Expression, Expression) [strict]
-             | doBind(String, Builtin, Expression) [strict(3)]
+             | doBind(String, ObjId, Expression) [strict(3)]
 
   syntax Test ::= "istype" "(" Expression "," Expression ")" [strict]
                 | "hasbase" "(" K "," Expression ")" [strict]
@@ -169,7 +169,7 @@ module PYTHON-SEMANTICS-COMMON
   rule DeMapify((K |-> K2 M)) => (K : K2) , DeMapify(M) [function, anywhere]
   rule DeMapify(.) => .NAMES [function, anywhere]
 
-  syntax Builtin ::= "id" "(" Expression ")" [function]
+  syntax ObjId ::= "id" "(" Expression ")" [function]
   rule id(obj(B,_)) => B
   rule id(undefined(S)) => undefined(S)
   rule id(ref(B)) => B
@@ -250,7 +250,7 @@ module PYTHON-SEMANTICS-COMMON
 
   syntax ListItem ::= (K, Bag, List, List, List, K)
                     | (K, Bag, List, K, K)
-                    | (K, Bag, List, K, K, Builtin)
+                    | (K, Bag, List, K, K, ObjId)
 
   rule binaryOp(O, O2:Object, S, S2, K:K) => test(and(istype(O, ref(S)), istype(O2, ref(S2))), K, ref("NotImplemented"))
   rule unaryOp(O, S, K) => test(istype(O, ref(S)), K, ref("NotImplemented"))
@@ -332,7 +332,7 @@ module PYTHON-SEMANTICS-COMMON
        <frameObject> _ => N </frameObject>
 
   rule (. => doBind(Id2String(X), B, ref(N))) ~> setArgs(N, (X |-> ref(B) => .) _)
-  rule setArgs(_, .) => .
+  rule [dissolve-setArgs]: setArgs(_, .) => .
 
   rule <k> describe(Self, Instance, Owner, S) => doDescribe(Self, Instance, gettype(Instance), S) ...</k>
        <symbols>... "None" |-> NoneId ...</symbols> when id(Owner) ==K NoneId orBool id(Instance) =/=K NoneId

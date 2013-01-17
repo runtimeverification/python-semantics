@@ -15,7 +15,7 @@ module PYTHON-SEMANTICS-LISTS
   rule invokeBuiltin(obj("init_list",_), ListItem(_:Object), .) => ref("None")
   rule invokeBuiltin(obj("init_list",_), ListItem(O) ListItem(O2), .) => iterate(O2, .) ~> setValue(O)
 
-  rule <k> list(L:List) ~> setValue(obj(B:Builtin,_)) => ref("None") ...</k>
+  rule <k> list(L:List) ~> setValue(obj(B:ObjId,_)) => ref("None") ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> (_ => list(Refify(Idify(L)))) ...</oattrs>

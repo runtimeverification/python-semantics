@@ -1,6 +1,6 @@
 syntax: glob
 tests/*
-python-compiled.maude
+python-kompiled
 programs/*.out
 programs/*.out.tmp
 programs/*.ref

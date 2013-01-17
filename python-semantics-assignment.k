@@ -6,7 +6,7 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   syntax K ::= "bindList" "(" List "," Object "," Bool ")"
              | "unbindList" "(" List ")"
 
-  rule (. => bind(X:Id, B:Builtin)) ~> (X , Ts:Expressions => Ts) := obj(B,_)
+  rule (. => bind(X:Id, B:ObjId)) ~> (X , Ts:Expressions => Ts) := obj(B,_)
   rule (. => bindList(Listify(Ts2), O, false)) ~> (tuple(Ts2:Expressions) , Ts => Ts) := O:Object
   rule (. => bindList(Listify(Ts2), O, false)) ~> ([ Ts2 ] , Ts => Ts) := O
   rule (. => ref("setattr")(O, Id2String(X), O2) ;) ~> ((O:Object . X:Id) , Ts => Ts) := O2:Object

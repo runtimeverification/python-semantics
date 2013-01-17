@@ -8,9 +8,9 @@ module PYTHON-SEMANTICS-SYNTAX
                  | KList
                  | KMap
 
-  syntax Object ::= "obj" "(" Builtin "," Bag ")"
+  syntax Object ::= "obj" "(" ObjId "," Bag ")"
 
-  syntax Builtin ::= Int
+  syntax ObjId ::= Int
                    | String
 
   syntax Expression ::= ObjRef

@@ -10,13 +10,13 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
              | "object" K "(" K "," List "," Map "," Map ")"
              | "def" String "(" Int "," Int "," Bool ")"
              | "incref" "(" List "," Int ")"
-             | "incref" "(" Builtin "," Int ")"
+             | "incref" "(" ObjId "," Int ")"
              | "genv" "(" String "," String ")"
              | "module" K "(" Expression ")" [strict(2)]
 
   syntax ListItem ::= "refs" "(" List ")"
 
-  rule incref(B:Builtin,N) => incref(ListItem(B),N) [macro, anywhere]
+  rule incref(B:ObjId,N) => incref(ListItem(B),N) [macro, anywhere]
   rule refs(ListItem(S) L) => ListItem(ref(S)) refs(L)
   rule refs(.List) => .List
 

@@ -15,7 +15,7 @@ module PYTHON-SEMANTICS-SETS
   rule [ior-set]: invokeBuiltin(obj("ior_set",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "set", "set", processSet(O, setvalue(O2)))
 
   rule invokeBuiltin(obj("eq_set",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "set", "set", bool(lengthList setvalue(O) ==Int lengthList setvalue(O2)) and subset(setvalue(O), O2))
-  rule invokeBuiltin(obj("ne_set",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "set", "set", not ref("ne_set")(O, O2))
+  rule invokeBuiltin(obj("ne_set",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "set", "set", not ref("eq_set")(O, O2, .Arguments))
   rule invokeBuiltin(obj("lt_set",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "set", "set", bool(lengthList setvalue(O) <Int lengthList setvalue(O2)) and subset(setvalue(O), O2))
   rule invokeBuiltin(obj("le_set",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "set", "set", subset(setvalue(O), O2))
 

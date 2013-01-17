@@ -4,7 +4,7 @@ TEST_REFERENCE = ${TESTS:.py=.ref}
 
 .PHONY: all test ref clean test-clean jenkins
 
-all:	python-compiled.maude
+all:	python-kompiled
 
 test: ${TEST_RESULTS}
 
@@ -17,14 +17,15 @@ jenkins-test: ${TEST_RESULTS}
 ref: ${TEST_REFERENCE}
 
 %.out: %.py python-compiled.maude kpython
-	./kpython $< > $@.tmp
-	- test "`grep "< k > (.).K </ k >" $@.tmp`" && cp $@.tmp $@
+	@echo "Testing $<"
+	@./kpython $< > $@.tmp
+	@- test "`grep "< k > (.).K </ k >" $@.tmp`" && cp $@.tmp $@ && echo "$< passed"
 
 
 %.ref: %.py
 	-PYTHONHASHSEED=1 python3.3 $< > /dev/null 2>&1 && touch $@
 
-python-compiled.maude: ?*.k
+python-kompiled: ?*.k
 	kompile python.k -v --transition "allocation"
 
 clean: test-clean
@@ -36,6 +37,7 @@ clean: test-clean
 	rm -f out
 	rm -f IN.maude
 	rm -f *.k~
+	rm -f *.orig
 	rm -f junit-results.xml
 
 test-clean:

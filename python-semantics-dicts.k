@@ -3,7 +3,7 @@ require "python-semantics-literals.k"
 module PYTHON-SEMANTICS-DICTS
   imports PYTHON-SEMANTICS-LITERALS
 
-  rule invokeBuiltin(obj("keys_dict",_), ListItem(obj(B:Builtin,_)), .) => mutable("_mapping" |-> ref(B), ref("dict_keys"))
+  rule invokeBuiltin(obj("keys_dict",_), ListItem(obj(B:ObjId,_)), .) => mutable("_mapping" |-> ref(B), ref("dict_keys"))
 
   rule <k> invokeBuiltin(obj("iter_dict_keys",_), ListItem(obj(_, <oattrs>... "_mapping" |-> ref(B) ...</oattrs>)), .) => mutable("_mapping" |-> ref(B) "__revision__" |-> N:Int "__order__" |-> list(sorted(DeSetify(keys M))) "__index__" |-> 0 "__index2__" |-> 0, ref("iterator")) ...</k>
        <object>...
@@ -14,7 +14,7 @@ module PYTHON-SEMANTICS-DICTS
   rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B2,_)), .) => raiseInternal("RuntimeError", "dictionary changed size during iteration") ...</k>
        <object>...
          <id>B2</id>
-         <oattrs>... "__revision__" |-> Rev1 "_mapping" |-> ref(B:Builtin) ...</oattrs>
+         <oattrs>... "__revision__" |-> Rev1 "_mapping" |-> ref(B:ObjId) ...</oattrs>
        ...</object>
        <object>...
          <id>B</id>
@@ -24,7 +24,7 @@ module PYTHON-SEMANTICS-DICTS
   rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B2,_)), .) => raise ref("StopIteration") ...</k>
        <object>...
          <id>B2</id>
-         <oattrs>... "__revision__" |-> Rev "__order__" |-> list(L) "__index__" |-> (Idx) "_mapping" |-> ref(B:Builtin) ...</oattrs>
+         <oattrs>... "__revision__" |-> Rev "__order__" |-> list(L) "__index__" |-> (Idx) "_mapping" |-> ref(B:ObjId) ...</oattrs>
        ...</object>
        <object>...
          <id>B</id>
@@ -34,7 +34,7 @@ module PYTHON-SEMANTICS-DICTS
   rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) ...</k>
        <object>...
          <id>B</id>
-         <oattrs>... "__revision__" |-> Rev "__order__" |-> list(L) "__index__" |-> (Idx => Idx +Int 1) "__index2__" |-> (Idx2:Int => 0) "_mapping" |-> ref(B2:Builtin) ...</oattrs>
+         <oattrs>... "__revision__" |-> Rev "__order__" |-> list(L) "__index__" |-> (Idx => Idx +Int 1) "__index2__" |-> (Idx2:Int => 0) "_mapping" |-> ref(B2:ObjId) ...</oattrs>
        ...</object>
        <object>...
          <id>B2</id>
@@ -44,7 +44,7 @@ module PYTHON-SEMANTICS-DICTS
   rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => key(get(getl(M:Map(get(L:List, Idx))), Idx2)) ...</k>
        <object>...
          <id>B</id>
-         <oattrs>... "__revision__" |-> Rev "__order__" |-> list(L) "__index__" |-> Idx "__index2__" |-> (Idx2:Int => Idx2 +Int 1) "_mapping" |-> ref(B2:Builtin) ...</oattrs>
+         <oattrs>... "__revision__" |-> Rev "__order__" |-> list(L) "__index__" |-> Idx "__index2__" |-> (Idx2:Int => Idx2 +Int 1) "_mapping" |-> ref(B2:ObjId) ...</oattrs>
        ...</object>
        <object>...
          <id>B2</id>

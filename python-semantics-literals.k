@@ -11,18 +11,18 @@ module PYTHON-SEMANTICS-LITERALS
              | "processDictElement" "(" Expression "," Expression "," Expression "," Expression ")" [strict]
              | "processSet" "(" Expression "," List ")" [strict(1)]
              | "processSetElement" "(" Expression "," Expression "," Expression ")" [strict]
-             | "tableInsert" "(" Builtin "," Int "," Expression "," K ")" [strict(3)]
-             | "tableLookup" "(" Builtin "," Int "," Expression ")" [strict(3)]
-             | "tableDelete" "(" Builtin "," Int "," Expression ")" [strict(3)]
-             | "bucketInsert" "(" Builtin "," Int "," Expression "," Expression "," List "," List ")" [strict(3, 4)]
+             | "tableInsert" "(" ObjId "," Int "," Expression "," K ")" [strict(3)]
+             | "tableLookup" "(" ObjId "," Int "," Expression ")" [strict(3)]
+             | "tableDelete" "(" ObjId "," Int "," Expression ")" [strict(3)]
+             | "bucketInsert" "(" ObjId "," Int "," Expression "," Expression "," List "," List ")" [strict(3, 4)]
              | "bucketLookup" "(" Expression "," List ")" [strict(1)]
-             | "bucketDelete" "(" Builtin "," Int "," Expression "," List "," List ")" [strict(3)]
-             | "setBucket" "(" Builtin "," Int "," List ")"
+             | "bucketDelete" "(" ObjId "," Int "," Expression "," List "," List ")" [strict(3)]
+             | "setBucket" "(" ObjId "," Int "," List ")"
  
-  syntax Builtin ::= "key" "(" KeyDatum ")" [function]
+  syntax ObjId ::= "key" "(" KeyDatum ")" [function]
   rule key(B : _) => B [function, anywhere]
 
-  syntax Builtin ::= "value" "(" KeyDatum ")" [function]
+  syntax ObjId ::= "value" "(" KeyDatum ")" [function]
   rule value(_ : B) => B [function, anywhere]
 
   rule <k> I:Int => immutable(I,ref("int")) ...</k>
@@ -49,7 +49,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule [checkHash]: <k> checkHash(O:Object) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__hash__ method should return an integer")) ...</k>
 
-  rule <k> processDictElement(obj(B:Builtin,_), Key:Object, Hash:Object, Value:K) => tableInsert(B, intvalue(Hash), Key, ref(id(Key)) : ref(id(Value))) ...</k>
+  rule <k> processDictElement(obj(B:ObjId,_), Key:Object, Hash:Object, Value:K) => tableInsert(B, intvalue(Hash), Key, ref(id(Key)) : ref(id(Value))) ...</k>
 
   rule <k> processSetElement(obj(B,_), Element:Object, Hash:Object) => tableInsert(B, intvalue(Hash), Element, ref(id(Element))) ...</k>
 
@@ -128,7 +128,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule immutable(V:Value, O) => immutable("__value__" |-> V, O)
 
-  syntax K ::= pair(Map, Builtin)
+  syntax K ::= pair(Map, ObjId)
   syntax ObjRef ::= mutable(Map, Int, Expression) [strict(3)]
 
   rule <k> immutable(M, obj(B,_)) => O ...</k>

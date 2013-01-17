@@ -107,7 +107,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__ge__" |-> def "ge_int" (1, 1, true)
            //TODO: getattribute, getnewargs
            "__gt__" |-> def "gt_int" (1, 1, true)
-           //TODO: hash
+           "__hash__" |-> def "hash_int" (0, 0, true)
            "__index__" |-> ref("int_int")
            "__int__" |-> def "int_int" (0, 0, true)
            "__invert__" |-> def "invert_int" (0, 0, true)

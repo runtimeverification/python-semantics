@@ -62,4 +62,7 @@ module PYTHON-SEMANTICS-INTEGERS
 
   rule invokeBuiltin(obj("int_int",_), ListItem(O), .) => O
 
+  rule <k> invokeBuiltin(obj("hash_int",_), ListItem(O), .) => unaryOp(O, "int", #if intvalue(O) %Int Modulus ==Int -1 #then -2 #else intvalue(O) %Int Modulus #fi) ...</k>
+       <hashInfo> ListItem(_) ListItem(Modulus) ...</hashInfo>
+
 endmodule

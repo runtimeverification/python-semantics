@@ -50,7 +50,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   context comparison(O:Object, comparison(HOLE, _, _), _)
   rule comparison(O:Object, comparison(O2:Object, Rest, Lbl2), Lbl) => comparison(O, O2, Lbl) and comparison(O2, Rest, Lbl2)
 
-  rule comparison(obj(B:Builtin,_), obj(B2:Builtin,_), '_is_) => bool(B ==K B2)
+  rule comparison(obj(B:ObjId,_), obj(B2:ObjId,_), '_is_) => bool(B ==K B2)
   rule comparison(O:Object, O2:Object, '_isnot_) => not (O is O2)
   rule comparison(O:Object, O2:Object, '_<_) => coerceBoolean(O, O2, "__lt__", "__gt__", "<")
   rule comparison(O:Object, O2:Object, '_>_) => coerceBoolean(O, O2, "__gt__", "__lt__", ">")

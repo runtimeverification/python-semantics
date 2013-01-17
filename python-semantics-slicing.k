@@ -39,11 +39,11 @@ module PYTHON-SEMANTICS-SLICING
 
   rule invokeBuiltin(obj("new_range",_), ListItem(O) ListItem(O2) ListItem(O3), .) => newHelper(O, ref("range"), .) ~> ref("new_range") (O, O2, O3, 1, .Arguments)
 
-  rule invokeBuiltin(obj("new_range",_), ListItem(O) ListItem(O2) ListItem(O3) ListItem(O4), .) => newHelper(O, ref("range"), .) ~> range(ref("index")(O2, .Arguments), ref("index")(O3, .Arguments), ref("index")(O4, .Arguments), O)
+  rule [new-range]: invokeBuiltin(obj("new_range",_), ListItem(O) ListItem(O2) ListItem(O3) ListItem(O4), .) => newHelper(O, ref("range"), .) ~> range(ref("index")(O2, .Arguments), ref("index")(O3, .Arguments), ref("index")(O4, .Arguments), O)
 
-  rule invokeBuiltin(obj("iter_range",_), ListItem(O), .) => mutable("current" |-> getattr(O, "start") "stop" |-> getattr(O, "stop") "step" |-> getattr(O, "step"), ref("iterator"))
+  rule [iter-range]: invokeBuiltin(obj("iter_range",_), ListItem(O), .) => mutable("current" |-> getattr(O, "start") "stop" |-> getattr(O, "stop") "step" |-> getattr(O, "step"), ref("iterator"))
 
-  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B:Builtin,_)), .) => test(test(Step <Int 0, Current >Int Stop, Current <Int Stop), Current, raise ref("StopIteration")) ...</k>
+  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B:ObjId,_)), .) => test(test(Step <Int 0, Current >Int Stop, Current <Int Stop), Current, raise ref("StopIteration")) ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "current" |-> (Current:Int => Current +Int Step) "stop" |-> Stop "step" |-> Step ...</oattrs>

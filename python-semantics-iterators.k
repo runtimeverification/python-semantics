@@ -5,10 +5,10 @@ module PYTHON-SEMANTICS-ITERATORS
   imports PYTHON-SEMANTICS-LITERALS
   imports PYTHON-SEMANTICS-TRY
 
-  rule <k> invokeBuiltin(obj("get_iter",_), ListItem(obj(_:Builtin,<oattrs>... "__value__" |-> K:K ...</oattrs>)), .) => mutable(K, ref("iterator")) ...</k>
+  rule <k> invokeBuiltin(obj("get_iter",_), ListItem(obj(_:ObjId,<oattrs>... "__value__" |-> K:K ...</oattrs>)), .) => mutable(K, ref("iterator")) ...</k>
 
   rule <k> invokeBuiltin(obj("iter_iter",_), ListItem(O:Object), .) => O ...</k>
-  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B:Builtin,_)), .) => B2 ...</k>
+  rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B:ObjId,_)), .) => B2 ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> list((ListItem(B2) => .) L:List) ...</oattrs>

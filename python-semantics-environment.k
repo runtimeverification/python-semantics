@@ -4,10 +4,10 @@ module PYTHON-SEMANTICS-ENVIRONMENT
   imports PYTHON-SEMANTICS-COMMON
 
   syntax ObjRef ::= "envLookup" "(" String "," Expression "," Expression ")" [strict(2, 3)]
-  syntax K ::= "doBind2" "(" String "," Builtin "," Expression "," Expression ")" [strict(3, 4)]
+  syntax K ::= "doBind2" "(" String "," ObjId "," Expression "," Expression ")" [strict(3, 4)]
 
   rule unbind(X) => bind(X, 0) [macro, anywhere]
-  rule <k> bind(X:Id, B:Builtin) => doBind(Id2String(X), B, ref(N)) ...</k>
+  rule <k> bind(X:Id, B:ObjId) => doBind(Id2String(X), B, ref(N)) ...</k>
        <frameObject> N </frameObject>
 
   rule <k> X:Id => envLookup(Id2String(X),ref(N),ref(N) . String2Id("f_code")) ...</k>
@@ -40,7 +40,7 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                        raiseInternal("NameError", "name '" +String S +String "' is not defined")
 
   rule doBind(S, B, Frame) => doBind2(S, B, Frame, Frame . String2Id("f_code"))
-  rule doBind2(S:String, B:Builtin, Frame:Object, Code:Object) => if S in Code . String2Id("co_varnames") or
+  rule doBind2(S:String, B:ObjId, Frame:Object, Code:Object) => if S in Code . String2Id("co_varnames") or
                                             S in Code . String2Id("co_cellvars") or
                                             S in Code . String2Id("co_freevars") :
                                               test(B ==K 0,
