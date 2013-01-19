@@ -7,7 +7,7 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   syntax K ::= "lmark"
 
-  syntax ListItem ::= "(" K "," K "," Bag ")"
+  syntax ListItem ::= loop(K, K, Bag)
 
   rule global _ => .
   rule nonlocal _ => .
@@ -17,7 +17,7 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   rule <k> (. => lmark) ~> (while Condition:K : Ss else: Ss2) ~> (K:K => break) </k>
        <currentFrame>
-         <lstack> . => (K, while Condition : Ss else: Ss2, C) ...</lstack>
+         <lstack> . => loop(K, while Condition : Ss else: Ss2, C) ...</lstack>
          C:Bag
        </currentFrame>
 
@@ -25,13 +25,13 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   rule [terminate-loop]: <k> break ~> _ => K </k>
        <currentFrame>
-         <lstack> (K, _, C) => . ...</lstack>
+         <lstack> loop(K, _, C) => . ...</lstack>
          (_ => C)
        </currentFrame>
 
   rule <k> (. => Finally:K) ~> break ...</k>
        <currentFrame>
-         <lstack> (Finally, C, XL:List, _, FL:List, Ex) => . ...</lstack>
+         <lstack> finally(Finally, C, XL:List, _, FL:List, Ex) => . ...</lstack>
          <xstack> _ => XL </xstack>
          <fstack> _ => FL </fstack>
          <xcontext> _ => Ex </xcontext>
@@ -39,11 +39,11 @@ module PYTHON-SEMANTICS-STATEMENTS
        </currentFrame>
 
   rule <k> continue => lmark ~> K ~> break ...</k>
-       <lstack> (_, K, _:Bag) ...</lstack>
+       <lstack> loop(_, K, _:Bag) ...</lstack>
 
   rule <k> (. => Finally) ~> continue ...</k>
        <currentFrame>
-         <lstack> (Finally, C, XL:List, _, FL:List, Ex) => . ...</lstack>
+         <lstack> finally(Finally, C, XL:List, _, FL:List, Ex) => . ...</lstack>
          <xstack> _ => XL </xstack>
          <fstack> _ => FL </fstack>
          <xcontext> _ => Ex </xcontext>
@@ -55,7 +55,7 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   rule [mark-for]: <k> (. => lmark) ~> (for Targets:K in O:Object : Ss else: Ss2) ~> (K => break) </k>
        <currentFrame>
-         <lstack> . => (K, for Targets in O : Ss else: Ss2, C) ...</lstack>
+         <lstack> . => loop(K, for Targets in O : Ss else: Ss2, C) ...</lstack>
          C:Bag
        </currentFrame>
 
@@ -75,9 +75,9 @@ module PYTHON-SEMANTICS-STATEMENTS
   // we copy from python-semantics-try.k so we can reuse finally functionality and still choose whether we suppress a raised exception
   rule <k> (doWith(Exit:Object, Enter:Object, T, Ss) => #if T ==K . #then . #else T, .Expressions := Enter #fi ~> Ss ~> popfinally ~> Exit(* ref("sys_exc_info")(.Arguments)) ;) ~> K </k>
        <currentFrame>
-         <xstack> (. => (if not Exit(* ref("sys_exc_info")(.Arguments)): raise else: (setx(Ex) ~> K), C, XL, LL, FL, Ex)) XL:List </xstack> 
-         <lstack> (. => (Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex)) LL:List </lstack>
-         <fstack> (. => (Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex)) FL:List </fstack>
+         <xstack> (. => finally(if not Exit(* ref("sys_exc_info")(.Arguments)): raise else: (setx(Ex) ~> K), C, XL, LL, FL, Ex)) XL:List </xstack> 
+         <lstack> (. => finally(Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex)) LL:List </lstack>
+         <fstack> (. => finally(Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex)) FL:List </fstack>
          <xcontext> Ex </xcontext>
          C:Bag
        </currentFrame>

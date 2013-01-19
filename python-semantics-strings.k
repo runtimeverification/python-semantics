@@ -24,7 +24,7 @@ module PYTHON-SEMANTICS-STRINGS
   rule hashPrefix(Seed, Width) => wrap(lcgRandom(Seed, Width /Int 4, Width) &Int (2 ^Int Width -Int 1), Width)
 
   rule <k> accumulate((S:String => substrString(S, 1, lengthString(S) -Int 1)), (I:Int => (mult(Imag, I, Width) xorInt asciiString(substrString(S, 0, 1)))), _) ...</k>
-       <hashInfo> ListItem(Width:Nat) ListItem(_) ListItem(_) ListItem(_) ListItem(Imag:Int) </hashInfo> when lengthString(S) =/=Int 0
+       <hashInfo> ListItem(Width:Nat) ListItem(_) ListItem(_) ListItem(_) ListItem(Imag:Int) ...</hashInfo> when lengthString(S) =/=Int 0
 
   rule <k> accumulate("", I, Len:Nat) => test((I xorInt Len xorInt hashSuffix(Seed, Width)) ==Int -1, -2, (I xorInt Len xorInt hashSuffix(Seed, Width))) ...</k>
        <hashSeed> Seed:Int </hashSeed>

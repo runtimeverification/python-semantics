@@ -45,22 +45,22 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   rule [refcount]: refcount(<k> K </k> <control> C <currentFrame> C2 </currentFrame> </control> <store> C3 </store> <symbols> Symbols </symbols> _:Bag) => (values Symbols) refcountk(K) refcountbag(C C2 C3)
   rule refcountbag(BI:BagItem BI2:BagItem C) => refcountbag(BI) refcountbag(BI2) refcountbag(C)
 
-  rule refcountbag(<xstack> (K, K2, C, K3, _) XL:List </xstack>) => refcountk(K ~> K2 ~> K3) refcountbag(C <xstack> XL </xstack>)
+  rule refcountbag(<xstack> try(K, K2, C, K3, _) XL:List </xstack>) => refcountk(K ~> K2 ~> K3) refcountbag(C <xstack> XL </xstack>)
 
   rule refcountbag(<xcontext> K </xcontext>) => refcountk(K)
 
   rule refcountbag(<frameObject> Frame </frameObject>) => SetItem(Frame)
 
-  rule refcountbag(<xstack> (K, C, XL, LL, FL, K2) XL2:List </xstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL XL2 </xstack> <lstack> LL </lstack> <fstack> FL </fstack>)
-  rule refcountbag(<lstack> (K, C, XL, LL, FL, K2) LL2:List </lstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL </xstack> <lstack> LL LL2 </lstack> <fstack> FL </fstack>)
-  rule refcountbag(<fstack> (K, C, XL, LL, FL, K2) FL2:List </fstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL </xstack> <lstack> LL </lstack> <fstack> FL FL2 </fstack>)
+  rule refcountbag(<xstack> finally(K, C, XL, LL, FL, K2) XL2:List </xstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL XL2 </xstack> <lstack> LL </lstack> <fstack> FL </fstack>)
+  rule refcountbag(<lstack> finally(K, C, XL, LL, FL, K2) LL2:List </lstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL </xstack> <lstack> LL LL2 </lstack> <fstack> FL </fstack>)
+  rule refcountbag(<fstack> finally(K, C, XL, LL, FL, K2) FL2:List </fstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL </xstack> <lstack> LL </lstack> <fstack> FL FL2 </fstack>)
 
-  rule refcountbag(<lstack> (K, K2, C) LL:List </lstack>) => refcountk(K ~> K2) refcountbag(C <lstack> LL </lstack>)
+  rule refcountbag(<lstack> loop(K, K2, C) LL:List </lstack>) => refcountk(K ~> K2) refcountbag(C <lstack> LL </lstack>)
 
-  rule refcountbag(<cstack> (K, C, FL, XC, K2) CL:List </cstack>) => refcountk(K ~> XC ~> K2) refcountbag(C <fstack> FL </fstack> <cstack> CL </cstack>)
-  rule refcountbag(<cstack> (K, C, FL, XC, K2, N) CL:List </cstack>) => refcountk(K ~> XC ~> K2) refcountbag(C <fstack> FL </fstack> <cstack> CL </cstack>) SetItem(N)
+  rule refcountbag(<cstack> call(K, C, FL, XC, K2) CL:List </cstack>) => refcountk(K ~> XC ~> K2) refcountbag(C <fstack> FL </fstack> <cstack> CL </cstack>)
+  rule refcountbag(<cstack> generator(K, C, FL, XC, K2, N) CL:List </cstack>) => refcountk(K ~> XC ~> K2) refcountbag(C <fstack> FL </fstack> <cstack> CL </cstack>) SetItem(N)
 
-  rule refcountbag(<scope> (CO, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, _, _) SL:List </scope>) => refcountk(ref(CO)) refcountbag(<scope> SL </scope>)
+  rule refcountbag(<scope> scope(CO, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, _, _) SL:List </scope>) => refcountk(ref(CO)) refcountbag(<scope> SL </scope>)
 
   rule refcountbag(<object>... <oenv> Env:Map </oenv> <oattrs> Attrs:Map </oattrs> ...</object>) => refcountset(values Env) refcountset(values Attrs)
   rule refcountbag(<object>... <oattrs> Attrs:Map </oattrs> ...</object>) => refcountset(values Attrs)

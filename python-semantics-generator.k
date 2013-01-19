@@ -41,7 +41,7 @@ module PYTHON-SEMANTICS-GENERATOR
            <xcontext> XC </xcontext>
            (C:Bag => newFrame)
          </currentFrame>
-         <cstack> . => (Frame, C, FL, XC, K, id(O)) ...</cstack>
+         <cstack> . => generator(Frame, C, FL, XC, K, id(O)) ...</cstack>
        ...</control>
 
   syntax K ::= (K, Bag, List, K)
@@ -54,12 +54,12 @@ module PYTHON-SEMANTICS-GENERATOR
            <xcontext> XC => RestoredXC </xcontext>
            (C:Bag => RestoredC)
          </currentFrame>
-         <cstack> . => (Frame, C, FL, XC, K, id(O)) ...</cstack>
+         <cstack> . => generator(Frame, C, FL, XC, K, id(O)) ...</cstack>
        ...</control>
 
   rule <k> return O ~> _ => setattr(N, "gi_state", (.K, SavedC, .List, SavedXC)) ~> raise ref("StopIteration")(#if id(O) ==K None #then .Arguments #else (O, .Arguments) #fi) ~> K </k>
        <control>...
-         <cstack> (Frame, C, FL, XC, K, N) => . ...</cstack>
+         <cstack> generator(Frame, C, FL, XC, K, N) => . ...</cstack>
          <currentFrame>
            <frameObject> _ => Frame </frameObject>
            <fstack> . => FL </fstack>
@@ -71,7 +71,7 @@ module PYTHON-SEMANTICS-GENERATOR
 
   rule [yield]: <k> yield O ~> SavedK => setattr(N, "gi_state", (SavedK, SavedC, SavedFL, SavedXC)) ~> O ~> K </k>
        <control>...
-         <cstack> (Frame, C, FL, XC, K, N) => . ...</cstack>
+         <cstack> generator(Frame, C, FL, XC, K, N) => . ...</cstack>
          <currentFrame>
            <frameObject> _ => Frame </frameObject>
            <fstack> SavedFL => FL </fstack>

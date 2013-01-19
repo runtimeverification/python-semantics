@@ -5,8 +5,6 @@ module PYTHON-SEMANTICS-SYNTAX
 
   syntax Value ::= NUMBER
                  | STRING
-                 | KList
-                 | KMap
 
   syntax Object ::= "obj" "(" ObjId "," Bag ")"
 
@@ -16,8 +14,6 @@ module PYTHON-SEMANTICS-SYNTAX
   syntax Expression ::= ObjRef
                 | Null
                 | Undefined
-                | KList
-                | KMap
 
   syntax Null ::= ".Obj"
 
@@ -35,7 +31,12 @@ module PYTHON-SEMANTICS-SYNTAX
 
   syntax Test ::= Bool
   syntax ObjRef ::= Object
-  syntax KList ::= "list" "(" List ")"
-  syntax KMap ::= "map" "(" Map ")"
+  syntax K ::= "list" "(" List ")"
+  syntax K ::= "map" "(" Map ")"
+
+  rule isValue(list(_)) => true
+  rule isExpression(list(_)) => true
+  rule isValue(map(_)) => true
+  rule isExpression(map(_)) => true
 
 endmodule

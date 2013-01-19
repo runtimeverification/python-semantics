@@ -88,7 +88,7 @@ module PYTHON-SEMANTICS-CALLS
            <xcontext> XC </xcontext>
            (C:Bag => newFrame)
          </currentFrame>
-         <cstack> . => (Frame, C, FL, XC, K) ...</cstack>
+         <cstack> . => call(Frame, C, FL, XC, K) ...</cstack>
        ...</control>
        <object>...
          <id>Code</id>
@@ -115,7 +115,7 @@ module PYTHON-SEMANTICS-CALLS
 
   rule <k> return O ~> _ => O ~> K </k>
        <control>...
-         <cstack> (Frame, C, FL, XC, K) => . ...</cstack>
+         <cstack> call(Frame, C, FL, XC, K) => . ...</cstack>
          <currentFrame>
            <frameObject> _ => Frame </frameObject>
            <fstack> . => FL </fstack>
@@ -126,7 +126,7 @@ module PYTHON-SEMANTICS-CALLS
 
   rule <k> (. => Finally:K) ~> return O ...</k>
        <currentFrame>
-         <fstack> (Finally, C, XL:List, LL:List, _, Ex) => . ...</fstack>
+         <fstack> finally(Finally, C, XL:List, LL:List, _, Ex) => . ...</fstack>
          <xstack> _ => XL </xstack>
          <lstack> _ => LL </lstack>
          <xcontext> _ => Ex </xcontext>

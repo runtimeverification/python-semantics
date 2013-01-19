@@ -223,6 +223,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__contains__" |-> def "contains_tuple" (1, 1, true)
            "__eq__" |-> def "eq_tuple" (1, 1, true)
            "__getitem__" |-> def "getitem_tuple" (1, 1, true)
+           "__hash__" |-> def "hash_tuple" (0, 0, true)
            "__iter__" |-> ref("get_iter")
            "__len__" |-> def "len_tuple" (0, 0, true)
            "__ne__" |-> def "ne_tuple" (1, 1, true)
@@ -436,7 +437,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          })
        ) ...</k>
        <debug> T:Bool </debug>
-       <hashInfo> ListItem(N1:Int) ListItem(N2:Int) ListItem(N3:Int) ListItem(N4:Int) ListItem(N5:Int) </hashInfo>
+       <hashInfo> ListItem(N1:Int) ListItem(N2:Int) ListItem(N3:Int) ListItem(N4:Int) ListItem(N5:Int) ...</hashInfo>
        <sysPath> L:List </sysPath>
 
 endmodule

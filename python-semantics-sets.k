@@ -9,7 +9,7 @@ module PYTHON-SEMANTICS-SETS
 
   syntax K ::= makeSet(Expression) [strict]
 
-  rule (. => O |= {O2}) ~> list((ListItem(O2) => .) _) ~> makeSet(O)
+  rule (. => O |= {O2, .Expressions}) ~> list((ListItem(O2) => .) _) ~> makeSet(O)
   rule list(.) ~> makeSet(_) => ref("None")
 
   rule [ior-set]: invokeBuiltin(obj("ior_set",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "set", "set", processSet(O, setvalue(O2)))

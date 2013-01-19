@@ -1,7 +1,9 @@
 require "python-semantics-lists.k"
+require "machine-integers.k"
 
 module PYTHON-SEMANTICS-TUPLES
   imports PYTHON-SEMANTICS-LISTS
+  imports MACHINE-INTEGERS
 
   rule invokeBuiltin(obj("add_tuple",_), ListItem(O:Object) ListItem(O2:Object), .) => test(and(istype(O, ref("tuple")), istype(O2, ref("tuple"))), immutable(list(listvalue(O) listvalue(O2)),ref("tuple")), raiseInternal("TypeError", "can only concatenate tuple to tuple"))
 
@@ -17,5 +19,17 @@ module PYTHON-SEMANTICS-TUPLES
 
   rule invokeBuiltin(obj("eq_tuple",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "tuple", "tuple", (ref("bool") (equalList(listvalue(O), (listvalue(O2))))))
   rule invokeBuiltin(obj("ne_tuple",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "tuple", "tuple", not equalList(listvalue(O), listvalue(O2)))
+
+  rule <k> invokeBuiltin(obj("hash_tuple",_), ListItem(O), .) => accumulateTuple(Begin, Mult, listvalue(O)) ...</k>
+       <hashInfo>... ListItem(Mult) ListItem(Begin) ListItem(_) ListItem(_) </hashInfo>
+
+  syntax ObjRef ::= accumulateTuple(Int, Int, List)
+
+  rule accumulateTuple(Current, Mult, ListItem(ref(B)) L) => ref("hash")(ref(B), .Arguments) ~> accumulateTuple(Current, Mult, ListItem(HOLE) L) [heat]
+  rule O ~> accumulateTuple(Current, Mult, ListItem(HOLE) L) => accumulateTuple(Current, Mult, ListItem(intvalue(O)) L) [cool]
+  rule <k> accumulateTuple(Current, Mult, ListItem(I:Int) L) => accumulateTuple(mult(Current xorInt I, Mult, Width), Mult +Int Addend +Int lengthList L +Int lengthList L, L) ...</k>
+       <hashInfo> ListItem(Width) _ ListItem(Addend) ListItem(_) </hashInfo>
+  rule <k> accumulateTuple(Current, _, .List) => test(add(Current, End, Width) ==Int -1, -2, add(Current, End, Width)) ...</k>
+       <hashInfo> ListItem(Width) _ ListItem(End) </hashInfo>
 
 endmodule
