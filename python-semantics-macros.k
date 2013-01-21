@@ -36,6 +36,6 @@ module PYTHON-SEMANTICS-MACROS
 
   rule [ E Comp ] => ref("list")(generator(E Comp)) [macro, anywhere]
   rule { E Comp } => ref("set")(generator(E Comp)) [macro, anywhere]
-  rule { E : E2 Comp } => ref("dict")(generator(tuple(E, E2) Comp)) [macro, anywhere]
+  rule { E : E2 Comp } => ref("dict")(generator(tuple(E, E2, .Expressions) Comp)) [macro, anywhere]
 
 endmodule

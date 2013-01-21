@@ -297,13 +297,14 @@ module PYTHON-SEMANTICS-COMMON
 
   context list(.) ~> iterate(HOLE,_)
 
-  rule iterate(O, K) => try: (list(.) ~> iterate(ref("iter") (O, .Arguments), K)) except ref("TypeError") : test(K ==K ., raise, K) else: pass
+  rule iterate(O:Object, K) => try: (list(.) ~> iterate(ref("iter") (O, .Arguments), K)) except ref("TypeError") : test(K ==K ., raise, K) else: pass
   rule list(L:List) ~> iterate(O:Object, K) => try: addItem(getmember(O, "__next__", true, false, false) (.Arguments)) except ref("StopIteration") : list(L) else: (list(L) ~> iterate(O, K))
   rule (addItem(O:Object) => .) ~> popx ~> list(_ (. => ListItem(O)))
   rule Lbl:KLabel(Kl:KList) ~> setx(K2)  => setx(K2) ~> Lbl(Kl) when isKResult(Lbl(Kl))
   rule Lbl:KLabel(Kl:KList) ~> popx => popx ~> Lbl(Kl) when isKResult(Lbl(Kl))
 
   rule <k> mapping(O, K) => iterate(getmember(O, "keys", true, false, false) (.Arguments) -> K, raiseInternal("TypeError", "o.keys() are not iterable")) ~> map(.) ~> mapping(O, K) ...</k>
+  rule <k> iterate(.Obj, _) ~> map(.) ~> mapping(_, _) => .Obj ...</k>
   rule <k> list((ListItem(O2:Object) => .) _) ~> (. => addPair(O2, (O [ O2 ]))) ~> map(_) ~> mapping(O,_) ...</k>
   rule <k> list(_) ~> (addPair(O:Object, O2:Object) => .) ~> map(_ (. => O |-> O2)) ...</k>
   rule <k> (list(.) => .) ~> map(_) ~> (mapping(_,_) => .) ...</k>
