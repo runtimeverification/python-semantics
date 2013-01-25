@@ -13,6 +13,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
              | "incref" "(" ObjId "," Int ")"
              | "genv" "(" String "," String ")"
              | "module" K "(" Expression ")" [strict(2)]
+             | "struct" K "(" Expressions ")"
 
   syntax ListItem ::= "refs" "(" List ")"
 
@@ -150,5 +151,23 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        ...</object>)
        <symbols>... (. => S |-> N) ...</symbols>
        <builtinModules>... (. => S |-> N) ...</builtinModules> [allocation]
+
+  rule <k> (. => incref(N, 3)) ~> struct (S:String => N)(K) ...</k>
+       <nextLoc> N => N +Int 1 </nextLoc>
+       (. => <object>...
+         <id>N</id>
+         <oattrs> "__class__" |-> ref("type") "__bases__" |-> list(ListItem(ref("tuple"))) "__order__" |-> list(.List) "__name__" |-> S "__mro__" |-> . </oattrs>
+         <oenv> "__new__" |-> ref("new_structseq") </oenv>
+       ...</object>)
+       <symbols>... (. => S |-> N) ...</symbols> [allocation]
+
+  rule <k> (. => object S +String "_structseq"("attribute", ., ., "__get__" |-> "__value__"[lengthList L])) ~> struct N:Int((S:String , K) => K) ...</k>
+       <object>...
+         <id>N</id>
+         <oattrs>... "__order__" |-> list(L (. => ListItem(S))) ...</oattrs>
+         <oenv>... . => S |-> ref(S +String "_structseq") ...</oenv>
+       ...</object>
+
+  rule struct _(.Expressions) => .
 
 endmodule

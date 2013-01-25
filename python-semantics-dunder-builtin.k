@@ -333,6 +333,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ., .) ~>
          object "cell_contents" ("attribute",.,., "__get__" |-> "cell_contents") ~>
          (def "sys_exc_info" (0, 0, false) ;) ~>
+         (def "new_structseq" (2, 2, false) ;) ~>
+         struct "sys.hash_info"("width", "modulus", "inf", "nan", "imag") ~>
+         struct "sys.version_info"("major", "minor", "micro", "releaselevel", "serial") ~>
+         struct "sys.implementation"("name", "version", "hexversion", "cache_tag") ~>
          (def "imp_acquire_lock" (0, 0, false) ;) ~>
          (def "imp_release_lock" (0, 0, false) ;) ~>
          (def "imp_is_builtin" (1, 1, false) ;) ~>
@@ -427,12 +431,15 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          }) ~>
          module "sys"({
            "exc_info" : ref("sys_exc_info")
-         , "hash_info" : tuple(N1, N2, N3, N4, N5, .Expressions)
+         , "hash_info" : ref("sys.hash_info")(tuple(N1, N2, N3, N4, N5, .Expressions))
+         , "hexversion": 50528496
+         , "implementation" : ref("sys.implementation")(tuple("kpython", ref("sys.version_info")(tuple(1, 0, 0, "alpha", 1, .Expressions)), 16777377 /* 0x010000A1 */, ref("None")))
          , "meta_path": [.Expressions]
          , "modules" : {.KeyData}
          , "path" : [DeListify(L)]
          , "path_hooks" : [.Expressions]
          , "path_importer_cache" : {.KeyData}
+         , "version_info" : ref("sys.version_info")(tuple(3, 3, 0, "final", 0, .Expressions))
          , .KeyData
          })
        ) ...</k>

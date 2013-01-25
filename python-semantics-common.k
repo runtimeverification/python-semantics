@@ -203,8 +203,9 @@ module PYTHON-SEMANTICS-COMMON
   syntax List ::= "getl" "(" K ")" [function]
   rule getl(list(L)) => L [function, anywhere]
 
-  syntax K ::= "getattr" "(" Expression "," String ")" [function]
+  syntax K ::= "getattr" "(" Expression "," K ")" [function]
   rule getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs:Map(S) [function, anywhere]
+  rule getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String[I:Int]) => get(getl(Attrs(S)), I)
 
   syntax K ::= "getattr2" "(" Expression "," String ")" [strict(1)]
   rule getattr2(O:Object, S:String) => getattr(O, S)

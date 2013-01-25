@@ -138,4 +138,10 @@ module PYTHON-SEMANTICS-LITERALS
        <literals> Literals:Map (. => pair(M, B) |-> ref(N)) </literals>
        <nextLoc> N => N +Int 1 </nextLoc> when notBool(pair(M, B) in keys(Literals)) [allocation]
 
+  rule invokeBuiltin(obj("new_structseq",_), ListItem(Type) ListItem(Sequence), .) => iterate(Sequence, raiseInternal("TypeError", "constructor requires a sequence")) ~> makeStructSeq(Type)
+
+  syntax K ::= makeStructSeq(Object)
+
+  rule list(L) ~> makeStructSeq(Type) => test(lengthList L =/=Int lengthList getl(getattr(Type, "__order__")), raiseInternal("TypeError", getattr(Type, "__name__") +String "takes a " +String Int2String(lengthList getl(getattr(Type, "__order__"))) +String "-sequence (" +String Int2String(lengthList L) +String "-sequence given)"), mutable(list(Refify(Idify(L))), Type))
+
 endmodule
