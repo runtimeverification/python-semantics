@@ -152,6 +152,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ,.) ~> 
          (def "len" (1, 1, false) ;) ~>
          object "list"("type",ListItem("object"),
+           "__add__" |-> def "add_list" (1, 1, true)
            "__eq__" |-> def "eq_list" (1, 1,  true)
            "__init__" |-> def "init_list" (0, 1, true)
            "__iter__" |-> def "get_iter" (0, 0, true)
@@ -213,6 +214,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ,.) ~>
          object "str"("type",ListItem("object"),
            "rpartition" |-> def "rpartition_str"(1, 1, true)
+           "rsplit" |-> def "rsplit_str"(0, 2, true)
            "__add__" |-> def "add_str" (1, 1, true)
            "__eq__" |-> def "eq_str" (1, 1, true)
            "__hash__" |-> def "hash_str" (0, 0, true)
