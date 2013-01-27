@@ -145,6 +145,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            //TODO: bit_length, conjugate, denominator, from_bytes, imag,
            //        numerator, real, to_bytes
            ,.) ~>
+         (def "isinstance" (2, 2, false) ;) ~>
+         (def "issubclass" (2, 2, false) ;) ~>
          (def "iter" (1, 2, false) ;) ~>
          object "iterator"("type",ListItem("object"),
            "__iter__" |-> def "iter_iter" (0, 0, true)
@@ -179,6 +181,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__ne__" |-> def "ne_object" (1, 1, true)
            "__new__" |-> def "new_object" (1, -1, false)
            "__setattr__" |-> def "setattr_object"(2, 2, true)
+           "__subclasshook__" |-> def "subclasshook_object"(0, -1, false)
            ,.) ~>
          object "__class__" ("attribute",.,., "__get__" |-> "__class__") ~>
          (def "ord" (1, 1, false) ;) ~>
@@ -236,11 +239,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__bases__" |-> ref("__bases__")
            "__call__" |-> def "call_type" (0, -1, true)
            "__getattribute__" |-> def "getattribute_type" (1, 1, true)
+           "__instancecheck__" |-> def "instancecheck_type" (1, 1, true)
            "__mro__" |-> ref("__mro__")
            "__name__" |-> ref("__name__type")
            "__new__" |-> def "new_type"(2, 4, false)
            "__prepare__" |-> def "prepare_type"(0, -1, false)
            "__setattr__" |-> def "setattr_type"(2, 2, true)
+           "__subclasscheck__" |-> def "subclasscheck_type"(1, 1, true)
            ,.) ~>
          object "__name__type" ("attribute",.,., "__get__" |-> "__name__") ~>
          object "__bases__" ("attribute",.,., "__get__" |-> "__bases__") ~>
@@ -385,6 +390,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "dict" : ref("dict")
          , "hash" : ref("hash")
          , "int" : ref("int")
+         , "isinstance" : ref("isinstance")
+         , "issubclass" : ref("issubclass")
          , "iter" : ref("iter")
          , "float" : ref("float")
          , "getattr" : ref("getattr")

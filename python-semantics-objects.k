@@ -56,4 +56,11 @@ module PYTHON-SEMANTICS-OBJECTS
   rule invokeBuiltin(obj("setattr_object",_), ListItem(O) ListItem(Name) ListItem(Value), .) => test(istype(O, ref("type")), raiseInternal("TypeError", "can't apply this __setattr__ to type object"), setmember(O, Name, Value))
   rule invokeBuiltin(obj("setattr_type",_), ListItem(Type) ListItem(Name) ListItem(Value), .) => setmember(Type, Name, Value)
 
+  rule invokeBuiltin(obj("subclasshook_object",_), L:List, .) => ref("NotImplemented")
+  rule invokeBuiltin(obj("instancecheck_type",_), ListItem(Self) ListItem(Instance), .) => bool(istype(Instance, Self))
+  rule invokeBuiltin(obj("subclasscheck_type",_), ListItem(Self) ListItem(Subclass), .) => bool(hasbase(Subclass, Self))
+
+  rule invokeBuiltin(obj("isinstance",_), ListItem(Instance) ListItem(Class), .) => getmember(Class, "__instancecheck__", true, false, true)(Instance, .Arguments)
+  rule invokeBuiltin(obj("issubclass",_), ListItem(Subclass) ListItem(Class), .) => getmember(Class, "__subclasscheck__", true, false, true)(Subclass, .Arguments) 
+
 endmodule
