@@ -87,6 +87,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__lt__" |-> def "lt_float" (1, 1, true)
            "__ne__" |-> def "ne_float" (1, 1, true)
            ,.) ~>
+         (def "format" (1, 2, false) ;) ~>
          (def "getattr" (2, 3, false) ;) ~>
          (def "globals" (0, 0, false) ;) ~>
 	 (def "hasattr" (2, 2, false) ;) ~>
@@ -177,6 +178,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__class__" |-> ref("__class__")
            "__getattribute__" |-> def "getattribute_object" (1, 1, true)
            "__eq__" |-> def "eq_object" (1, 1, true)
+           "__format__" |-> def "format_object" (1, 1, true)
            "__init__" |-> def "init_object" (0, -1, true)
            "__ne__" |-> def "ne_object" (1, 1, true)
            "__new__" |-> def "new_object" (1, -1, false)
@@ -216,10 +218,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "new_staticmethod"(2, 2, false)
            ,.) ~>
          object "str"("type",ListItem("object"),
+           "format" |-> def "format_str"(0, -1, true)
            "rpartition" |-> def "rpartition_str"(1, 1, true)
            "rsplit" |-> def "rsplit_str"(0, 2, true)
            "__add__" |-> def "add_str" (1, 1, true)
            "__eq__" |-> def "eq_str" (1, 1, true)
+           "__format__" |-> def "__format___str"(1, 1, true)
            "__hash__" |-> def "hash_str" (0, 0, true)
            "__ne__" |-> def "ne_str" (1, 1, true)
            ,.) ~>
@@ -394,6 +398,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "issubclass" : ref("issubclass")
          , "iter" : ref("iter")
          , "float" : ref("float")
+         , "format" : ref("format")
          , "getattr" : ref("getattr")
          , "hasattr" : ref("hasattr")
          , "len" : ref("len")
