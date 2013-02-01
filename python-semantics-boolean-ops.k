@@ -3,13 +3,14 @@ require "python-semantics-ops.k"
 module PYTHON-SEMANTICS-BOOLEAN-OPS
   imports PYTHON-SEMANTICS-OPS
 
-  syntax ObjRef ::= "bool" "(" K ")" [strict]
-                  | "coerceBoolean" "(" Expression "," Expression "," Expression "," Expression "," String ")" [strict(1, 2)]
-                  | "len" "(" Expression ")" [strict]
-                  | "checkBool" "(" Expression ")" [strict]
-                  | "checkInt" "(" Expression ")" [strict]
-                  | "checkLen" "(" Expression ")" [strict]
-                  | "contains" "(" K "," Expression ")" [strict]
+  syntax ObjRef ::= bool(K) [strict]
+                  | coerceBoolean(Expression, Expression, Expression, Expression, String) [strict(1, 2)]
+                  | len(Expression) [strict]
+                  | checkBool(Expression) [strict]
+                  | checkInt(Expression) [strict]
+                  | checkLen(Expression) [strict]
+                  | contains(K, Expression) [strict]
+                  | index(Expression) [strict]
 
   rule bool(true) => ref("True")
   rule bool(false) => ref("False")
@@ -21,7 +22,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule invokeBuiltin(obj("new_bool",_), ListItem(O), .) => newHelper(O, ref("bool"), .) ~> ref("False")
   rule invokeBuiltin(obj("new_bool",_), ListItem(O:Object) ListItem(O2:Object), .) => newHelper(O, ref("bool"), .) ~> bool(O2)
 
-  rule len(O) => checkLen(ref("index")(getmember(O, "__len__", true, false, false) (.Arguments)))
+  rule len(O) => checkLen(index(getmember(O, "__len__", true, false, false) (.Arguments)))
   rule checkLen(O:Object) => test(intvalue(O) >=Int 0, O, raiseInternal("ValueError", "__len__() should return >= 0"))
   rule checkLen(.Obj) => .Obj
   rule invokeBuiltin(obj("len",_), ListItem(O), .) => len(O) -> raiseInternal("TypeError", "object has no len()")

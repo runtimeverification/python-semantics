@@ -11,7 +11,6 @@ module PYTHON-SEMANTICS-SLICING
                   | "indices3" "(" Int "," Int "," Int "," Int ")"
                   | "indices4" "(" Int "," Int "," Int "," Int ")"
                   | "indices5" "(" Int "," Int "," Int ")"
-                  | "index" "(" Expression ")" [strict]
                   | "checkIndex" "(" Expression ")" [strict]
                   | "iters" "(" List ")"
                   | "makeMap" "(" Expression "," Expression "," List ")" [strict(1, 2)]
@@ -49,7 +48,8 @@ module PYTHON-SEMANTICS-SLICING
          <oattrs>... "current" |-> (Current:Int => Current +Int Step) "stop" |-> Stop "step" |-> Step ...</oattrs>
        ...</object>
 
-  rule index(O) => checkIndex(getmember(O, "__index__", true, false, false) (.Arguments))
+  rule index(O:Object) => checkIndex(getmember(O, "__index__", true, false, false) (.Arguments))
+  rule index(.Obj) => .Obj
   rule checkIndex(O:Object) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__index__ returned non-int"))
   rule checkIndex(.Obj) => .Obj
   rule invokeBuiltin(obj("index",_), ListItem(O), .) => index(O) -> raiseInternal("TypeError", "object cannot be interpreted as an integer")
