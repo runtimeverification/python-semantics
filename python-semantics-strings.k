@@ -34,6 +34,8 @@ module PYTHON-SEMANTICS-STRINGS
 
   rule invokeBuiltin(obj("ord",_), ListItem(O), .) => test(istype(O, ref("str")), test(length(strvalue(O), UTF-8) =/=Int 1, raiseInternal("TypeError", "ord() expected a character, but string of length " +String Int2String(length(strvalue(O), UTF-8)) +String " found"), codePoint(strvalue(O), UTF-8, 0)), raiseInternal("TypeError", "ord() expected string of length 1"))
 
+  rule invokeBuiltin(obj("len_str",_), ListItem(O), .) => length(strvalue(O), UTF-8)
+
   rule invokeBuiltin(obj("rsplit_str",_), ListItem(O), .) => ref("rsplit_str")(O, ref("None"), -1, .Arguments)
   rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep), .) => ref("rsplit_str")(O, Sep, -1, .Arguments)
   rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep) ListItem(MaxSplit), .) => if Sep is ref("None") : rsplit(strvalue(O), ref("index")(MaxSplit, .Arguments)) else: test(istype(Sep, ref("str")), rsplit(strvalue(O), ref("index")(MaxSplit, .Arguments), strvalue(Sep)), raiseInternal("TypeError", "Cannot convert object to str implicitly"))

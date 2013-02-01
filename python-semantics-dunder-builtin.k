@@ -225,6 +225,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__eq__" |-> def "eq_str" (1, 1, true)
            "__format__" |-> def "__format___str"(1, 1, true)
            "__hash__" |-> def "hash_str" (0, 0, true)
+           "__len__" |-> def "len_str"(0, 0, true)
            "__ne__" |-> def "ne_str" (1, 1, true)
            ,.) ~>
          object "tuple"("type",ListItem("object"),
