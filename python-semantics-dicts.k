@@ -57,6 +57,7 @@ module PYTHON-SEMANTICS-DICTS
 
   rule invokeBuiltin(obj("getitem_dict",_), ListItem(obj(B,_)) ListItem(Key:Object), .) => ref("hash")(Key) ~> tableLookup(B, 0, Key)
   rule (O:Object => .) ~> tableLookup(_,(_ => intvalue(O)),_)
+  rule (O:Object => .) ~> tableLookup(_,(_ => intvalue(O)),_) ;
 
   rule invokeBuiltin(obj("setitem_dict",_), ListItem(O) ListItem(Key) ListItem(Value:Object), .) => processDict(O, Key |-> Value) ; ~> ref("None") 
 
@@ -85,5 +86,7 @@ module PYTHON-SEMANTICS-DICTS
   syntax ObjRef ::= equalDict(Map, Expression) [strict(2)]
   rule equalDict(Key |-> Value M, Dict) => Key in Dict and Dict[Key] == Value and equalDict(M, Dict)
   rule equalDict(.Map, _) => ref("True")
+
+  rule invokeBuiltin(obj("contains_dict",_), ListItem(Dict) ListItem(Key:Object), .) => try: (ref("hash")(Key) ~> tableLookup(id(Dict), 0, Key) ; ~> ref("True")) except ref("KeyError"): ref("False") else: pass
 
 endmodule

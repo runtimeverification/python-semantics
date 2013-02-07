@@ -68,6 +68,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "dict"("type",ListItem("object"),
            "keys" |-> def "keys_dict" (0, 0, true)
            "update" |-> ref("init_dict")
+           "__contains__" |-> def "contains_dict" (1, 1, true)
            "__delitem__" |-> def "delitem_dict" (1, 1, true)
            "__eq__" |-> def "eq_dict" (1, 1, true)
            "__getitem__" |-> def "getitem_dict" (1, 1, true)
