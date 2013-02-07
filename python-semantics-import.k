@@ -13,10 +13,9 @@ module PYTHON-SEMANTICS-IMPORT
 
   // importlib
 
-  rule importlib => doImportlib({.KeyData}) ~> ref("builtins") . String2Id("__import__"), .Expressions := ref("__import__")
-  rule <k> doImportlib(Dict:Object) => Dict["path_sep"], .Expressions := pathSeparator(OS) ~> bootstrap(Dict, SetItem("_imp") SetItem("sys")) ~> executeModule(codeObject(String2Id("importlib._bootstrap"), .Parameters, Importlib, true), ref("builtins"), Dict) ~> makeSymbol("__import__", Dict["__import__"]) ...</k>
+  rule importlib => doImportlib({.KeyData})
+  rule <k> doImportlib(Dict:Object) => executeModule(codeObject(String2Id("importlib._bootstrap"), .Parameters, Importlib, true), ref("builtins"), Dict) ~> Dict["_install"](ref("sys"), ref("_imp"), .Arguments) ~> ref("builtins") . String2Id("__import__"), .Expressions := Dict["__import__"] ...</k>
        <importlib> Importlib </importlib>
-       <os> OS </os>
 
   rule (. => Dict[S], .Expressions := ref(S)) ~> bootstrap(Dict, (SetItem(S) => .) _)
   rule bootstrap(_, .) => .
@@ -26,9 +25,10 @@ module PYTHON-SEMANTICS-IMPORT
 
   rule invokeBuiltin(obj("imp_acquire_lock",_), ., .) => ref("None")
   rule invokeBuiltin(obj("imp_release_lock",_), ., .) => ref("None")
+  rule invokeBuiltin(obj("imp_extension_suffixes",_), ., .) => [.Expressions]
   rule <k> invokeBuiltin(obj("imp_is_builtin",_), ListItem(O), .) => test(istype(O, ref("str")), bool(strvalue(O) in keys(M)), raiseInternal("TypeError", "must be str")) ...</k>
        <builtinModules> M </builtinModules>
-  rule <k> invokeBuiltin(obj("imp_init_builtin",_), ListItem(O), .) => test(istype(O, ref("str")), test(strvalue(O) in keys(M), ref(M(strvalue(O))), ref("None")), raiseInternal("TypeError", "must be str"))  ...</k>
+  rule <k> invokeBuiltin(obj("imp_init_builtin",_), ListItem(O), .) => test(istype(O, ref("str")), test(strvalue(O) in keys(M), ref("sys") . String2Id("modules")[strvalue(O)], .Expressions := ref(M(strvalue(O))) ~> ref(M(strvalue(O))), ref("None")), raiseInternal("TypeError", "must be str"))  ...</k>
        <builtinModules> M </builtinModules>
   rule invokeBuiltin(obj("imp_is_frozen",_), ListItem(O), .) => test(istype(O, ref("str")), ref("False"), raiseInternal("TypeError", "must be str"))
   rule invokeBuiltin(obj("imp_init_frozen",_), ListItem(O), .) => test(istype(O, ref("str")), ref("None"), raiseInternal("TypeError", "must be str"))

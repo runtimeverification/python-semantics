@@ -6,9 +6,10 @@ PYTHON_LIB=$PYTHON_PREFIX/lib/python3.3
 IMPORTLIB=fake-importlib.py
 SIXTYFOUR_BIT="ListItem(64) ListItem(2305843009213693951) ListItem(314159) ListItem(0) ListItem(1000003) ListItem(3430008) ListItem(82520) ListItem(97531)"
 DEBUG=true
+VERBOSE=false
 HASHINFO=$SIXTYFOUR_BIT
 OS=POSIX
 GC_THRESHOLD=100
 SYS_PATH="ListItem(\"\") ListItem(\"$PYTHON_LIB\")"
 HASHSEED=1
-krun --parser "./parser" --output-mode raw -cHASHINFO="$HASHINFO" -cDEBUG="$DEBUG" -cOS="$OS" -cGCTHRESHOLD="$GC_THRESHOLD" -cSYSPATH="$SYS_PATH" -cHASHSEED="$HASHSEED" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" "$@"
+krun --parser "./parser" --output-mode raw -cHASHINFO="$HASHINFO" -cDEBUG="$DEBUG" -cVERBOSE="$VERBOSE" -cOS="$OS" -cGCTHRESHOLD="$GC_THRESHOLD" -cSYSPATH="$SYS_PATH" -cHASHSEED="$HASHSEED" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" "$@"

@@ -42,6 +42,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "UnboundLocalError"("type",ListItem("NameError"),.,.) ~>
          object "ValueError"("type",ListItem("Exception"),.,.) ~>
          object "ZeroDivisionError"("type", ListItem("ArithmeticError"),.,.) ~>
+         (def "all"(1, 1, false) ;) ~>
          object "bool"("type",ListItem("int"),
            "__new__" |-> def "new_bool" (1, 2, false)
            ,.) ~>
@@ -346,17 +347,19 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "cell_contents" ("attribute",.,., "__get__" |-> "cell_contents") ~>
          (def "sys_exc_info" (0, 0, false) ;) ~>
          (def "new_structseq" (2, 2, false) ;) ~>
+         struct "sys.flags"("optimize","verbose") ~>
          struct "sys.hash_info"("width", "modulus", "inf", "nan", "imag") ~>
          struct "sys.version_info"("major", "minor", "micro", "releaselevel", "serial") ~>
          struct "sys.implementation"("name", "version", "hexversion", "cache_tag") ~>
          (def "imp_acquire_lock" (0, 0, false) ;) ~>
-         (def "imp_release_lock" (0, 0, false) ;) ~>
-         (def "imp_is_builtin" (1, 1, false) ;) ~>
+         (def "imp_extension_suffixes" (0, 0, false) ;) ~>
          (def "imp_init_builtin" (1, 1, false) ;) ~>
-         (def "imp_is_frozen" (1, 1, false) ;) ~>
          (def "imp_init_frozen" (1, 1, false) ;) ~>
+         (def "imp_is_builtin" (1, 1, false) ;) ~>
+         (def "imp_is_frozen" (1, 1, false) ;) ~>
          (def "imp_is_frozen_package" (1, 1, false) ;) ~>
-         (def "imp_get_frozen_object" (1, 1, false) ;)
+         (def "imp_get_frozen_object" (1, 1, false) ;) ~>
+         (def "imp_release_lock" (0, 0, false) ;) 
        )
        ...</k>
 
@@ -364,7 +367,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
 
          // module declarations
          module "_io"({.KeyData}) ~>
-         module "_os"({.KeyData}) ~>
+         module "posix"({.KeyData}) ~>
          module "_warnings"({.KeyData}) ~>
          module "builtins"({
            "AssertionError" : ref("AssertionError")
@@ -386,8 +389,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "TypeError" : ref("TypeError")
          , "UnboundLocalError" : ref("UnboundLocalError")
          , "ValueError" : ref("ValueError")
-         , "__debug__" : #if T #then ref("True") #else ref("False") #fi
+         , "__debug__" : #if Debug #then ref("True") #else ref("False") #fi
          , "__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."
+         , "all" : ref("all")
          , "bool" : ref("bool")
          , "bytes" : ref("bytes")
          , "classmethod" : ref("classmethod")
@@ -415,19 +419,18 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "str" : ref("str")
          , "tuple" : ref("tuple")
          , "type" : ref("type")
-         , .KeyData
          }) ~>
          module "errno"({.KeyData}) ~>
          module "_imp"({
            "acquire_lock" : ref("imp_acquire_lock")
-         , "release_lock" : ref("imp_release_lock")
-         , "is_builtin" : ref("imp_is_builtin")
+         , "extension_suffixes" : ref("imp_extension_suffixes")
          , "init_builtin" : ref("imp_init_builtin")
-         , "is_frozen" : ref("imp_is_frozen")
          , "init_frozen" : ref("imp_init_frozen")
+         , "is_builtin" : ref("imp_is_builtin")
+         , "is_frozen" : ref("imp_is_frozen")
          , "is_frozen_package" : ref("imp_is_frozen_package")
          , "get_frozen_object" : ref("imp_get_frozen_object")
-         , .KeyData
+         , "release_lock" : ref("imp_release_lock")
          }) ~>
          module "marshal"({.KeyData}) ~>
          module "types"({
@@ -442,10 +445,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "MethodType" : ref("method")
          , "ModuleType" : ref("module")
          , "TracebackType" : ref("traceback")
-         , .KeyData
          }) ~>
          module "sys"({
            "exc_info" : ref("sys_exc_info")
+         , "flags": ref("sys.flags")(tuple(#if Debug #then 0 #else 1 #fi, #if Verbose #then 1 #else 0 #fi, .Expressions))
          , "hash_info" : ref("sys.hash_info")(tuple(N1, N2, N3, N4, N5, .Expressions))
          , "hexversion": 50528496
          , "implementation" : ref("sys.implementation")(tuple("kpython", ref("sys.version_info")(tuple(1, 0, 0, "alpha", 1, .Expressions)), 16777377 /* 0x010000A1 */, ref("None")))
@@ -455,10 +458,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "path_hooks" : [.Expressions]
          , "path_importer_cache" : {.KeyData}
          , "version_info" : ref("sys.version_info")(tuple(3, 3, 0, "final", 0, .Expressions))
-         , .KeyData
          })
        ) ...</k>
-       <debug> T:Bool </debug>
+       <debug> ListItem(Debug:Bool) ListItem(Verbose:Bool) </debug>
        <hashInfo> ListItem(N1:Int) ListItem(N2:Int) ListItem(N3:Int) ListItem(N4:Int) ListItem(N5:Int) ...</hashInfo>
        <sysPath> L:List </sysPath>
 

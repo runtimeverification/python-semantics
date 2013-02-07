@@ -32,7 +32,7 @@ module PYTHON-SEMANTICS-COMMON
                   <references> .Map </references>
                   <bootstrapping> 3 </bootstrapping>
                   <nextLoc> 1 </nextLoc>
-                  <debug> $DEBUG:Bool </debug>
+                  <debug> ListItem($DEBUG:Bool) ListItem($VERBOSE:Bool) </debug>
                   <hashInfo> $HASHINFO:List </hashInfo>
                   <hashSeed> $HASHSEED:Int </hashSeed>
                   <sysPath> $SYSPATH:List </sysPath>
@@ -64,7 +64,8 @@ module PYTHON-SEMANTICS-COMMON
   syntax Test ::= "istype" "(" Expression "," Expression ")" [strict]
                 | "hasbase" "(" K "," Expression ")" [strict]
 
-  syntax ObjRef ::= "ref" "(" K ")"
+  // TODO: figure out why the good goddamn fuck it is that if I make ref(K) of sort ObjRef then parsing dicts takes exponential time.
+  syntax Expression ::= ref(K)
                   | "builtin" "(" Id ")"
                   | "gettype" "(" Expression ")"
                   | "getbases" "(" Expression ")"

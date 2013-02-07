@@ -1,5 +1,6 @@
 require "python-semantics-common.k"
 
+
 module PYTHON-SEMANTICS-BUILTIN-MODULES
   imports PYTHON-SEMANTICS-COMMON
 
@@ -7,13 +8,14 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
              | "resolve"
              | "modules"
              | "importlib"
-             | "object" K "(" K "," List "," Map "," Map ")"
-             | "def" String "(" Int "," Int "," Bool ")"
+             | "object" ObjId "(" String "," List "," Map "," Map ")"
              | "incref" "(" List "," Int ")"
              | "incref" "(" ObjId "," Int ")"
              | "genv" "(" String "," String ")"
-             | "module" K "(" Expression ")" [strict(2)]
-             | "struct" K "(" Expressions ")"
+             | "module" ObjId "(" Expression ")" [strict(2)]
+             | "struct" ObjId "(" Expressions ")"
+
+  syntax ObjRef ::= "def" String "(" Int "," Int "," Bool ")"
 
   syntax ListItem ::= "refs" "(" List ")"
 
