@@ -14,7 +14,7 @@ module PYTHON-SEMANTICS-IMPORT
   // importlib
 
   rule importlib => doImportlib({.KeyData})
-  rule <k> doImportlib(Dict:Object) => executeModule(codeObject(String2Id("importlib._bootstrap"), .Parameters, Importlib, true), ref("builtins"), Dict) ~> Dict["_install"](ref("sys"), ref("_imp"), .Arguments) ~> ref("builtins") . String2Id("__import__"), .Expressions := Dict["__import__"] ...</k>
+  rule <k> doImportlib(Dict:Object) => executeModule(codeObject(String2Id("importlib._bootstrap"), .Parameters, Importlib, true), ref("builtins"), Dict) ~> Dict["_install"](ref("sys"), ref("_imp"), .Arguments) ; ~> ref("builtins") . String2Id("__import__"), .Expressions := Dict["__import__"] ...</k>
        <importlib> Importlib </importlib>
 
   rule (. => Dict[S], .Expressions := ref(S)) ~> bootstrap(Dict, (SetItem(S) => .) _)
