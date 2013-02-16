@@ -5,7 +5,7 @@ module PYTHON-SEMANTICS-CALLS
 
   syntax K ::= "processArgs" "(" List "," Map "," Expression "," Expression ")" [strict(3, 4)]
              | "sortArgs" "(" List ")"
-             | "matchArgs" "(" Expression "," Expression "," List "," Map "," Map "," Int ")" [strict(1, 2)]
+             | "matchArgs" "(" Expression "," Expression "," List "," Map "," Map "," Int "," Bool "," Bool ")" [strict(1, 2)]
              | "addArg" "(" Expression "," Expression ")" [strict]
              | "addKwArg" "(" String "," Expression "," Expression ")" [strict(2)]
              | "addDefaults" "(" Int "," Expression ")" [strict(2)]
@@ -18,7 +18,7 @@ module PYTHON-SEMANTICS-CALLS
 
   rule <k> obj(S:String,ObjState:Bag) (Args:K) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeBuiltin(obj(S,ObjState), ., .) ...</k> when isKResult(Args)
   rule <k> invokeBuiltin(obj("call_function",_), ListItem(O:Object) L:List, M:Map) => invokeFunction(O, L, M) ...</k>
-  rule <k> invokeFunction(O, L, M) => matchArgs(O, O . String2Id("__code__"), L, M, ., 0) ...</k>
+  rule <k> invokeFunction(O, L, M) => matchArgs(O, O . String2Id("__code__"), L, M, ., 0, false, false) ...</k>
 
   rule isKResult(_ = K) => true when isKResult(K) [function, anywhere]
 
@@ -37,41 +37,43 @@ module PYTHON-SEMANTICS-CALLS
   rule (processArgs(L, M:Map, .Obj, .Obj) => .) ~> invokeBuiltin(_, (. => L), (. => M))
 
   //process positional arguments
-  rule (. => addArg(Code . String2Id("co_varnames") [N:Int], O)) ~> matchArgs(_, Code:Object, (ListItem(O) => .) _, _, _, (N => N +Int 1)) when N <Int getattr(Code, "co_argcount")
+  rule (. => addArg(Code . String2Id("co_varnames") [N:Int], O)) ~> matchArgs(_, Code:Object, (ListItem(O) => .) _, _, _, (N => N +Int 1), _, _) when N <Int getattr(Code, "co_argcount")
 
   //leftover positional arguments get stored in vararg
-  rule (. => addArg(Code . String2Id("co_varnames") [getattr(Code, "co_argcount") +Int getattr(Code, "co_kwonlyargcount")], tuple(DeListify(L:List)))) ~> matchArgs(_, Code:Object, (L => .), _, _, N) when N >=Int getattr(Code, "co_argcount") andBool (getattr(Code, "co_flags") &Int 4) =/=Int 0 andBool L =/=List .
+  rule (. => addArg(Code . String2Id("co_varnames") [getattr(Code, "co_argcount") +Int getattr(Code, "co_kwonlyargcount")], tuple(DeListify(L:List)))) ~> matchArgs(_, Code:Object, (L => .), _, _, N, (false => true), _) when N >=Int getattr(Code, "co_argcount") andBool (getattr(Code, "co_flags") &Int 4) =/=Int 0
 
-  rule (addArg(O:Object, O2:Object) => .) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _)
-  rule (addArg(O:Object, O2:Object) => .) ~> addKwArg(_,_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _)
-  rule (addArg(O:Object, O2:Object) => .) ~> addDefaults(_,_) ~> addKwDefaults(_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _)
-  rule (addArg(O:Object, O2:Object) => .) ~> addKwDefaults(_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _)
+  rule (addArg(O:Object, O2:Object) => .) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _, _, _)
+  rule (addArg(O:Object, O2:Object) => .) ~> addKwArg(_,_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _, _, _)
+  rule (addArg(O:Object, O2:Object) => .) ~> addDefaults(_,_) ~> addKwDefaults(_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _, _, _)
+  rule (addArg(O:Object, O2:Object) => .) ~> addKwDefaults(_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _, _, _)
 
   // if there is no vararg, leftover positional arguments raise TypeError
-  rule matchArgs(Function:Object, Code:Object, ListItem(_) L, _, _, N) => raiseInternal("TypeError", name(Function) + "() takes at most " +String Int2String(getattr(Code, "co_argcount")) +String " positional arguments (" +String Int2String(N +Int lengthList L +Int 1) +String " given)") when N >=Int getattr(Code, "co_argcount") andBool (getattr(Code, "co_flags") &Int 4) ==Int 0
+  rule matchArgs(Function:Object, Code:Object, ListItem(_) L, _, _, N, _, _) => raiseInternal("TypeError", name(Function) + "() takes at most " +String Int2String(getattr(Code, "co_argcount")) +String " positional arguments (" +String Int2String(N +Int lengthList L +Int 1) +String " given)") when N >=Int getattr(Code, "co_argcount") andBool (getattr(Code, "co_flags") &Int 4) ==Int 0
 
   // keyword arguments fill positional and kwonly arguments
-  rule (. => if S in Code . String2Id("co_varnames") [0 : getattr(Code, "co_argcount") +Int getattr(Code, "co_kwonlyargcount") : ] : addArg(S, O) else: addKwArg(S, O, Code . String2Id("co_varnames") [numArgs(Code) -Int 1])) ~> matchArgs(_, Code:Object, ., (S |-> O => .) _, M, _) when notBool(String2Id(S) in keys(M))
+  rule (. => if S in Code . String2Id("co_varnames") [0 : getattr(Code, "co_argcount") +Int getattr(Code, "co_kwonlyargcount") : ] : addArg(S, O) else: addKwArg(S, O, Code . String2Id("co_varnames") [numArgs(Code) -Int 1])) ~> matchArgs(_, Code:Object, ., (S |-> O => .) _, M, _, _, HasKwarg) when notBool(String2Id(S) in keys(M)) andBool (HasKwarg orBool getattr(Code, "co_flags") &Int 8 ==Int 0)
  
   // cannot specify a parameter both positionally and as a keyword
-  rule matchArgs(Function:Object, Code:Object, ., _ S |-> _, _ X |-> _, _) => raiseInternal("TypeError", name(Function) + "() got multiple values for keyword argument '" +String S +String "'") when Id2String(X) ==String S
+  rule matchArgs(Function:Object, Code:Object, ., _ S |-> _, _ X |-> _, _, _, _) => raiseInternal("TypeError", name(Function) + "() got multiple values for keyword argument '" +String S +String "'") when Id2String(X) ==String S
+
+  // create dict for kwargs if present
+  rule (. => addArg(Code . String2Id("co_varnames") [numArgs(Code) -Int 1], {.KeyData})) ~> matchArgs(_, Code:Object, _, _, M, _, _, (false => true)) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
 
   // fill in default value for unspecified parameter
-  rule (. => addDefaults(0, ref("len")(Function . String2Id("__defaults__")) if Function . String2Id("__defaults__") is not ref("None") else 0) ~> addKwDefaults(0, Function . String2Id("__kwdefaults__"))) ~> matchArgs(Function:Object,Code:Object, ., ., M, _) when lengthMap M <Int numArgs(Code)
-  rule (addDefaults(N, _) => .) ~> addKwDefaults(_,_) ~> matchArgs(_,Code:Object, _, _ ,_ ,_) when N ==Int getattr(Code, "co_argcount")
-  rule (. => addDefault(Code . String2Id("co_varnames") [N:Int])) ~> addDefaults(N, O:Object) ~> addKwDefaults(_,_) ~> matchArgs(_,Code:Object, _, _, _, _) when N <Int getattr(Code, "co_argcount")
-  rule addDefault(O:Object) ~> addDefaults(N2:Int, O2) ~> addKwDefaults(_,_) ~> matchArgs(Function:Object, Code:Object, _, _, M, N) => raiseInternal("TypeError", name(Function) + "() takes at least " +String Int2String(getattr(Code, "co_argcount") -Int intvalue(O2)) +String " arguments (" +String Int2String(N) +String " given)") when notBool(String2Id(strvalue(O)) in keys(M)) andBool N2 <Int getattr(Code, "co_argcount") -Int intvalue(O2)
-  rule (addDefault(O:Object) => #if String2Id(strvalue(O)) in keys(M) #then . #else addArg(O, (Function . String2Id("__defaults__") [N -Int getattr(Code, "co_argcount") +Int intvalue(O2)])) #fi) ~> addDefaults((N => N +Int 1), O2) ~> addKwDefaults(_,_) ~> matchArgs(Function:Object, Code:Object, _, _, M, _) when N >=Int getattr(Code, "co_argcount") -Int intvalue(O2) orBool String2Id(strvalue(O)) in keys(M)
-  rule (addKwDefaults(N, _) => .) ~> matchArgs(_, Code:Object, _, _, _, _) when N ==Int getattr(Code, "co_kwonlyargcount")
-  rule (. => addKwDefault(Code . String2Id("co_varnames") [N +Int getattr(Code, "co_argcount")])) ~> addKwDefaults((N => N +Int 1), _:Object)~> matchArgs(_, Code:Object, _, _, _, _) when N <Int getattr(Code, "co_kwonlyargcount")
-  rule (addKwDefault(O:Object) => #if String2Id(strvalue(O)) in keys(M) #then . #else if O in O2 : addArg(O, O2[O]) else: raiseInternal("TypeError", name(Function) + "() needs keyword-only argument " +String strvalue(O)) #fi) ~> addKwDefaults(_, O2) ~> matchArgs(Function:Object, Code:Object, _, _, M, _)
+  rule (. => addDefaults(0, ref("len")(Function . String2Id("__defaults__")) if Function . String2Id("__defaults__") is not ref("None") else 0) ~> addKwDefaults(0, Function . String2Id("__kwdefaults__"))) ~> matchArgs(Function:Object,Code:Object, ., ., M, _, HasVararg, HasKwarg) when lengthMap M <Int numArgs(Code) andBool (HasVararg orBool getattr(Code, "co_flags") &Int 4 ==Int 0) andBool (HasKwarg orBool getattr(Code, "co_flags") &Int 8 ==Int 0)
+  rule (addDefaults(N, _) => .) ~> addKwDefaults(_,_) ~> matchArgs(_,Code:Object, _, _, _, _, _, _) when N ==Int getattr(Code, "co_argcount")
+  rule (. => addDefault(Code . String2Id("co_varnames") [N:Int])) ~> addDefaults(N, O:Object) ~> addKwDefaults(_,_) ~> matchArgs(_,Code:Object, _, _, _, _, _, _) when N <Int getattr(Code, "co_argcount")
+  rule addDefault(O:Object) ~> addDefaults(N2:Int, O2) ~> addKwDefaults(_,_) ~> matchArgs(Function:Object, Code:Object, _, _, M, N, _, _) => raiseInternal("TypeError", name(Function) + "() takes at least " +String Int2String(getattr(Code, "co_argcount") -Int intvalue(O2)) +String " arguments (" +String Int2String(N) +String " given)") when notBool(String2Id(strvalue(O)) in keys(M)) andBool N2 <Int getattr(Code, "co_argcount") -Int intvalue(O2)
+  rule (addDefault(O:Object) => #if String2Id(strvalue(O)) in keys(M) #then . #else addArg(O, (Function . String2Id("__defaults__") [N -Int getattr(Code, "co_argcount") +Int intvalue(O2)])) #fi) ~> addDefaults((N => N +Int 1), O2) ~> addKwDefaults(_,_) ~> matchArgs(Function:Object, Code:Object, _, _, M, _, _, _) when N >=Int getattr(Code, "co_argcount") -Int intvalue(O2) orBool String2Id(strvalue(O)) in keys(M)
+  rule (addKwDefaults(N, _) => .) ~> matchArgs(_, Code:Object, _, _, _, _, _, _) when N ==Int getattr(Code, "co_kwonlyargcount")
+  rule (. => addKwDefault(Code . String2Id("co_varnames") [N +Int getattr(Code, "co_argcount")])) ~> addKwDefaults((N => N +Int 1), _:Object)~> matchArgs(_, Code:Object, _, _, _, _, _, _) when N <Int getattr(Code, "co_kwonlyargcount")
+  rule (addKwDefault(O:Object) => #if String2Id(strvalue(O)) in keys(M) #then . #else if O in O2 : addArg(O, O2[O]) else: raiseInternal("TypeError", name(Function) + "() needs keyword-only argument " +String strvalue(O)) #fi) ~> addKwDefaults(_, O2) ~> matchArgs(Function:Object, Code:Object, _, _, M, _, _, _)
 
-  context addKwArg(S, _, HOLE) ~> matchArgs(_, Code:Object, _, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
-  rule (. => addArg(O, {.KeyData})) ~> addKwArg(S, _, O:Object) ~> matchArgs(_, Code:Object, _, _, M, _) when notBool(String2Id(strvalue(O)) in keys(M)) andBool (getattr(Code, "co_flags") &Int 8) =/=Int 0
-  rule addKwArg(S, _, _) ~> matchArgs(Function:Object, Code:Object, _, _, _, _) => raiseInternal("TypeError", name(Function) + "() got an unexpected keyword argument '" +String S +String "'") when (getattr(Code, "co_flags") &Int 8) ==Int 0
-  rule (addKwArg(S:String, O:Object, O2:Object) => (M:Map(String2Id(strvalue(O2))) [S:String], .Expressions) := O) ~> matchArgs(_, Code:Object, _, _, M, _) when String2Id(strvalue(O2)) in keys(M) andBool (getattr(Code, "co_flags") &Int 8) =/=Int 0
+  context addKwArg(S, _, HOLE) ~> matchArgs(_, Code:Object, _, _, _, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
+  rule addKwArg(S, _, _) ~> matchArgs(Function:Object, Code:Object, _, _, _, _, _, _) => raiseInternal("TypeError", name(Function) + "() got an unexpected keyword argument '" +String S +String "'") when (getattr(Code, "co_flags") &Int 8) ==Int 0
+  rule (addKwArg(S:String, O:Object, O2:Object) => (M:Map(String2Id(strvalue(O2))) [S:String], .Expressions) := O) ~> matchArgs(_, Code:Object, _, _, M, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
 
-  rule <k> matchArgs(obj(B:ObjId,_),Code:Object,.,.,M,_) => invoke(ref(B), M) ...</k> when lengthMap M ==Int numArgs(Code)
+  rule <k> matchArgs(obj(B:ObjId,_),Code:Object,.,.,M,_, HasVararg, HasKwarg) => invoke(ref(B), M) ...</k> when lengthMap M ==Int numArgs(Code) andBool (HasVararg orBool getattr(Code, "co_flags") &Int 4 ==Int 0) andBool (HasKwarg orBool getattr(Code, "co_flags") &Int 8 ==Int 0)
 
   syntax ListItem ::= (K, Bag, Int, List)
   syntax ObjRef ::= makeLocals(Expression, Expression) [strict(1, 2)]
