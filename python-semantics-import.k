@@ -1,11 +1,9 @@
 require "python-semantics-boolean-ops.k"
 require "python-semantics-builtin-modules.k"
-require "python-semantics-os.k"
 
 module PYTHON-SEMANTICS-IMPORT
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
   imports PYTHON-SEMANTICS-BUILTIN-MODULES
-  imports PYTHON-SEMANTICS-OS
 
   syntax K ::= bootstrap(Expression, Set) [strict(1)]
               | makeSymbol(String, Expression) [strict(2)]

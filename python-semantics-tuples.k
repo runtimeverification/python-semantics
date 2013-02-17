@@ -21,15 +21,15 @@ module PYTHON-SEMANTICS-TUPLES
   rule invokeBuiltin(obj("ne_tuple",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "tuple", "tuple", not equalList(listvalue(O), listvalue(O2)))
 
   rule <k> invokeBuiltin(obj("hash_tuple",_), ListItem(O), .) => accumulateTuple(Begin, Mult, listvalue(O)) ...</k>
-       <hashInfo>... ListItem(Mult) ListItem(Begin) ListItem(_) ListItem(_) </hashInfo>
+       <constants>... "sys.hash_info.imag" |-> Mult "tuple.__hash__:begin" |-> Begin ...</constants>
 
   syntax ObjRef ::= accumulateTuple(Int, Int, List)
 
   rule accumulateTuple(Current, Mult, ListItem(ref(B)) L) => ref("hash")(ref(B), .Arguments) ~> accumulateTuple(Current, Mult, ListItem(HOLE) L) [heat]
   rule O ~> accumulateTuple(Current, Mult, ListItem(HOLE) L) => accumulateTuple(Current, Mult, ListItem(intvalue(O)) L) [cool]
   rule <k> accumulateTuple(Current, Mult, ListItem(I:Int) L) => accumulateTuple(mult(Current xorInt I, Mult, Width), Mult +Int Addend +Int lengthList L +Int lengthList L, L) ...</k>
-       <hashInfo> ListItem(Width) _ ListItem(Addend) ListItem(_) </hashInfo>
+       <constants>... "sys.hash_info.width" |-> Width "tuple.__hash__:addend" |-> Addend ...</constants>
   rule <k> accumulateTuple(Current, _, .List) => test(add(Current, End, Width) ==Int -1, -2, add(Current, End, Width)) ...</k>
-       <hashInfo> ListItem(Width) _ ListItem(End) </hashInfo>
+       <constants>... "sys.hash_info.width" |-> Width "tuple.__hash__:end" |-> End ...</constants>
 
 endmodule

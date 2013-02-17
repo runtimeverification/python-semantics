@@ -32,12 +32,10 @@ module PYTHON-SEMANTICS-COMMON
                   <references> .Map </references>
                   <bootstrapping> 3 </bootstrapping>
                   <nextLoc> 1 </nextLoc>
-                  <debug> ListItem($DEBUG:Bool) ListItem($VERBOSE:Bool) </debug>
-                  <hashInfo> $HASHINFO:List </hashInfo>
-                  <hashSeed> $HASHSEED:Int </hashSeed>
                   <sysPath> $SYSPATH:List </sysPath>
+                  <environ> $ENVIRON:Map </environ>
+                  <constants> $CONSTANTS:Map </constants>
                   <importlib> $IMPORTLIB:K </importlib>
-                  <os> $OS:K </os>
                 </T>
 
   syntax K ::= "initialize" "(" K ")"

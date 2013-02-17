@@ -22,9 +22,14 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "__context__" ("attribute",.,., "__get__" |-> "__context__") ~>
          object "__suppress_context__" ("attribute",.,., "__get__" |-> "__suppress_context__") ~>
          object "__traceback__" ("attribute",.,., "__get__" |-> "__traceback__") ~>
+         object "EOFError"("type",ListItem("Exception"),.,.) ~>
          object "Exception"("type",ListItem("BaseException"),.,.) ~>
          object "False"("bool",.,.,
            "__value__" |-> 0) ~>
+         object "FileExistsError"("type",ListItem("OSError"),.,.) ~>
+         object "IOError"("type",ListItem("Exception"),.,.) ~>
+         object "ImportError"("type",ListItem("Exception"),.,.) ~>
+         object "ImportWarning"("type",ListItem("Warning"),.,.) ~>
          object "IndexError"("type",ListItem("LookupError"),.,.) ~>
          object "KeyError"("type",ListItem("LookupError"),.,.) ~>
          object "LookupError"("type",ListItem("Exception"),.,.) ~>
@@ -33,14 +38,21 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "NoneType"("type",ListItem("object"),.,.) ~>
          object "NotImplemented"("NotImplementedType",.,.,.) ~>
          object "NotImplementedType"("type",ListItem("object"),.,.) ~>
+         object "NotImplementedError"("type",ListItem("RuntimeError"),.,.) ~>
+         object "OSError"("type",ListItem("Exception"),.,.) ~>
+         object "PermissionError"("type",ListItem("OSError"),.,.) ~>
          object "RuntimeError"("type",ListItem("Exception"),.,.) ~>
          object "StopIteration"("type",ListItem("Exception"),.,.) ~>
          object "SyntaxError"("type",ListItem("Exception"),.,.) ~>
+         object "SystemError"("type",ListItem("Exception"),.,.) ~>
          object "True"("bool",.,.,
            "__value__" |-> 1) ~>
          object "TypeError"("type",ListItem("Exception"),.,.) ~>
          object "UnboundLocalError"("type",ListItem("NameError"),.,.) ~>
+         object "UnicodeError"("type",ListItem("ValueError"),.,.) ~>
+         object "UnicodeDecodeError"("type",ListItem("UnicodeError"),.,.) ~>
          object "ValueError"("type",ListItem("Exception"),.,.) ~>
+         object "Warning"("type",ListItem("Exception"),.,.) ~>
          object "ZeroDivisionError"("type", ListItem("ArithmeticError"),.,.) ~>
          (def "all"(1, 1, false) ;) ~>
          object "bool"("type",ListItem("int"),
@@ -64,8 +76,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__init__" |-> def "init_classmethod"(1, 1, true)
            "__new__" |-> def "new_classmethod"(2, 2, false)
            ,.) ~>
+         (def "compile"(3, 6, false) ;) ~>
          object "complex"("type",ListItem("object"),.,.) ~>
          object "dict"("type",ListItem("object"),
+           "get" |-> def "get_dict" (1, 2, true)
            "keys" |-> def "keys_dict" (0, 0, true)
            "update" |-> ref("init_dict")
            "__contains__" |-> def "contains_dict" (1, 1, true)
@@ -94,6 +108,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          (def "globals" (0, 0, false) ;) ~>
 	 (def "hasattr" (2, 2, false) ;) ~>
          (def "hash" (1, 1, false) ;) ~>
+         (def "id"(1, 1, false) ;) ~>
          (def "index" (1, 1, false) ;) ~>
          object "int"("type",ListItem("object"),
            "__abs__" |-> def "abs_int" (0, 0, true)
@@ -157,6 +172,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ,.) ~> 
          (def "len" (1, 1, false) ;) ~>
          object "list"("type",ListItem("object"),
+           "append" |-> def "append_list"(1, 1, true)
+           "extend" |-> def "extend_list"(1, 1, true)
            "__add__" |-> def "add_list" (1, 1, true)
            "__eq__" |-> def "eq_list" (1, 1,  true)
            "__init__" |-> def "init_list" (0, 1, true)
@@ -193,6 +210,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__iter__" |-> def "iter_range" (0, 0, true)
            "__new__" |-> def "new_range" (1, 4, false)
            ,.) ~>
+         object "reversed" ("type", ListItem("object"),
+           "__new__" |-> def "reversed.__init__"(1, 1, true)
+           ,.) ~>
          object "set" ("type", ListItem("object"),
            "__contains__" |-> def "contains_set" (1, 1, true)
            "__eq__" |-> def "eq_set" (1, 1, true)
@@ -221,14 +241,23 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ,.) ~>
          object "str"("type",ListItem("object"),
            "format" |-> def "format_str"(0, -1, true)
+           "join" |-> def "join_str"(1, 1, true)
+           "lower" |-> def "lower_str"(0, 0, true)
+           "partition" |-> def "partition_str"(1, 1, true)
            "rpartition" |-> def "rpartition_str"(1, 1, true)
            "rsplit" |-> def "rsplit_str"(0, 2, true)
+           "startswith" |-> def "startswith_str"(1, 3, true)
            "__add__" |-> def "add_str" (1, 1, true)
            "__eq__" |-> def "eq_str" (1, 1, true)
            "__format__" |-> def "__format___str"(1, 1, true)
            "__hash__" |-> def "hash_str" (0, 0, true)
            "__len__" |-> def "len_str"(0, 0, true)
+           "__mod__" |-> def "mod_str"(1, 1, true)
            "__ne__" |-> def "ne_str" (1, 1, true)
+           ,.) ~>
+         object "super"("type",ListItem("object"),
+           "__getattribute__" |-> def "super.__getattribute__"(1, 1, true)
+           "__init__" |-> def "super.__init__"(0, 2, true)
            ,.) ~>
          object "tuple"("type",ListItem("object"),
            "__add__" |-> def "add_tuple" (1, 1, true)
@@ -346,12 +375,17 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "cell"("type",ListItem("object"),
            ., .) ~>
          object "cell_contents" ("attribute",.,., "__get__" |-> "cell_contents") ~>
-         (def "sys_exc_info" (0, 0, false) ;) ~>
          (def "new_structseq" (2, 2, false) ;) ~>
+
+         //module "sys"
+         (def "sys_exc_info" (0, 0, false) ;) ~>
          struct "sys.flags"("optimize","verbose") ~>
          struct "sys.hash_info"("width", "modulus", "inf", "nan", "imag") ~>
          struct "sys.version_info"("major", "minor", "micro", "releaselevel", "serial") ~>
          struct "sys.implementation"("name", "version", "hexversion", "cache_tag") ~>
+
+         //module "_imp"
+         (def "imp__fix_co_filename"(2, 2, false) ;) ~>
          (def "imp_acquire_lock" (0, 0, false) ;) ~>
          (def "imp_extension_suffixes" (0, 0, false) ;) ~>
          (def "imp_init_builtin" (1, 1, false) ;) ~>
@@ -360,59 +394,133 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          (def "imp_is_frozen" (1, 1, false) ;) ~>
          (def "imp_is_frozen_package" (1, 1, false) ;) ~>
          (def "imp_get_frozen_object" (1, 1, false) ;) ~>
-         (def "imp_release_lock" (0, 0, false) ;) 
+         (def "imp_load_dynamic" (2, 3, false) ;) ~>
+         (def "imp_release_lock" (0, 0, false) ;) ~>
+
+         //module "_io"
+         object "BytesIO"("type", ListItem("_BufferedIOBase"),
+           "__init__" |-> def "BytesIO.__init__"(0, 1, true)
+           "readline" |-> def "BytesIO.readline"(0, 1, true)
+           ,.) ~>
+         object "FileIO"("type", ListItem("_RawIOBase"),
+           "__init__" |-> def "FileIO.__init__"(1, 4, true)
+           "read" |-> def "FileIO.read"(0, 1, true)
+           "write" |-> def "FileIO.write"(1, 1, true)
+           ,.) ~>
+         object "IncrementalNewlineDecoder"("type", ListItem("object"),
+           "__init__" |-> def "IncrementalNewlineDecoder.__init__"(2, 3, true)
+           "decode" |-> def "IncrementalNewlineDecoder.decode"(1, 2, true)
+           ,.) ~>
+         object "_IOBase"("type", ListItem("object"),
+           "__new__" |-> def "_IOBase.__new__"(1, -1, false)
+           ,.) ~>
+         object "_RawIOBase"("type", ListItem("_IOBase"),
+           "read" |-> def "_RawIOBase.read"(0, 1, true)
+           ,.) ~>
+         object "_BufferedIOBase"("type", ListItem("_IOBase"),.,.) ~>
+
+         //module "_warnings" 
+         (def "_warnings.warn" (1, 3, false) ;) ~>
+
+         //module "_weakref"
+         object "weakref"("type", ListItem("object"),
+           "__call__" |-> def "weakref.__call__"(0, 0, true)
+           "__new__" |-> def "weakref.__new__"(2, 3, false)
+           ,.) ~>
+
+         //module "marshal"
+         (def "marshal.dumps"(1, 2, false) ;) ~>
+         (def "marshal.loads"(1, 1, false) ;) ~>
+
+         //module "posix"
+         (def "getcwd"(0, 0, false) ;) ~>
+         (def "listdir"(0, 1, false) ;) ~>
+         (def "mkdir"(1, 2, false) ;) ~>
+         (def "open"(2, 3, false) ;) ~>
+         (def "replace"(2, 2, false) ;) ~>
+         (def "stat"(1, 1, false) ;) ~>
+         (def "unlink"(1, 1, false) ;) ~>
+         .K
        )
        ...</k>
 
   rule <k> modules => (
 
          // module declarations
-         module "_io"({.KeyData}) ~>
-         module "posix"({.KeyData}) ~>
-         module "_warnings"({.KeyData}) ~>
+         module "_imp"({
+           "_fix_co_filename": ref("imp__fix_co_filename")
+         , "acquire_lock" : ref("imp_acquire_lock")
+         , "extension_suffixes" : ref("imp_extension_suffixes")
+         , "init_builtin" : ref("imp_init_builtin")
+         , "init_frozen" : ref("imp_init_frozen")
+         , "is_builtin" : ref("imp_is_builtin")
+         , "is_frozen" : ref("imp_is_frozen")
+         , "is_frozen_package" : ref("imp_is_frozen_package")
+         , "get_frozen_object" : ref("imp_get_frozen_object")
+         , "load_dynamic": ref("imp_load_dynamic")
+         , "release_lock" : ref("imp_release_lock")
+         }) ~>
+         module "_io"({
+           "BytesIO" : ref("BytesIO")
+         , "FileIO" : ref("FileIO")
+         , "IncrementalNewlineDecoder" : ref("IncrementalNewlineDecoder")
+	 }) ~>
+         module "_warnings"({
+           "warn" : ref("_warnings.warn")
+         }) ~>
+         module "_weakref"({
+           "ref" : ref("weakref")
+         }) ~>
          module "builtins"({
            "AssertionError" : ref("AssertionError")
          , "AttributeError" : ref("AttributeError")
          , "BaseException" : ref("BaseException")
          , "Exception" : ref("Exception")
          , "False" : ref("False")
+         , "ImportError" : ref("ImportError")
          , "IndexError" : ref("IndexError")
          , "KeyError" : ref("KeyError")
          , "LookupError" : ref("LookupError")
          , "NameError" : ref("NameError")
          , "None" : ref("None")
          , "NotImplemented" : ref("NotImplemented")
+         , "NotImplementedError" : ref("NotImplementedError")
+         , "OSError" : ref("OSError")
          , "RuntimeError" : ref("RuntimeError")
          , "StopIteration" : ref("StopIteration")
          , "SyntaxError" : ref("SyntaxError")
+         , "SystemError" : ref("SystemError")
          , "ZeroDivisionError" : ref("ZeroDivisionError")
          , "True" : ref("True")
          , "TypeError" : ref("TypeError")
          , "UnboundLocalError" : ref("UnboundLocalError")
          , "ValueError" : ref("ValueError")
-         , "__debug__" : #if Debug #then ref("True") #else ref("False") #fi
+         , "__debug__" : #if Constants("__debug__") #then ref("True") #else ref("False") #fi
          , "__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."
          , "all" : ref("all")
          , "bool" : ref("bool")
          , "bytes" : ref("bytes")
          , "classmethod" : ref("classmethod")
+         , "compile" : ref("compile")
          , "complex" : ref("complex")
          , "dict" : ref("dict")
-         , "hash" : ref("hash")
-         , "int" : ref("int")
-         , "isinstance" : ref("isinstance")
-         , "issubclass" : ref("issubclass")
-         , "iter" : ref("iter")
          , "float" : ref("float")
          , "format" : ref("format")
          , "getattr" : ref("getattr")
          , "hasattr" : ref("hasattr")
+         , "hash" : ref("hash")
+         , "id" : ref("id")
+         , "int" : ref("int")
+         , "isinstance" : ref("isinstance")
+         , "issubclass" : ref("issubclass")
+         , "iter" : ref("iter")
          , "len" : ref("len")
          , "list" : ref("list")
          , "map" : ref("map")
          , "object" : ref("object")
          , "ord" : ref("ord")
          , "range" : ref("range")
+         , "reversed" : ref("reversed")
          , "set" : ref("set")
          , "setattr" : ref("setattr")
          , "slice" : ref("slice")
@@ -421,19 +529,41 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "tuple" : ref("tuple")
          , "type" : ref("type")
          }) ~>
-         module "errno"({.KeyData}) ~>
-         module "_imp"({
-           "acquire_lock" : ref("imp_acquire_lock")
-         , "extension_suffixes" : ref("imp_extension_suffixes")
-         , "init_builtin" : ref("imp_init_builtin")
-         , "init_frozen" : ref("imp_init_frozen")
-         , "is_builtin" : ref("imp_is_builtin")
-         , "is_frozen" : ref("imp_is_frozen")
-         , "is_frozen_package" : ref("imp_is_frozen_package")
-         , "get_frozen_object" : ref("imp_get_frozen_object")
-         , "release_lock" : ref("imp_release_lock")
+         module "marshal"({
+           "dumps" : ref("marshal.dumps")
+         , "loads" : ref("marshal.loads")
          }) ~>
-         module "marshal"({.KeyData}) ~>
+         module "posix"({
+           "environ" : {DeMapify(M)}
+         , "getcwd" : ref("getcwd")
+         , "listdir" : ref("listdir")
+         , "mkdir" : ref("mkdir")
+         , "open" : ref("open")
+         , "replace" : ref("replace")
+         , "stat" : ref("stat")
+         , "unlink" : ref("unlink")
+         , "O_WRONLY" : Constants("posix.O_WRONLY")
+         , "O_CREAT": Constants("posix.O_CREAT")
+         , "O_EXCL": Constants("posix.O_EXCL")
+        
+         }) ~>
+         module "sys"({
+           "builtin_module_names" : ["_imp", "_io", "_warnings", "builtins", "marshal", "posix", "sys", "types", .Expressions]
+         , "dont_write_bytecode" : ref("True")
+         , "exc_info" : ref("sys_exc_info")
+         , "flags": ref("sys.flags")(tuple(#if Constants("__debug__") #then 0 #else 1 #fi, #if Constants("PYTHONVERBOSE") #then 1 #else 0 #fi, .Expressions))
+         , "hash_info" : ref("sys.hash_info")(tuple(Constants("sys.hash_info.width"), Constants("sys.hash_info.modulus"), Constants("sys.hash_info.inf"), Constants("sys.hash_info.nan"), Constants("sys.hash_info.imag"), .Expressions))
+         , "hexversion": 50528496
+         , "implementation" : ref("sys.implementation")(tuple("kpython", ref("sys.version_info")(tuple(1, 0, 0, "alpha", 1, .Expressions)), 16777377 /* 0x010000A1 */, ref("None")))
+         , "meta_path": [.Expressions]
+         , "modules" : {.KeyData}
+         , "path" : [DeListify(L)]
+         , "path_hooks" : [.Expressions]
+         , "path_importer_cache" : {.KeyData}
+         , "platform" : Constants("sys.platform")
+         , "version" : "3.3.0 (kpython version 1.0.0a1)"
+         , "version_info" : ref("sys.version_info")(tuple(3, 3, 0, "final", 0, .Expressions))
+         }) ~>
          module "types"({
            "BuiltinFunctionType" : ref("builtin-function")
          , "BuiltinMethodType" : ref("builtin-method")
@@ -446,23 +576,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "MethodType" : ref("method")
          , "ModuleType" : ref("module")
          , "TracebackType" : ref("traceback")
-         }) ~>
-         module "sys"({
-           "exc_info" : ref("sys_exc_info")
-         , "flags": ref("sys.flags")(tuple(#if Debug #then 0 #else 1 #fi, #if Verbose #then 1 #else 0 #fi, .Expressions))
-         , "hash_info" : ref("sys.hash_info")(tuple(N1, N2, N3, N4, N5, .Expressions))
-         , "hexversion": 50528496
-         , "implementation" : ref("sys.implementation")(tuple("kpython", ref("sys.version_info")(tuple(1, 0, 0, "alpha", 1, .Expressions)), 16777377 /* 0x010000A1 */, ref("None")))
-         , "meta_path": [.Expressions]
-         , "modules" : {.KeyData}
-         , "path" : [DeListify(L)]
-         , "path_hooks" : [.Expressions]
-         , "path_importer_cache" : {.KeyData}
-         , "version_info" : ref("sys.version_info")(tuple(3, 3, 0, "final", 0, .Expressions))
          })
        ) ...</k>
-       <debug> ListItem(Debug:Bool) ListItem(Verbose:Bool) </debug>
-       <hashInfo> ListItem(N1:Int) ListItem(N2:Int) ListItem(N3:Int) ListItem(N4:Int) ListItem(N5:Int) ...</hashInfo>
        <sysPath> L:List </sysPath>
+       <environ> M:Map </environ>
+       <constants> Constants:Map </constants>
 
 endmodule
