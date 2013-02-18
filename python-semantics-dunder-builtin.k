@@ -28,7 +28,6 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__value__" |-> 0) ~>
          object "FileExistsError"("type",ListItem("OSError"),.,.) ~>
          object "GeneratorExit"("type",ListItem("BaseException"),.,.) ~>
-         object "IOError"("type",ListItem("Exception"),.,.) ~>
          object "ImportError"("type",ListItem("Exception"),
            "name" |-> ref("name")
            "path" |-> ref("path")
@@ -480,13 +479,18 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "ref" : ref("weakref")
          }) ~>
          module "builtins"({
-           "AssertionError" : ref("AssertionError")
+           "ArithmeticError" : ref("ArithmeticError")
+         , "AssertionError" : ref("AssertionError")
          , "AttributeError" : ref("AttributeError")
          , "BaseException" : ref("BaseException")
+         , "EOFError" : ref("EOFError")
          , "Exception" : ref("Exception")
-         , "False" : ref("False")
-         , "GeneratorExit" : ref("GeneratorExit") 
+         , "False" : ref("False") 
+         , "FileExistsError" : ref("FileExistsError")
+         , "GeneratorExit" : ref("GeneratorExit")
+         , "IOError" : ref("OSError")
          , "ImportError" : ref("ImportError")
+         , "ImportWarning" : ref("ImportWarning")
          , "IndexError" : ref("IndexError")
          , "KeyError" : ref("KeyError")
          , "LookupError" : ref("LookupError")
@@ -495,15 +499,19 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "NotImplemented" : ref("NotImplemented")
          , "NotImplementedError" : ref("NotImplementedError")
          , "OSError" : ref("OSError")
+         , "PermissionError" : ref("PermissionError")
          , "RuntimeError" : ref("RuntimeError")
          , "StopIteration" : ref("StopIteration")
          , "SyntaxError" : ref("SyntaxError")
          , "SystemError" : ref("SystemError")
-         , "ZeroDivisionError" : ref("ZeroDivisionError")
          , "True" : ref("True")
          , "TypeError" : ref("TypeError")
          , "UnboundLocalError" : ref("UnboundLocalError")
+         , "UnicodeError" : ref("UnicodeError")
+         , "UnicodeDecodeError" : ref("UnicodeDecodeError")
          , "ValueError" : ref("ValueError")
+         , "Warning" : ref("Warning")
+         , "ZeroDivisionError" : ref("ZeroDivisionError")
          , "__debug__" : #if Constants("__debug__") #then ref("True") #else ref("False") #fi
          , "__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."
          , "all" : ref("all")
@@ -516,6 +524,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "float" : ref("float")
          , "format" : ref("format")
          , "getattr" : ref("getattr")
+         , "globals" : ref("globals")
          , "hasattr" : ref("hasattr")
          , "hash" : ref("hash")
          , "id" : ref("id")
@@ -525,6 +534,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "iter" : ref("iter")
          , "len" : ref("len")
          , "list" : ref("list")
+         , "locals" : ref("locals")
          , "map" : ref("map")
          , "object" : ref("object")
          , "ord" : ref("ord")
@@ -535,6 +545,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "slice" : ref("slice")
          , "staticmethod" : ref("staticmethod")
          , "str" : ref("str")
+         , "super" : ref("super")
          , "tuple" : ref("tuple")
          , "type" : ref("type")
          }) ~>
@@ -554,7 +565,6 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "O_WRONLY" : Constants("posix.O_WRONLY")
          , "O_CREAT": Constants("posix.O_CREAT")
          , "O_EXCL": Constants("posix.O_EXCL")
-        
          }) ~>
          module "sys"({
            "builtin_module_names" : ["_imp", "_io", "_warnings", "builtins", "marshal", "posix", "sys", "types", .Expressions]
