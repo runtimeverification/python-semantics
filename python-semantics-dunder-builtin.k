@@ -13,7 +13,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "args" |-> ref("args")
            "__cause__" |-> ref("__cause__")
            "__context__" |-> ref("__context__")
-           "__init__" |-> def "init_baseexception" (0, -1, true)
+           "__new__" |-> def "BaseException.__new__" (1, -1, false)
            "__suppress_context__" |-> ref("__suppress_context__")
            "__traceback__" |-> ref("__traceback__")
            ,.) ~>
@@ -28,7 +28,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__value__" |-> 0) ~>
          object "FileExistsError"("type",ListItem("OSError"),.,.) ~>
          object "IOError"("type",ListItem("Exception"),.,.) ~>
-         object "ImportError"("type",ListItem("Exception"),.,.) ~>
+         object "ImportError"("type",ListItem("Exception"),
+           "name" |-> ref("name")
+           "path" |-> ref("path")
+           "__init__" |-> def "ImportError.__init__"(0, -1, true)
+           ,.) ~>
+	 object "name"("attribute",.,.,"__get__" |-> "name") ~>
+         object "path"("attribute",.,.,"__get__" |-> "path") ~>
          object "ImportWarning"("type",ListItem("Warning"),.,.) ~>
          object "IndexError"("type",ListItem("LookupError"),.,.) ~>
          object "KeyError"("type",ListItem("LookupError"),.,.) ~>

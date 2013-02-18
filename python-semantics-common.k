@@ -313,6 +313,9 @@ module PYTHON-SEMANTICS-COMMON
   rule <k> newHelper(O:Object, Type:Object, St:Set) => test(hasbase(O, Type), test(id(O) in lookup(Sym, St), raiseInternal("TypeError", "unsafe builtin __new__ call error message"), .), raiseInternal("TypeError", "invalid builtin __new__ call argument type error message")) ...</k>
        <symbols> Sym:Map </symbols>
 
+  syntax K ::= keywordHelper(String, Map, Set)
+  rule keywordHelper(Name, M, S) => #if keys(M) -Set S =/=Set . #then raiseInternal("TypeError", Name +String "does not take keyword arguments") #else . #fi
+
   rule raiseInternal(S, O) => raise mutable("args" |-> undefined(strvalue(O)),ref(S))
 
   rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => (Dict [ "__name__"], .Expressions := CO . String2Id("co_name")) ~> (Dict [ "__doc__" ], .Expressions := CO . String2Id("co_consts") [0]) ~> (Dict [ "__builtins__" ], .Expressions := Builtins) ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple(.Expressions)) ~> setref(id(CO), "co_cellvars", tuple(.Expressions)) ~> ref("sys") . String2Id("modules")[CO . String2Id("co_name")], .Expressions := ref(N) ~> executeFrame(N:Int +Int 1, ref(id(CO)), ref("None"), Dict, Dict, Builtins, {.KeyData}, .) ...</k>
