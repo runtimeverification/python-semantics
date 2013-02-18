@@ -8,3 +8,8 @@ def a():
 b = a()
 b.__next__()
 b.close()
+try:
+  b.__next__()
+except StopIteration:
+  x = 5
+assert x == 5

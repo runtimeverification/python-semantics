@@ -14,3 +14,9 @@ except StopIteration as e:
 
 b = a()
 b.close()
+try:
+  b.__next__()
+  assert False
+except StopIteration:
+  x =  5
+assert x == 5
