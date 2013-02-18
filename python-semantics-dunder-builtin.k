@@ -27,6 +27,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "False"("bool",.,.,
            "__value__" |-> 0) ~>
          object "FileExistsError"("type",ListItem("OSError"),.,.) ~>
+         object "GeneratorExit"("type",ListItem("BaseException"),.,.) ~>
          object "IOError"("type",ListItem("Exception"),.,.) ~>
          object "ImportError"("type",ListItem("Exception"),
            "name" |-> ref("name")
@@ -358,6 +359,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "__module__" ("attribute",.,., "__get__" |-> "__module__" "__set__" |-> def "set_ref_default"(3, 3, false)) ~>
          object "__name__function"("attribute",.,., "__get__" |-> "__name__" "__set__" |-> def "set_attr_string"(3, 3, false)) ~>
          object "generator"("type",ListItem("object"),
+           "close" |-> def "close_generator"(0, 0, true)
            "send" |-> def "send_generator"(1, 1, true)
            "throw" |-> def "throw_generator"(1, 3, true)
            "__iter__" |-> def "iter_generator"(0, 0, true)
@@ -483,6 +485,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "BaseException" : ref("BaseException")
          , "Exception" : ref("Exception")
          , "False" : ref("False")
+         , "GeneratorExit" : ref("GeneratorExit") 
          , "ImportError" : ref("ImportError")
          , "IndexError" : ref("IndexError")
          , "KeyError" : ref("KeyError")
