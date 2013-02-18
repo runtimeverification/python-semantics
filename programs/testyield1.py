@@ -11,3 +11,6 @@ try:
   assert False
 except StopIteration as e:
   assert e.args == (7,)
+
+b = a()
+b.close()
