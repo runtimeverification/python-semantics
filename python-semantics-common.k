@@ -39,7 +39,7 @@ module PYTHON-SEMANTICS-COMMON
                 </T>
 
   syntax K ::= "initialize" "(" K ")"
-             | "bind" "(" NAME "," ObjId ")" 
+             | "bind" "(" NAME "," Expression ")" 
              | "unbind" "(" NAME ")"
              | "mapping" "(" Expression "," K ")" [strict(1)]
              | "addItem" "(" Expression ")" [strict]
@@ -57,7 +57,7 @@ module PYTHON-SEMANTICS-COMMON
              | makeFrame(Int, Expression, Expression, Expression, Expression, Expression, Expression, Map) [strict(2, 3, 4, 5, 6, 7)]
              | setArgs(Int, Map)
              | getMro(Expression, Expression) [strict]
-             | doBind(String, ObjId, Expression) [strict(3)]
+             | doBind(String, Expression, Expression) [strict(3)]
 
   syntax Test ::= "istype" "(" Expression "," Expression ")" [strict]
                 | "hasbase" "(" K "," Expression ")" [strict]
@@ -332,7 +332,7 @@ module PYTHON-SEMANTICS-COMMON
   rule [executeFrame]: <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => makeFrame(N, CO, Back, Locals, Globals, Builtins, Cells, Args) ~> getattr(CO, "co_code") ...</k>
        <frameObject> _ => N </frameObject>
 
-  rule (. => doBind(Id2String(X), B, ref(N))) ~> setArgs(N, (X |-> ref(B) => .) _)
+  rule (. => doBind(Id2String(X), ref(B), ref(N))) ~> setArgs(N, (X |-> ref(B) => .) _)
   rule [dissolve-setArgs]: setArgs(_, .) => .
 
   rule <k> describe(Self, Instance, Owner, S) => doDescribe(Self, Instance, gettype(Instance), S) ...</k>
