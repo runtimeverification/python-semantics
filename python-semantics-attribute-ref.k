@@ -14,6 +14,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule [attribute]: O:Object . X:Id => ref("getattr")(O, Id2String(X), .Arguments)
 
   rule invokeBuiltin(obj("getattr",_), ListItem(O) ListItem(S:Object), .) => try: (getmember(O, "__getattribute__", true, false, true) (S)) except ref("AttributeError") : (getmember(O, "__getattr__", true, false, false) (S) -> raise) else: pass
+  rule invokeBuiltin(obj("getattr",_), ListItem(O:Object) ListItem(S:Object) ListItem(Default), .) => try: ref("getattr")(O, S) except ref("AttributeError") : Default else: pass
   rule invokeBuiltin(obj("hasattr",_), ListItem(O) ListItem(S), .) => try: (ref("getattr")(O, S, .Arguments) ; ~> ref("True")) except ref("AttributeError") : ref("False") else: pass
 
   rule invokeBuiltin(obj("getattribute_object",_), ListItem(O) ListItem(O2:Object), .) => checkData(getmember(O, O2, false, false, false), O) -> mapLookup(O, O2) -> getmember(O, O2, true, false, true)
