@@ -113,11 +113,13 @@ module PYTHON-SEMANTICS-COMMON
   rule Ids2Strings(.) => . [function, anywhere]
 
   syntax List ::= "Listify" "(" K ")" [function]
-  rule Listify((P:Parameter , Ps:Parameters)) => ListItem(P) Listify(Ps) [function, anywhere]
+  rule Listify((P:DefParameter , Ps:Parameters)) => ListItem(P) Listify(Ps) [function, anywhere]
+  rule Listify((A:Argument , As:Arguments)) => ListItem(A) Listify(As) [function, anywhere]
   rule Listify(.Parameters) => . [function, anywhere]
 
   syntax Expressions ::= "DeListify" "(" List ")" [function]
-  rule DeListify(ListItem(P) L) => P , DeListify(L) [function, anywhere]
+  rule DeListify(ListItem(P:DefParameter) L) => P , DeListify(L) [function, anywhere]
+  rule DeListify(ListItem(A:Argument) L) => A , DeListify(L) [function, anywhere]
   rule DeListify(.) => .Expressions [function, anywhere]
 
   syntax List ::= "Refify" "(" List ")" [function]
@@ -186,7 +188,7 @@ module PYTHON-SEMANTICS-COMMON
   rule listvalue(obj(_,<oattrs>... "__value__" |-> list(L:List) ...</oattrs>)) => L [function, anywhere]
 
   syntax Map ::= "mapvalue" "(" Object ")" [function]
-  rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ _ |-> list(_ (ListItem(K : K2) => .) _)) ...</oattrs>)) (. => K |-> K2) [function, anywhere]
+  rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ _ |-> list(_ (ListItem(K:Expression : K2:Expression) => .) _)) ...</oattrs>)) (. => K |-> K2) [function, anywhere]
   rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ (_ |-> list(.) => .)) ...</oattrs>)) [function, anywhere]
   rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(.) ...</oattrs>)) => . [function, anywhere]
 
