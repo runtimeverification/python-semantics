@@ -56,13 +56,13 @@ module PYTHON-SEMANTICS-FUNCTIONS
   context makeFunction(_, (_:List ListItem(** (_ : HOLE)) _:List), _, _) 
   context makeFunction(_, _, HOLE, _)
 
-  rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X) L:List => L), _, false) ...</k>
+  rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X:Id) L:List => L), _, false) ...</k>
        <object>...
          <id>N</id>
          <oattrs>... "co_argcount" |-> (N2:Int => N2 +Int 1) "co_nlocals" |-> (N3:Int => N3 +Int 1) ...</oattrs>
        ...</object>
 
-  rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X) L:List => L), _, true) ...</k>
+  rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X:Id) L:List => L), _, true) ...</k>
        <object>...
          <id>N</id>
          <oattrs>... "co_nlocals" |-> (N2 => N2 +Int 1) "co_kwonlyargcount" |-> (N3 => N3 +Int 1) ...</oattrs>
@@ -147,7 +147,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   syntax Set ::= "LOCAL" "(" Set "," Set "," Set "," List ")" [function]
   syntax Set ::= "BOUND" "(" Set "," List ")" [function]
   syntax List ::= "PARAMS" "(" List ")" [function]
-  rule LOCAL(Defs, Globals, Nonlocals, Params) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set . [function, anywhere]
+  rule [LOCAL]: LOCAL(Defs, Globals, Nonlocals, Params) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set . [function, anywhere]
   rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses Defs) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals [function, anywhere]
   rule BOUND(Bound:Set, L scope(_, Defs, _, Nonlocals, Globals2, _, Params, false, _)) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals2, L) [function, anywhere]
   rule BOUND(Bound:Set, L scope(_, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, true, _)) => BOUND(Bound, L)
