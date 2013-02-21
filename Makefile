@@ -39,6 +39,7 @@ clean: test-clean
 	rm -f *.k~
 	rm -f *.orig
 	rm -f junit-results.xml
+	rm -f nohup.out
 
 test-clean:
 	rm -f programs/*.out programs/*.ref programs/*.out.tmp
