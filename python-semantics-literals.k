@@ -65,7 +65,7 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(_ H |-> list(Values)) ...</oattrs>
        ...</object>
 
-  rule bucketInsert(B, H, Key, K, ListItem(Key2 : Value2) Suffix:List, Prefix:List) => test(plbool(Key == Key2), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem(Key2 : Value2)))
+  rule bucketInsert(B, H, Key, K, ListItem(Key2:Expression : Value2:Expression) Suffix:List, Prefix:List) => test(plbool(Key == Key2), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem(Key2 : Value2)))
 
   rule <k> bucketInsert(B, H, Key, K, ., Prefix) => . ...</k>
        <object>...
@@ -97,7 +97,7 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
-  rule bucketLookup(Key, ListItem(Key2 : Value2) Suffix) => test(plbool(Key == Key2), Value2, bucketLookup(Key, Suffix))
+  rule bucketLookup(Key, ListItem(Key2:Expression : Value2:Expression) Suffix) => test(plbool(Key == Key2), Value2, bucketLookup(Key, Suffix))
   rule bucketLookup(Key, .) => raise ref("KeyError") (Key, .Arguments)
 
   rule <k> tableDelete(B, H, Key) => bucketDelete(B, H, Key, Values, .) ...</k>
@@ -112,7 +112,7 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
-  rule bucketDelete(B, H, Key, ListItem(Key2 : Value2) Suffix, Prefix) => test(plbool(Key == Key2), setBucket(B, H, Prefix Suffix), bucketDelete(B, H, Key, Suffix, Prefix ListItem(Key2 : Value2)))
+  rule bucketDelete(B, H, Key, ListItem(Key2:Expression : Value2:Expression) Suffix, Prefix) => test(plbool(Key == Key2), setBucket(B, H, Prefix Suffix), bucketDelete(B, H, Key, Suffix, Prefix ListItem(Key2 : Value2)))
   rule bucketDelete(_, _, Key, ., _) => raise ref("KeyError") (Key, .Arguments)
 
   rule <k> mutable(V:Value,O) => mutable("__value__" |-> V "__revision__" |-> 0, O) ...</k>
