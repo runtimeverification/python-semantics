@@ -6,7 +6,7 @@ module PYTHON-SEMANTICS-ENVIRONMENT
   syntax ObjRef ::= "envLookup" "(" String "," Expression "," Expression ")" [strict(2, 3)]
   syntax K ::= "doBind2" "(" String "," Expression "," Expression "," Expression ")" [strict(3, 4)]
 
-  rule unbind(X) => bind(X, 0) [macro, anywhere]
+  rule unbind(X) => bind(X, ref(0)) [macro, anywhere]
   rule <k> bind(X:Id, B:Expression) => doBind(Id2String(X), B, ref(N)) ...</k>
        <frameObject> N </frameObject>
 

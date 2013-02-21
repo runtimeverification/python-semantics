@@ -3,8 +3,8 @@ ENVIRON=`env | sed "s/^/\"/" | sed "s/$/\"/" | sed "s/=/\" |-> \"/" | tr "\n" " 
 PYTHON_BINARY=`which python3.3`
 PYTHON_PREFIX=${PYTHON_BINARY%/bin/python3.3}
 PYTHON_LIB=$PYTHON_PREFIX/lib/python3.3
-IMPORTLIB=$PYTHON_LIB/importlib/_bootstrap.py
-#IMPORTLIB=fake-importlib.py
+#IMPORTLIB=$PYTHON_LIB/importlib/_bootstrap.py
+IMPORTLIB=fake-importlib.py
 SIXTYFOUR_BIT='"sys.hash_info.width" |-> 64 "sys.hash_info.modulus" |-> 2305843009213693951 "sys.hash_info.inf" |-> 314159 "sys.hash_info.nan" |-> 0 "sys.hash_info.imag" |-> 1000003 "tuple.__hash__:begin" |-> 3430008 "tuple.__hash__:addend" |-> 82520 "tuple.__hash__:end" |-> 97531'
 DEBUG='"__debug__" |-> true'
 VERBOSE='"PYTHONVERBOSE" |-> false'
