@@ -170,7 +170,6 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
 
   syntax Parameters ::= List{Parameter,","} [seqstrict]
   syntax Parameter ::= Argument
-                     | KeyDatum
                      | Argument ":" Expression
                      | "*"
 
