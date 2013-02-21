@@ -166,11 +166,15 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                      | FuncDef
                      | "@" Expression "newline" Decorated [strict(1)]
 
-  syntax Parameters ::= List{Parameter,","} [seqstrict]
-  syntax Parameter ::= Argument
-                     | KeyDatum
-                     | Argument ":" Expression
-                     | "*"
+  syntax Parameter ::= NAME
+                     | NAME ":" Expression
+
+  syntax DefParameter ::= Parameter
+                        | Parameter "=" Expression
+                        | "*"
+                        | "*" Parameter
+                        | "**" Parameter
+  syntax Parameters ::= List{DefParameter,","} [seqstrict]
 
   syntax FuncDef ::= "def" NAME "(" Parameters ")" "->" Expression ":" Statements
                    | "def" NAME "(" Parameters ")" ":" Statements

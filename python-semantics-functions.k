@@ -5,16 +5,17 @@ module PYTHON-SEMANTICS-FUNCTIONS
   imports PYTHON-VISITOR
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
-  syntax K ::= "makeFunction" "(" Int "," List "," K "," Bool ")"
-             | "makeCodeObject" "(" Int "," List "," K "," Bool ")"
-  syntax String ::= "paramName" "(" Argument ")"
+  syntax K ::= makeFunction(Int, List, K, Bool)
+             | makeCodeObject(Int, List, K, Bool)
+  syntax String ::= paramName(DefParameter)
 
   rule paramName(X:Id) => Id2String(X)
-  rule paramName(X = _) => Id2String(X)
-  rule paramName(* X) => Id2String(X)
-  rule paramName(** X) => Id2String(X)
+  rule paramName(X:Id : _) => Id2String(X)
+  rule paramName(P:Parameter = _) => paramName(P)
+  rule paramName(* P:Parameter) => paramName(P)
+  rule paramName(** P:Parameter) => paramName(P)
 
-  syntax ObjRef ::= "function" "(" Parameters "," Expression "," K ")" [strict(2)]
+  syntax ObjRef ::= function(Parameters, Expression, K) [strict(2)]
 
   rule [evaluate-function-object]: <k> function(Ps:K, O:Object, Return:K) =>
            setref(N, "__doc__", (O . String2Id("co_consts") [0])) ~> 
@@ -47,12 +48,12 @@ module PYTHON-SEMANTICS-FUNCTIONS
        ...</object>) [allocation]
        
 
-  context makeFunction(_, (ListItem(X = HOLE) _:List), _, _)
-  context makeFunction(_, (_:List ListItem(X : HOLE) _:List), _, _)
-  context makeFunction(_, (ListItem((X = HOLE) : _) _:List), _, _)
-  context makeFunction(_, (_:List ListItem((X = _) : HOLE) _:List), _, _)
-  context makeFunction(_, (_:List ListItem((* _) : HOLE) _:List), _, _)
-  context makeFunction(_, (_:List ListItem((** _) : HOLE) _:List), _, _) 
+  context makeFunction(_, (ListItem(_ = HOLE) _:List), _, _)
+  context makeFunction(_, (_:List ListItem(_ : HOLE) _:List), _, _)
+  context makeFunction(_, (ListItem((_ : _) = HOLE) _:List), _, _)
+  context makeFunction(_, (_:List ListItem((_ : HOLE) = _) _:List), _, _)
+  context makeFunction(_, (_:List ListItem(* (_ : HOLE)) _:List), _, _)
+  context makeFunction(_, (_:List ListItem(** (_ : HOLE)) _:List), _, _) 
   context makeFunction(_, _, HOLE, _)
 
   rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X) L:List => L), _, false) ...</k>
@@ -67,10 +68,10 @@ module PYTHON-SEMANTICS-FUNCTIONS
          <oattrs>... "co_nlocals" |-> (N2 => N2 +Int 1) "co_kwonlyargcount" |-> (N3 => N3 +Int 1) ...</oattrs>
        ...</object>
 
-  rule makeCodeObject(_, ((ListItem(X = _) => ListItem(X)) _), _, _)
+  rule makeCodeObject(_, ((ListItem(P:Parameter = _) => ListItem(P)) _), _, _)
 
-  rule [makeFunction-defaults]: (. => setref(N, "__defaults__", test(plbool(getref2(ref(N), "__defaults__") is ref("None")), tuple(O), (getref2(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, false)
-  rule [makeFunction-kwdefaults]: (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), setref(N, "__kwdefaults__", {Id2String(X) : O}), (getref2(ref(N), "__kwdefaults__")[Id2String(X)] := O))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, true)
+  rule [makeFunction-defaults]: (. => setref(N, "__defaults__", test(plbool(getref2(ref(N), "__defaults__") is ref("None")), tuple(O), (getref2(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(P:Parameter = O:Object) => ListItem(P)) _), _, false)
+  rule [makeFunction-kwdefaults]: (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), setref(N, "__kwdefaults__", {paramName(P) : O}), (getref2(ref(N), "__kwdefaults__")[paramName(P)] := O))) ~> makeFunction(N, ((ListItem(P:Parameter = O:Object) => ListItem(P)) _), _, true)
   rule [makeFunction-parameter]: makeFunction(_, ((ListItem(X:Id) => .) _), _, _)
 
   rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 4)) ~> addParam(* X)) ~> makeCodeObject(N, ((ListItem(* X:Id) => ListItem(*)) L), _, false) 
@@ -79,10 +80,14 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule makeFunction(_, ((ListItem(*) => .) L), _, (false => true))
   rule makeCodeObject(_, ((ListItem(*) => .) L), _, (false => true))
   rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 8)) ~> addParam(** X)) ~> makeCodeObject(N, ((ListItem(** X:Id) => .) L), _, _)
-  rule makeFunction(N, ((ListItem(** X) => .) L), _, _)
-  rule (. => getref2(ref(N), "__annotations__")[paramName(Arg)] := O) ~> makeFunction(N, ((ListItem(Arg:K : O:Object) => ListItem(Arg)) _), _, _) 
+  rule makeFunction(N, ((ListItem(** X:Id) => .) L), _, _)
+  rule (. => getref2(ref(N), "__annotations__")[Id2String(X)] := O) ~> makeFunction(N, ((ListItem(X:Id : O:Object) => ListItem(X)) _), _, _) 
+  rule (. => getref2(ref(N), "__annotations__")[Id2String(X)] := O) ~> makeFunction(N, ((ListItem(* (X:Id : O:Object)) => ListItem(* X)) _), _, _) 
+  rule (. => getref2(ref(N), "__annotations__")[Id2String(X)] := O) ~> makeFunction(N, ((ListItem(** X:Id : O:Object) => ListItem(** X)) _), _, _) 
   rule (. => getref2(ref(N), "__annotations__")["return"] := O) ~> makeFunction(N, _, (O:Object => .Obj), _) 
-  rule makeCodeObject(N, ((ListItem(Arg : _) => ListItem(Arg)) _), _, _)
+  rule makeCodeObject(N, ((ListItem(X:Id : _) => ListItem(X)) _), _, _)
+  rule makeCodeObject(N, ((ListItem(* (X:Id : _)) => ListItem(* X)) _), _, _)
+  rule makeCodeObject(N, ((ListItem(** X:Id : _) => ListItem(** X)) _), _, _)
 
   syntax ObjRef ::= "makeClosure" "(" Expression ")" [strict]
                   | "cellNum" "(" Expression "," Expression "," Expression ")" [strict]
@@ -147,12 +152,12 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule BOUND(Bound:Set, L scope(_, Defs, _, Nonlocals, Globals2, _, Params, false, _)) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals2, L) [function, anywhere]
   rule BOUND(Bound:Set, L scope(_, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, true, _)) => BOUND(Bound, L)
   rule BOUND(Bound, .) => Bound [function, anywhere]
-  rule PARAMS(ListItem(X:Id) Params) => ListItem(Id2String(X)) PARAMS(Params) [function, anywhere]
-  rule PARAMS(ListItem(* X:Id) Params) => PARAMS(Params ListItem(* X)) when Params =/=List . [function, anywhere]
-  rule PARAMS(ListItem(** X:Id) ListItem(* Y:Id)) => ListItem(Id2String(Y)) ListItem(Id2String(X)) [function, anywhere]
-  rule PARAMS(ListItem(* X:Id)) => ListItem(Id2String(X)) [function, anywhere]
-  rule PARAMS(ListItem(** X:Id)) => ListItem(Id2String(X)) [function, anywhere]
-  rule PARAMS(ListItem(* X:Id) ListItem(** Y:Id)) => ListItem(Id2String(X)) ListItem(Id2String(Y)) [function, anywhere]
+  rule PARAMS(ListItem(P:Parameter) Params) => ListItem(paramName(P)) PARAMS(Params) [function, anywhere]
+  rule PARAMS(ListItem(* P:Parameter) Params) => PARAMS(Params ListItem(* P)) when Params =/=List . [function, anywhere]
+  rule PARAMS(ListItem(** P:Parameter) ListItem(* Q:Parameter)) => ListItem(paramName(Q)) ListItem(paramName(P)) [function, anywhere]
+  rule PARAMS(ListItem(* P:Parameter)) => ListItem(paramName(P)) [function, anywhere]
+  rule PARAMS(ListItem(** P:Parameter)) => ListItem(paramName(P)) [function, anywhere]
+  rule PARAMS(ListItem(* P:Parameter) ListItem(** Q:Parameter)) => ListItem(paramName(P)) ListItem(paramName(Q)) [function, anywhere]
   rule PARAMS(.) => . [function, anywhere]
 
   rule createFunction(X, Ps, K:K, O:Object) => visited((X, .Expressions) := function(Ps, O, K))
@@ -175,7 +180,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
              | addUse(Id)
              | addNonlocals(NAMES)
              | addGlobals(NAMES)
-             | addParam(Parameter)
+             | addParam(DefParameter)
              | "setGenerator"
 
   rule <k> addDef(X) => . ...</k>
