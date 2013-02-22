@@ -68,17 +68,6 @@ module PYTHON-SEMANTICS-TRY
 
   rule <k> raise ...</k>
        <control>...
-         <cstack> generator(Frame, C, FL, _, _, _) => . ...</cstack>
-         <currentFrame>
-           (<xstack> . </xstack>
-           _ => C)
-           <frameObject> _ => Frame </frameObject>
-           <fstack> _ => FL </fstack>
-           <xcontext> _ </xcontext>
-         </currentFrame>
-       ...</control>
-  rule <k> raise ...</k>
-       <control>...
          <cstack> call(Frame, C, FL, _, _) => . ...</cstack>
          <currentFrame>
            (<xstack> . </xstack>

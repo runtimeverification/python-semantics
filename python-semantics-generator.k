@@ -24,11 +24,11 @@ module PYTHON-SEMANTICS-GENERATOR
   rule createRaiseStatement(O, Type, .Obj, Traceback:Object) => test(istype(Type, ref("BaseException")), throwGenerator(O, Type . String2Id("with_traceback")(Traceback, .Arguments)), throwGenerator(O, Type(.Arguments) . String2Id("with_traceback")(Traceback, .Arguments)))
   rule createRaiseStatement(O, Type, Value:Object, Traceback:Object) => throwGenerator(O, Type(Value, .Arguments) . String2Id("with_traceback")(Traceback, .Arguments))
 
-  rule invokeBuiltin(obj("close_generator",_), ListItem(O), .) => try: throwGenerator(O, ref("GeneratorExit")) except ref("GeneratorExit") : ref("None") except except ref("StopIteration") : ref("None") else: raiseInternal("RuntimeError", "generator ignored GeneratorExit")
+  rule invokeBuiltin(obj("close_generator",_), ListItem(O), .) => try: throwGenerator(O, ref("GeneratorExit")) ; except ref("GeneratorExit") : ref("None") except except ref("StopIteration") : ref("None") else: raiseInternal("RuntimeError", "generator ignored GeneratorExit")
 
   syntax ObjRef ::= runGenerator(Expression, Expression) [strict]
                   | throwGenerator(Expression, Expression) [strict]
-                  | enterGenerator(Expression, K, K)        
+                  | enterGenerator(Expression, K, K)
   rule runGenerator(O, Arg) => if Arg is not ref("None") : raiseInternal("TypeError", "can't send non-None value to just-started generator") else: enterGenerator(O, .K, .K) when getattr(O, "gi_state") ==K .K
   rule throwGenerator(O, Ex) => enterGenerator(O, raise Ex, getattr(O, "gi_state"))
   rule runGenerator(O, Arg) => enterGenerator(O, Arg, getattr(O, "gi_state")) when getattr(O, "gi_state") =/=K .K
@@ -57,7 +57,7 @@ module PYTHON-SEMANTICS-GENERATOR
          <cstack> . => generator(Frame, C, FL, XC, K, id(O)) ...</cstack>
        ...</control>
 
-  rule <k> return O ~> _ => setattr(N, "gi_state", (.K, SavedC, .List, SavedXC)) ~> raise ref("StopIteration")(#if id(O) ==K None #then .Arguments #else (O, .Arguments) #fi) ~> K </k>
+  rule <k> return O ~> _ => setattr(N, "gi_state", (#freezer (HOLE ;)(.KList), SavedC, .List, SavedXC)) ~> raise ref("StopIteration")(#if id(O) ==K None #then .Arguments #else (O, .Arguments) #fi) ~> K </k>
        <control>...
          <cstack> generator(Frame, C, FL, XC, K, N) => . ...</cstack>
          <currentFrame>
@@ -79,5 +79,17 @@ module PYTHON-SEMANTICS-GENERATOR
            (SavedC => C)
          </currentFrame>
        </control>
+
+  rule [raise-out-of-generator]: <k> (. => setattr(N, "gi_state", (#freezer (HOLE ;)(.KList), <xstack> . </xstack> SavedC, .List, ref("None")))) ~> raise ...</k>
+       <control>...
+         <cstack> generator(Frame, C, FL, _, _, N) => . ...</cstack>
+         <currentFrame>
+           (<xstack> . </xstack>
+           SavedC => C)
+           <frameObject> _ => Frame </frameObject>
+           <fstack> . => FL </fstack>
+           <xcontext> SavedXC </xcontext>
+         </currentFrame>
+       ...</control>
 
 endmodule
