@@ -13,4 +13,4 @@ GC_THRESHOLD=100
 SYS_PATH="ListItem(\"\") ListItem(\"$PYTHON_LIB\")"
 HASHSEED='"PYTHONHASHSEED" |-> 1'
 OS='"sys.platform" |-> "linux" "posix.O_WRONLY" |-> 1 "posix.O_CREAT" |-> 64 "posix.O_EXCL" |-> 128'
-krun --parser "./parser" --output-mode raw -cGCTHRESHOLD="$GC_THRESHOLD" -cSYSPATH="$SYS_PATH" -cCONSTANTS="$SIXTYFOUR_BIT $DEBUG $VERBOSE $HASHINFO $HASHSEED $OS" -cENVIRON="$ENVIRON" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" "$@"
+krun --parser "./parser" -cGCTHRESHOLD="$GC_THRESHOLD" -cSYSPATH="$SYS_PATH" -cCONSTANTS="$SIXTYFOUR_BIT $DEBUG $VERBOSE $HASHINFO $HASHSEED $OS" -cENVIRON="$ENVIRON" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" "$@"

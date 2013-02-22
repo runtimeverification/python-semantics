@@ -18,7 +18,7 @@ ref: ${TEST_REFERENCE}
 
 %.out: %.py python-kompiled/base.maude kpython
 	@echo "Testing $<"
-	@./kpython $< > $@.tmp
+	@./kpython --output-mode raw $< > $@.tmp
 	@- test "`grep "< k > (.).K </ k >" $@.tmp`" && cp $@.tmp $@ && echo "$< passed"
 
 
