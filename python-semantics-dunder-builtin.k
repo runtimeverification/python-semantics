@@ -567,7 +567,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "O_EXCL": Constants("posix.O_EXCL")
          }) ~>
          module "sys"({
-           "builtin_module_names" : ["_imp", "_io", "_warnings", "builtins", "marshal", "posix", "sys", "types", .Expressions]
+           "builtin_module_names" : ["_imp", "_io", "_warnings", "_weakref", "builtins", "marshal", "posix", "sys", "types", .Expressions]
          , "dont_write_bytecode" : ref("True")
          , "exc_info" : ref("sys_exc_info")
          , "flags": ref("sys.flags")(tuple(#if Constants("__debug__") #then 0 #else 1 #fi, #if Constants("PYTHONVERBOSE") #then 1 #else 0 #fi, .Expressions))
