@@ -256,6 +256,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__add__" |-> def "add_str" (1, 1, true)
            "__eq__" |-> def "eq_str" (1, 1, true)
            "__format__" |-> def "__format___str"(1, 1, true)
+           "__getitem__" |-> def "getitem_str"(1, 1, true)
            "__hash__" |-> def "hash_str" (0, 0, true)
            "__len__" |-> def "len_str"(0, 0, true)
            "__mod__" |-> def "mod_str"(1, 1, true)

@@ -152,4 +152,16 @@ module PYTHON-SEMANTICS-STRINGS
   rule alignString(S, Fill, ">", Width) => #if lengthString(S) >=Int Width #then S #else (Fill *String (Width -Int lengthString(S))) +String S #fi
   rule alignString(S, Fill, "^", Width) => #if lengthString(S) >=Int Width #then S #else (Fill *String ((Width -Int lengthString(S)) /Int 2)) +String S +String (Fill *String ((Width -Int lengthString(S)) /Int 2 +Int (Width -Int lengthString(S)) %Int 2)) #fi
 
+  rule invokeBuiltin(obj("startswith_str",_), ListItem(S:Object) ListItem(Prefix:Object), .) => test(istype(Prefix, ref("str")), startswith(strvalue(S), Prefix), test(istype(Prefix, ref("tuple")), startswith(strvalue(S), listvalue(Prefix)), raiseInternal("TypeError", "startswith first arg must be str or tuple of str")))
+  rule invokeBuiltin(obj("startswith_str",_), ListItem(S:Object) ListItem(Prefix:Object) ListItem(Start:Object), .) => ref("startswith_str")(S, Prefix, Start, lengthString(strvalue(S)))
+  rule invokeBuiltin(obj("startswith_str",_), ListItem(S:Object) ListItem(Prefix:Object) ListItem(Start:Object) ListItem(End:Object), .) => ref("startswith_str")(S[Start : End : ], Prefix)
+
+  syntax Expression ::= startswith(String, Expression) [strict(2)]
+  syntax Expression ::= startswith(String, List)
+
+  rule startswith(S:String, Prefix:Object) => test(istype(Prefix, ref("str")), #if findString(S, strvalue(Prefix), 0) ==Int 0 #then ref("True") #else ref("False") #fi, raiseInternal("TypeError", "Cannot convert object to str implicitly"))
+  rule startswith(S:String, ListItem(ref(N)) L:List) => startswith(S, ref(N)) or startswith(S, L)
+  rule startswith(S:String, .List) => ref("True")
+
+  rule invokeBuiltin(obj("getitem_str",_), ListItem(S:Object) ListItem(Item:Object), .) => test(istype(Item, ref("
 endmodule
