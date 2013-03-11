@@ -1,19 +1,19 @@
 module MACHINE-INTEGERS
 
   syntax Int ::= mult(Int, Int, Int) [function]
-  rule mult(I:Int, I2:Int, N:Nat) => wrap(I *Int I2, N) [function, anywhere]
+  rule mult(I:Int, I2:Int, N:Nat) => wrap(I *Int I2, N) 
 
   syntax Int ::= add(Int, Int, Int) [function]
   rule add(I, I2, N) => wrap(I +Int I2, N)
 
   syntax Int ::= wrap(Int, Int) [function]
-  rule wrap(I, N) => (I &Int maxInt(N)) |Int (0 -Int (I &Int sign(N))) [function, anywhere]
+  rule wrap(I, N) => (I &Int maxInt(N)) |Int (0 -Int (I &Int sign(N))) 
 
   syntax Int ::= sign(Int) [function]
-  rule sign(N) => 1 <<Int (N -Int 1) [function, anywhere]
+  rule sign(N) => 1 <<Int (N -Int 1) 
 
   syntax Int ::= maxInt(Int) [function]
-  rule maxInt(N) => sign(N) -Int 1 [function, anywhere]
+  rule maxInt(N) => sign(N) -Int 1 
 
   syntax Int ::= lcgRandom(Int, Int, Int) [function]
 

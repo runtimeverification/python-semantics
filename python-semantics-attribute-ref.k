@@ -3,19 +3,19 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-ATTRIBUTE-REF
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= mapLookup(Expression, Expression) [strict]
-                  | mapInsert(Expression, Expression, Expression) [strict]
-                  | basesLookup(Expression, Expression) [strict]
-                  | basesLookup(List, Expression) [strict(2), klabel('basesLookup2)]
-                  | descriptor(Expression, Expression, Expression, Test) [strict]
-                  | checkData(Expression, Expression) [strict]
-                  | checkDataSet(Expression, Expression, Expression) [strict]
+  syntax ObjRef ::= mapLookup(Exp, Exp) [strict]
+                  | mapInsert(Exp, Exp, Exp) [strict]
+                  | basesLookup(Exp, Exp) [strict]
+                  | basesLookup(List, Exp) [strict(2), klabel('basesLookup2)]
+                  | descriptor(Exp, Exp, Exp, Test) [strict]
+                  | checkData(Exp, Exp) [strict]
+                  | checkDataSet(Exp, Exp, Exp) [strict]
 
-  rule [attribute]: O:Object . X:Id => ref("getattr")(O, Id2String(X), .Arguments)
+  rule [attribute]: O:Object . X:Id => ref("getattr")(O, Id2String(X))
 
   rule invokeBuiltin(obj("getattr",_), ListItem(O) ListItem(S:Object), .) => try: (getmember(O, "__getattribute__", true, false, true) (S)) except ref("AttributeError") : (getmember(O, "__getattr__", true, false, false) (S) -> raise) else: pass
   rule invokeBuiltin(obj("getattr",_), ListItem(O:Object) ListItem(S:Object) ListItem(Default), .) => try: ref("getattr")(O, S) except ref("AttributeError") : Default else: pass
-  rule invokeBuiltin(obj("hasattr",_), ListItem(O) ListItem(S), .) => try: (ref("getattr")(O, S, .Arguments) ; ~> ref("True")) except ref("AttributeError") : ref("False") else: pass
+  rule invokeBuiltin(obj("hasattr",_), ListItem(O) ListItem(S), .) => try: (ref("getattr")(O, S) ; ~> ref("True")) except ref("AttributeError") : ref("False") else: pass
 
   rule invokeBuiltin(obj("getattribute_object",_), ListItem(O) ListItem(O2:Object), .) => checkData(getmember(O, O2, false, false, false), O) -> mapLookup(O, O2) -> getmember(O, O2, true, false, true)
   rule invokeBuiltin(obj("getattribute_type",_), ListItem(O) ListItem(O2), .) => checkData(getmember(O, O2, false, false, false), O) -> getmember(O, O2, true, true, true)
@@ -60,18 +60,18 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule descriptor(.Obj,_,_,_) => .Obj
 
   //TODO: add super
-  rule descriptor(O:Object, O2:Object, _, true) => (getmember(O, "__get__", false, false, false) ( O , ref("None") , O2, .Arguments)) -> O
-  rule <k> descriptor(O:Object, O2:Object, Type:Object, false) => (getmember(O, "__get__", false, false, false) ( O , O2 , Type, .Arguments )) -> O ...</k>
+  rule descriptor(O:Object, O2:Object, _, true) => (getmember(O, "__get__", false, false, false) ( O , ref("None") , O2)) -> O
+  rule <k> descriptor(O:Object, O2:Object, Type:Object, false) => (getmember(O, "__get__", false, false, false) ( O , O2 , Type )) -> O ...</k>
        <symbols>... "None" |-> None:Int ...</symbols> when id(O2) =/=K None
-  rule <k> descriptor(O:Object, O2:Object, Type:Object, false) => (getmember(O, "__get__", false, false, false) (O, O2, O2, .Arguments)) -> O ...</k>
+  rule <k> descriptor(O:Object, O2:Object, Type:Object, false) => (getmember(O, "__get__", false, false, false) (O, O2, O2)) -> O ...</k>
        <symbols>... "None" |-> None:Int ...</symbols> when id(O2) ==K None
  
   rule setmember(O:Object, Name:Object, Value:Object) => checkDataSet(getmember(O, Name, false, false, false), O, Value) -> mapInsert(O, Name, Value) -> raiseInternal("AttributeError", "object has no attribute '" +String strvalue(Name) +String "'")
 
-  rule checkDataSet(O:Object, Instance, Value) => getmember(O, "__set__", false, false, false) (O, Instance, Value, .Arguments) -> .Obj
+  rule checkDataSet(O:Object, Instance, Value) => getmember(O, "__set__", false, false, false) (O, Instance, Value) -> .Obj
   rule checkDataSet(.Obj, _, _) => .Obj
 
-  rule <k> mapInsert(obj(B,_), Name, Value) => Dict [Name] , .Expressions := Value ~> ref("None") ...</k>
+  rule <k> mapInsert(obj(B,_), Name, Value) => Dict [Name]  = Value:Exp ~> ref("None") ...</k>
        <object>
          <id> B </id>
          <oattrs>... "__dict__" |-> Dict ...</oattrs>

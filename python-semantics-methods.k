@@ -3,7 +3,7 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-METHODS
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= "method" "(" Expression "," Expression ")" [strict]
+  syntax ObjRef ::= "method" "(" Exp "," Exp ")" [strict]
 
   rule invokeBuiltin(obj("get_builtin_method",_), ListItem(Self:Object) ListItem(Instance:Object) ListItem(Owner:Object), .) => describe(Self, Instance, Owner, "get_function")
   rule invokeBuiltin(obj("get_function",_), ListItem(Self:Object) ListItem(Instance:Object) ListItem(Owner:Object), .) => describe(Self, Instance, Owner, "get_function")
@@ -19,7 +19,7 @@ module PYTHON-SEMANTICS-METHODS
 
   rule doCall((O:Object => .), _, _) ~> (. => O (.Arguments))
   rule doCall(., _ (ListItem(K:K) => .), .) ~> _:Object (Args:K => (K , Args))
-  rule doCall(., _, _ (S:String |-> K => .)) ~> _:Object (Args:K => (String2Id(S) = K, Args))
+  rule doCall(., _, _ (S:String |-> K => .)) ~> _:Object (Args:K => (String2Id(S) = K:Exp, Args))
   rule doCall(., ., .) => .
 
   rule invokeBuiltin(obj("call_builtin_function",_), ListItem(Func) L:List, M:Map) => doCall(Func, L, M)

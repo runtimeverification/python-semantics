@@ -3,7 +3,7 @@ require "python-semantics-boolean-ops.k"
 module PYTHON-SEMANTICS-OBJECTS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
-  syntax ObjRef ::= "init" "(" Expression "," Expression "," List "," Map ")" [strict(1, 2)] 
+  syntax ObjRef ::= "init" "(" Exp "," Exp "," List "," Map ")" [strict(1, 2)] 
                   | "getMros" "(" List ")"
                   | "mroMerge" "(" KList ")"
   syntax Bool ::= "notInTail" "(" ObjId "," List ")" [function]
@@ -34,10 +34,10 @@ module PYTHON-SEMANTICS-OBJECTS
   rule mroMerge(((list(L:List),,list(L2:List)) => list(L L2)),,_) when all(L L2, isMroReady)
   rule (. => list(.) ~> 0) ~> mroMerge(list(L))
   rule list(_ (. => ListItem(B))) ~> (N:Int => 0) ~> mroMerge(list((L:List => trimHead(L, B)) ListItem(list((ListItem(B:Object) => .) _)) (L2:List => trimHead(L2, B)))) when lengthList L ==Int N andBool notInTail(B, L L2)
-  rule notInTail(B, ListItem(list(ListItem(_) L)) L2) => notBool(B in Setify(L)) andBool notInTail(B, L2) [function, anywhere]
-  rule notInTail(B, .) => true [function, anywhere]
-  rule trimHead(ListItem(list(ListItem(B) L:List)) L2:List, B2) => ListItem(#if B ==K B2 #then list(L) #else list(ListItem(B) L) #fi) trimHead(L2, B2) [function, anywhere]
-  rule trimHead(., _) => . [function, anywhere]
+  rule notInTail(B, ListItem(list(ListItem(_) L)) L2) => notBool(B in Setify(L)) andBool notInTail(B, L2) 
+  rule notInTail(B, .) => true 
+  rule trimHead(ListItem(list(ListItem(B) L:List)) L2:List, B2) => ListItem(#if B ==K B2 #then list(L) #else list(ListItem(B) L) #fi) trimHead(L2, B2) 
+  rule trimHead(., _) => . 
   rule list(_) ~> _ ~> mroMerge(list(_ (ListItem(list(.)) => .) _))
   rule list(_) ~> (N:Int => N +Int 1) ~> mroMerge(list(L:List ListItem(list(ListItem(B:Object) _)) L2:List)) when lengthList L ==Int N andBool notBool notInTail(B, L L2)
   rule list(_) ~> N:Int ~> mroMerge(list(L)) => raiseInternal("TypeError", "Cannot create a consistent method resolution order (MRO)") when N ==Int lengthList(L) andBool L =/=List .
@@ -60,7 +60,7 @@ module PYTHON-SEMANTICS-OBJECTS
   rule invokeBuiltin(obj("instancecheck_type",_), ListItem(Self) ListItem(Instance), .) => bool(istype(Instance, Self))
   rule invokeBuiltin(obj("subclasscheck_type",_), ListItem(Self) ListItem(Subclass), .) => bool(hasbase(Subclass, Self))
 
-  rule invokeBuiltin(obj("isinstance",_), ListItem(Instance) ListItem(Class), .) => getmember(Class, "__instancecheck__", true, false, true)(Instance, .Arguments)
-  rule invokeBuiltin(obj("issubclass",_), ListItem(Subclass) ListItem(Class), .) => getmember(Class, "__subclasscheck__", true, false, true)(Subclass, .Arguments) 
+  rule invokeBuiltin(obj("isinstance",_), ListItem(Instance) ListItem(Class), .) => getmember(Class, "__instancecheck__", true, false, true)(Instance)
+  rule invokeBuiltin(obj("issubclass",_), ListItem(Subclass) ListItem(Class), .) => getmember(Class, "__subclasscheck__", true, false, true)(Subclass) 
 
 endmodule

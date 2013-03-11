@@ -25,7 +25,7 @@ module PYTHON-SEMANTICS-TUPLES
 
   syntax ObjRef ::= accumulateTuple(Int, Int, List)
 
-  rule accumulateTuple(Current, Mult, ListItem(ref(B)) L) => ref("hash")(ref(B), .Arguments) ~> accumulateTuple(Current, Mult, ListItem(HOLE) L) [heat]
+  rule accumulateTuple(Current, Mult, ListItem(ref(B)) L) => ref("hash")(ref(B)) ~> accumulateTuple(Current, Mult, ListItem(HOLE) L) [heat]
   rule O ~> accumulateTuple(Current, Mult, ListItem(HOLE) L) => accumulateTuple(Current, Mult, ListItem(intvalue(O)) L) [cool]
   rule <k> accumulateTuple(Current, Mult, ListItem(I:Int) L) => accumulateTuple(mult(Current xorInt I, Mult, Width), Mult +Int Addend +Int lengthList L +Int lengthList L, L) ...</k>
        <constants>... "sys.hash_info.width" |-> Width "tuple.__hash__:addend" |-> Addend ...</constants>

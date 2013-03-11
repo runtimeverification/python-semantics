@@ -7,34 +7,34 @@ import sys
 class KPythonVisitor(ast.NodeVisitor):
 
   def visit_Module(self, node):
-    return self.visit_list(node.body, "'_newline_")
+    return self.visit_list(node.body, "'_newline_", "newline")
 
   def visit_list(self, nodes, op, dotlist=None):
     visit = self.visit
     if nodes and isinstance(nodes[0], str):
       visit = self.getid
-    if dotlist and len(nodes) == 1:
+    if dotlist is not None and len(nodes) == 1:
       return op + "(" + visit(nodes[0]) + ",," + "'.List`{\"" + dotlist + "\"`}(.KList))"
     elif len(nodes) == 1:
       return visit(nodes[0])
-    elif dotlist and len(nodes) == 0:
+    elif dotlist is not None and len(nodes) == 0:
       return "'.List`{\"" + dotlist + "\"`}(.KList)"
     return op + "(" + visit(nodes[0]) + ",," + self.visit_list(nodes[1:], op, dotlist) + ")"
 
   def visit_FunctionDef(self, node):
     if not node.returns:
-      return self.decorate("'def_`(_`):_(" + self.getid(node.name) + ",," + self.getparams(node.args) + ",," + self.visit_list(node.body, "'_newline_") + ")", node.decorator_list)
+      return self.decorate("'def_`(_`):_(" + self.getid(node.name) + ",," + self.getparams(node.args) + ",," + self.visit_list(node.body, "'_newline_", "newline") + ")", node.decorator_list)
     else:
-      return self.decorate("'def_`(_`)->_:_(" + self.getid(node.name) + ",," + self.getparams(node.args) + ",," + self.visit(node.returns) + ",," + self.visit_list(node.body, "'_newline_") + ")", node.decorator_list)
+      return self.decorate("'def_`(_`)->_:_(" + self.getid(node.name) + ",," + self.getparams(node.args) + ",," + self.visit(node.returns) + ",," + self.visit_list(node.body, "'_newline_", "newline") + ")", node.decorator_list)
 
   def visit_ClassDef(self, node):
-    return self.decorate("'class_`(_`):_(" + self.getid(node.name) + ",," + self.getargs(node.bases, node.keywords, node.starargs, node.kwargs) + ",," + self.visit_list(node.body, "'_newline_") + ")", node.decorator_list)
+    return self.decorate("'class_`(_`):_(" + self.getid(node.name) + ",," + self.getargs(node.bases, node.keywords, node.starargs, node.kwargs) + ",," + self.visit_list(node.body, "'_newline_", "newline") + ")", node.decorator_list)
 
   def decorate(self, function, decorators):
     if not decorators:
       return function
     else:
-      return "'@_newline_(" + self.visit(decorators[0]) + ",," + self.decorate(function, decorators[1:]) + ")" 
+      return "'@__(" + self.visit(decorators[0]) + ",," + self.decorate(function, decorators[1:]) + ")" 
 
   def getparams(self, args):
     result = []
@@ -43,17 +43,17 @@ class KPythonVisitor(ast.NodeVisitor):
       arg = args.args[i]
       if arg.annotation:
         if i >= default_index:
-          result.append("'_:_('_=_(" + self.getid(arg.arg) + ",," + self.visit(args.defaults[i - default_index]) + "),," + self.visit(arg.annotation) + ")")
+          result.append("'annotation('_=_(" + self.getid(arg.arg) + ",," + self.visit(args.defaults[i - default_index]) + "),," + self.visit(arg.annotation) + ")")
         else:
-          result.append("'_:_(" + self.getid(arg.arg) + ",," + self.visit(arg.annotation) + ")")
+          result.append("'annotation(" + self.getid(arg.arg) + ",," + self.visit(arg.annotation) + ")")
       else:
         if i >= default_index:
-          result.append("'_=_(" + self.getid(arg.arg) + ",," + self.visit(args.defaults[i - default_index]) + ")")
+          result.append("'keyword(" + self.getid(arg.arg) + ",," + self.visit(args.defaults[i - default_index]) + ")")
         else:
           result.append(self.getid(arg.arg))
     if args.vararg:
       if args.varargannotation:
-        result.append("'_:_('*_(" + self.getid(args.vararg) + "),," + self.visit(args.varargannotation) + ")")
+        result.append("'annotation('*_(" + self.getid(args.vararg) + "),," + self.visit(args.varargannotation) + ")")
       else:
         result.append("'*_(" + self.getid(args.vararg) + ")")
     else:
@@ -62,17 +62,17 @@ class KPythonVisitor(ast.NodeVisitor):
       arg = args.kwonlyargs[i]
       if arg.annotation:
         if args.kw_defaults[i]:
-          result.append("'_:_('_=_(" + self.getid(arg.arg) + ",," + self.visit(args.kw_defaults[i]) + "),," + self.visit(arg.annotation) + ")")
+          result.append("'annotation('keyword(" + self.getid(arg.arg) + ",," + self.visit(args.kw_defaults[i]) + "),," + self.visit(arg.annotation) + ")")
         else:
-          result.append("'_:_(" + self.getid(arg.arg) + ",," + self.visit(arg.annotation) + ")")
+          result.append("'annotation(" + self.getid(arg.arg) + ",," + self.visit(arg.annotation) + ")")
       else:
         if args.kw_defaults[i]:
-          result.append("'_=_(" + self.getid(arg.arg) + ",," + self.visit(args.kw_defaults[i]) + ")")
+          result.append("'keyword(" + self.getid(arg.arg) + ",," + self.visit(args.kw_defaults[i]) + ")")
         else:
           result.append(self.getid(arg.arg))
     if args.kwarg:
       if args.kwargannotation:
-        result.append("'_:_('**_(" + self.getid(args.kwarg) + "),," + self.visit(args.kwargannotation) + ")")
+        result.append("'annotation('**_(" + self.getid(args.kwarg) + "),," + self.visit(args.kwargannotation) + ")")
       else:
         result.append("'**_(" + self.getid(args.kwarg) + ")")
     return self.dolist(result)
@@ -93,23 +93,23 @@ class KPythonVisitor(ast.NodeVisitor):
     return "'del_(" + self.visit_list(node.targets, "'_`,_","`,") + ")"
 
   def visit_Assign(self, node):
-    return "'_:=_(" + self.visit_list(node.targets, "'_`,_","`,") + ",," + self.visit(node.value) + ")"
+    return "'_=_(" + self.visit_list(node.targets, "'targets","=") + ",," + self.visit(node.value) + ")"
 
   def visit_AugAssign(self, node):
     return "'_" + self.visit(node.op) + "=_(" + self.visit(node.target) + ",," + self.visit(node.value) + ")"
 
   def visit_For(self, node):
-    return "'for_in_:_else:_(" + self.visit(node.target) + ",," + self.visit(node.iter) + ",," + self.visit_list(node.body,"'_newline_") + ",," + (self.visit_list(node.orelse,"'_newline_") if node.orelse else "'pass(.KList)") + ")"
+    return "'for_in_:_else:_(" + self.visit(node.target) + ",," + self.visit(node.iter) + ",," + self.visit_list(node.body,"'_newline_", "newline") + ",," + (self.visit_list(node.orelse,"'_newline_", "newline") if node.orelse else "'pass(.KList)") + ")"
 
   def visit_While(self, node):
-    return "'while_:_else:_(" + self.visit(node.test) + ",," + self.visit_list(node.body,"'_newline_") + ",," + (self.visit_list(node.orelse,"'_newline_") if node.orelse else "'pass(.KList)") + ")"
+    return "'while_:_else:_(" + self.visit(node.test) + ",," + self.visit_list(node.body,"'_newline_", "newline") + ",," + (self.visit_list(node.orelse,"'_newline_", "newline") if node.orelse else "'pass(.KList)") + ")"
 
   def visit_If(self, node):
     return ("'if_:_else:_(" + self.visit(node.test) + ",,"
-            + self.visit_list(node.body,"'_newline_") + ",," + (self.visit_list(node.orelse,"'_newline_") if node.orelse else "'pass(.KList)") + ")")
+            + self.visit_list(node.body,"'_newline_", "newline") + ",," + (self.visit_list(node.orelse,"'_newline_", "newline") if node.orelse else "'pass(.KList)") + ")")
 
   def visit_With(self, node):
-    return "'with_:_(" + self.visit_list(node.items, "'_`,_", "`,") + ",," + self.visit_list(node.body, "'_newline_") + ")"
+    return "'with_:_(" + self.visit_list(node.items, "'_`,_", "`,") + ",," + self.visit_list(node.body, "'_newline_", "newline") + ")"
 
   def visit_withitem(self, node):
     if node.optional_vars:
@@ -126,19 +126,21 @@ class KPythonVisitor(ast.NodeVisitor):
       return "'raise_from_(" + self.visit(node.exc) + ",," + self.visit(node.cause) + ")"
 
   def visit_Try(self, node):
-    return "'try:__else:_finally:_(" + self.visit_list(node.body, "'_newline_") + ",," + self.visit_list(node.handlers, "'_except_","except") + ",," + (self.visit_list(node.orelse, "'_newline_") if len(node.orelse) > 0 else "'pass(.KList)") + ",," + (self.visit_list(node.finalbody, "'_newline_") if len(node.finalbody) > 0 else "'pass(.KList)") + ")"
+    return "'try:__else:_finally:_(" + self.visit_list(node.body, "'_newline_", "newline") + ",," + self.visit_list(node.handlers, "'__","") + ",," + (self.visit_list(node.orelse, "'_newline_", "newline") if len(node.orelse) > 0 else "'pass(.KList)") + ",," + (self.visit_list(node.finalbody, "'_newline_", "newline") if len(node.finalbody) > 0 else "'pass(.KList)") + ")"
 
   def visit_ExceptHandler(self, node):
     if not node.type:
-      return "'except:_(" + self.visit_list(node.body, "'_newline_") + ")"
+      return "'except:_(" + self.visit_list(node.body, "'_newline_", "newline") + ")"
     elif not node.name:
-      return "'except_:_(" + self.visit(node.type) + ",," + self.visit_list(node.body, "'_newline_") + ")"
+      return "'except_:_(" + self.visit(node.type) + ",," + self.visit_list(node.body, "'_newline_", "newline") + ")"
     else:
-      return "'except_as_:_(" + self.visit(node.type) + ",," + self.getid(node.name) + ",," + self.visit_list(node.body, "'_newline_") + ")"
+      return "'except_as_:_(" + self.visit(node.type) + ",," + self.getid(node.name) + ",," + self.visit_list(node.body, "'_newline_", "newline") + ")"
 
   def visit_Assert(self, node):
-    return ("'assert_('_`,_(" + self.visit(node.test)
-            + (",,'_`,_(" + self.visit(node.msg) if node.msg else "") + ",,'.List`{\"`,\"`}(.KList)))" + (")" if node.msg else ""))
+    if node.msg:
+      return "'assert_`,_(" + self.visit(node.test) + ",," + self.visit(node.msg) + ")"
+    else:
+      return "'assert_(" + self.visit(node.test) + ")"
 
   def visit_Import(self, node):
     return "'import_(" + self.visit_list(node.names, "'_`,_", "`,") + ")"
@@ -150,7 +152,7 @@ class KPythonVisitor(ast.NodeVisitor):
     return "'nonlocal_(" + self.visit_list(node.names, "'_`,_", "`,") + ")"
 
   def visit_Expr(self, node):
-    return "'_;(" + self.visit(node.value) + ")"
+    return "'Expr(" + self.visit(node.value) + ")"
 
   def visit_Pass(self, node):
     return "'pass(.KList)"
@@ -191,25 +193,25 @@ class KPythonVisitor(ast.NodeVisitor):
     l = []
     for g in node.generators:
       l += self.visit(g)
-    return "'`[__`](" + self.visit(node.elt) + ",," + "'_@_(" + ",,'_@_(".join(l) + ",,'.List`{\"@\"`}(.KList))" + ")"*len(l)
+    return "'`[__`](" + self.visit(node.elt) + ",," + "'__(" + ",,'__(".join(l) + ",,'.List`{\"\"`}(.KList))" + ")"*len(l)
 
   def visit_SetComp(self, node):
     l = []
     for g in node.generators:
       l += self.visit(g)
-    return "'`{__`}(" + self.visit(node.elt) + ",," + "'_@_(" + ",,'_@_(".join(l) + ",,'.List`{\"@\"`}(.KList))" + ")"*len(l)
+    return "'`{__`}(" + self.visit(node.elt) + ",," + "'__(" + ",,'__(".join(l) + ",,'.List`{\"\"`}(.KList))" + ")"*len(l)
 
   def visit_DictComp(self, node):
     l = []
     for g in node.generators:
       l += self.visit(g)
-    return "'`{_:__`}(" + self.visit(node.key) + ",," + self.visit(node.value) + ",," + "'_@_(" + ",,'_@_(".join(l) + ",,'.List`{\"@\"`}(.KList))" + ")"*len(l)
+    return "'`{_:__`}(" + self.visit(node.key) + ",," + self.visit(node.value) + ",," + "'__(" + ",,'__(".join(l) + ",,'.List`{\"\"`}(.KList))" + ")"*len(l)
 
   def visit_GeneratorExp(self, node):
     l = []
     for g in node.generators:
       l += self.visit(g)
-    return "'generator`(__`)(" + self.visit(node.elt) + ",," + "'_@_(" + ",,'_@_(".join(l) + ",,'.List`{\"@\"`}(.KList))" + ")"*len(l)
+    return "'GeneratorExp(" + self.visit(node.elt) + ",," + "'__(" + ",,'__(".join(l) + ",,'.List`{\"\"`}(.KList))" + ")"*len(l)
 
   def visit_Yield(self, node):
     if node.value:
@@ -232,7 +234,7 @@ class KPythonVisitor(ast.NodeVisitor):
     for arg in args:
       nodes.append(self.visit(arg))
     for keyword in keywords:
-      nodes.append("'_=_(" + self.getid(keyword.arg) + ",," + self.visit(keyword.value) + ")")
+      nodes.append("'keyword(" + self.getid(keyword.arg) + ",," + self.visit(keyword.value) + ")")
     if starargs:
       nodes.append("'*_(" + self.visit(starargs) + ")")
     if kwargs:
@@ -273,7 +275,7 @@ class KPythonVisitor(ast.NodeVisitor):
     return "'_`[_`](" + self.visit(node.value) + ",," + self.visit(node.slice) + ")"
 
   def visit_Starred(self, node):
-    return "'*_(" + self.visit(node.value) + ")"
+    return "'Starred(" + self.visit(node.value) + ")"
 
   def visit_Name(self, node):
     return self.getid(node.id)
@@ -286,7 +288,7 @@ class KPythonVisitor(ast.NodeVisitor):
     return "'`[_`](" + self.visit_list(node.elts, "'_`,_", "`,") + ")"
 
   def visit_Tuple(self, node):
-    return "'tuple`(_`)(" + self.visit_list(node.elts, "'_`,_", "`,") + ")"
+    return "'Tuple(" + self.visit_list(node.elts, "'_`,_", "`,") + ")"
 
   def visit_Slice(self, node):
     if node.lower:
@@ -303,7 +305,7 @@ class KPythonVisitor(ast.NodeVisitor):
     return op
 
   def visit_ExtSlice(self, node):
-    return "'tuple`(_`)(" + self.visit_list(node.dims, "'_`,_", "`,") + ")"
+    return "'Tuple(" + self.visit_list(node.dims, "'_`,_", "`,") + ")"
 
   def visit_Index(self, node):
     return self.visit(node.value)
@@ -335,7 +337,7 @@ class KPythonVisitor(ast.NodeVisitor):
   def visit_BitAnd(self, node):
     return "&"
   def visit_FloorDiv(self, node):
-    return "floor/"
+    return "FloorDiv"
   def visit_Invert(self, node):
     return "'~_"
   def visit_Not(self, node):

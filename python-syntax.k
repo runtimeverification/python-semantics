@@ -8,175 +8,215 @@ module PYTHON-TOKENS
   syntax NAME ::= Id
   syntax NUMBER ::= Int | Float | Imaginary
   syntax STRING ::= String | Bytes
-  syntax NAMES ::= List{NAME,","} [seqstrict, hybrid]
+  syntax NAMES ::= NeList{NAME,","} [seqstrict, hybrid]
 endmodule
 
 module PYTHON-SYNTAX imports PYTHON-TOKENS
 
-  syntax CompFor ::= "for" Targets "in" Expressions
-  syntax CompIf ::= "if" Expression
+  syntax CompFor ::= "for" Target "in" Exp
+  syntax CompIf ::= "if" Exp
   syntax Comp ::= CompFor
                 | CompIf
-  syntax Comps ::= List{Comp,"@"}
+  syntax Comps ::= List{Comp,""}
 
 
-  syntax YieldExpression ::= "yield" Expression [strict] 
+  syntax YieldExp ::= "yield" Exp [strict] 
                            | "yield"
+                           | "yield" "from" Exp [strict]
+
   syntax KeyData ::= List{KeyDatum,","} [seqstrict]
-  syntax KeyDatum ::= Expression ":" Expression [seqstrict, hybrid]
+  //this conflicts with Argument ":" Exp below. Since I can tag all the rules
+  //in python-semantics-functions.k to have Argument as their first sort (no
+  //literal values are needed) I will go ahead and tag its inverse number with
+  //prefer in order to force all '_:_ instances whose first argument is an Exp
+  //to be KeyDatum. Ideally we would tag the KeyDatum as KeyDatum but the tool
+  //doesn't support that yet.
+  syntax KeyDatum ::= Exp ":" Exp [seqstrict, hybrid, prefer]
 
   syntax Arguments ::= List{Argument,","}
-  syntax Argument ::= Expression
-                    | NAME "=" Expression [strict(2)]
-                    // "*" Expression is implicit
-                    | "**" Expression [strict, hybrid]
+  syntax Argument ::= Exp
+                    | NAME "=" Exp [strict(2), klabel('keyword)]
+                    | "*" Exp
+                    | "**" Exp [strict, hybrid]
 
-  syntax Expression ::= ":" ":"
-                      | Expression ":" ":"
-                      | ":" Expression ":"
-                      | ":" ":" Expression
-                      | Expression ":" Expression ":" [seqstrict]
-                      | Expression ":" ":" Expression [seqstrict]
-                      | ":" Expression ":" Expression [seqstrict]
-                      | Expression ":" Expression ":" Expression [seqstrict]
+  //TODO: 2-part slices
+  syntax Slice ::= Exp
+                 | ":" ":"
+                 | Exp ":" ":"
+                 | ":" Exp ":"
+                 | ":" ":" Exp
+                 | Exp ":" Exp ":"
+                 | Exp ":" ":" Exp
+                 | ":" Exp ":" Exp
+                 | Exp ":" Exp ":" Exp
 
-  syntax Expression ::= "(" Expression ")" [bracket]
-                | NAME
+  //since sometimes NAME "=" Exp is an assignment statement and sometimes a
+  //keyword argument, we make Target directly subsort Id to disambiguate.
+  //Ideally we would tag terms with sorts though.
+  syntax TargetAndExp ::= Id
+                        | "tuple" "(" TargetAndExps ")" [strict, klabel('Tuple)]
+                        | "[" TargetAndExps "]" [strict]
+                        > Exp "." NAME [strict(1), left]
+                        | Exp "[" Slice "]" [seqstrict, left]
+
+  syntax Target ::= TargetAndExp
+                  | "*" Target [strict, klabel('Starred)]
+                  | "tuple" "(" Targets ")" [strict, klabel('Tuple)]
+                  | "[" Targets "]" [strict]
+  syntax TargetAndExps ::= NeList{TargetAndExp,","}
+  syntax Targets ::= List{Target,","}
+  syntax NeTargets ::= NeList{Target,","}
+  syntax Targets ::= NeTargets
+  syntax Exp ::= TargetAndExp
+
+  syntax Exp ::= "(" Exp ")" [bracket]
                 | NUMBER
                 | STRING
-                | "tuple" "(" Expressions ")" [strict]
-                | "[" Expression Comps "]"
-                | "generator" "(" Expression Comps ")"
-                | "{" Expression Comps "}"
-                | "{" Expression ":" Expression Comps "}"
-                | "[" Expressions "]" [strict]
+                | "tuple" "(" Exps ")" [strict, klabel('Tuple)] //TODO: use List{Exp,","}
+                | "[" Exp Comps "]"
+                | "generator" "(" Exp Comps ")" [klabel('GeneratorExp)] //TODO: Use (__)
+                | "{" Exp Comps "}"
+                | "{" Exp ":" Exp Comps "}"
+                | "[" Exps "]" [strict]
                 | "{" KeyData "}" [strict]
-                | "{" Expressions "}" [strict, klabel('Set)]
-                | YieldExpression
+                | "{" NeExps "}" [strict, klabel('Set)]
+                | YieldExp
                 | "..."
 
-                   > Expression "." NAME           [strict(1), left]
-                   | Expression "[" Expression "]" [seqstrict, left]
-                   | Expression "(" Arguments ")"  [seqstrict, left]
+                   > Exp "." NAME           [strict(1), left]
+                   | Exp "[" Slice "]" [seqstrict, left]
+                   | Exp "(" Arguments ")"  [seqstrict, left]
 
-                 > Expression "**" Expression [seqstrict, right]
+                 > Exp "**" Exp [seqstrict, right]
 
-                 > "-" Expression [strict]
-                 | "+" Expression [strict]
-                 | "~" Expression [strict]
+                 > "-" Exp [strict]
+                 | "+" Exp [strict]
+                 | "~" Exp [strict]
 
-                 > Expression "*" Expression      [seqstrict, left]
-                 | Expression "floor/" Expression [seqstrict, left]
-                 | Expression "/" Expression      [seqstrict, left]
-                 | Expression "%" Expression      [seqstrict, left]
+                 > Exp "*" Exp      [seqstrict, left]
+                 | Exp "floor/" Exp [seqstrict, left, klabel('_FloorDiv_)] //TODO: use //
+                 | Exp "/" Exp      [seqstrict, left]
+                 | Exp "%" Exp      [seqstrict, left]
 
-                 > Expression "+" Expression [seqstrict, left]
-                 | Expression "-" Expression [seqstrict, left]
+                 > Exp "+" Exp [seqstrict, left]
+                 | Exp "-" Exp [seqstrict, left]
 
-                     > Expression "<<" Expression [seqstrict, left]
-                     | Expression ">>" Expression [seqstrict, left]
+                     > Exp "<<" Exp [seqstrict, left]
+                     | Exp ">>" Exp [seqstrict, left]
 
-                   > Expression "&" Expression [seqstrict, left]
+                   > Exp "&" Exp [seqstrict, left]
 
-                   > Expression "^" Expression [seqstrict, left]
+                   > Exp "^" Exp [seqstrict, left]
 
-                  > Expression "|" Expression [seqstrict, left]
+                  > Exp "|" Exp [seqstrict, left]
 
-                      > Expression "<" Expression        [right]
-                      | Expression ">" Expression        [right]
-                      | Expression "==" Expression       [right]
-                      | Expression ">=" Expression       [right]
-                      | Expression "<=" Expression       [right]
-                      | Expression "!=" Expression       [right]
-                      | Expression "is" Expression       [right]
-                      | Expression "is" "not" Expression [right]
-                      | Expression "in" Expression       [right]
-                      | Expression "not" "in" Expression [right]
+                      > Exp "<" Exp        [right]
+                      | Exp ">" Exp        [right]
+                      | Exp "==" Exp       [right]
+                      | Exp ">=" Exp       [right]
+                      | Exp "<=" Exp       [right]
+                      | Exp "!=" Exp       [right]
+                      | Exp "is" Exp       [right]
+                      | Exp "is" "not" Exp [right]
+                      | Exp "in" Exp       [right]
+                      | Exp "not" "in" Exp [right]
 
-                   > "not" Expression [strict]
+                   > "not" Exp [strict]
 
-                   > Expression "and" Expression [strict(1), left]
+                   > Exp "and" Exp [strict(1), left]
 
-                  > Expression "or" Expression [strict(1), left]
+                  > Exp "or" Exp [strict(1), left]
 
-                      > Expression "if" Expression "else" Expression [strict(2), right]
-                      > "lambda" Parameters ":" Expression
-                      | "*" Expression [strict, hybrid]
+                      > Exp "if" Exp "else" Exp [strict(2), right]
+                      > "lambda" Parameters ":" Exp
 
   syntax "*" -/- [\*]
 
-  syntax Expressions ::= List{Expression,","}
+  syntax Exps ::= List{Exp,","}
+  syntax Exps ::= NeExps
+  syntax NeExps ::= NeList{Exp,","}
 
-  syntax Targets ::= Expressions 
-  syntax Target ::= Expression
+  syntax AssignTargets ::= NeList{Target,"="} [klabel('targets), avoid]
   
-  syntax Aliases ::= List{Alias,","}
-  syntax Alias ::= Expression
-                       | Expression "as" Expression [strict(1)]
-  syntax RelativeModule ::= ".dir"
-                          | Expression
+  syntax Aliases ::= NeList{Alias,","}
+  //TODO: separate with from import
+  syntax Alias ::= Exp
+                       | Exp "as" Exp [strict(1)]
+  syntax RelativeModule ::= "." [onlyLabel]
+                          | Exp
                           | "." RelativeModule
 
-  syntax ExceptClauses ::= List{ExceptClause,"except"}
+  syntax ExceptClauses ::= NeList{ExceptClause,""}
 
-  syntax Statement ::= Expression ";" [strict]
-                     | Targets ":=" Expression     [strict(2)]
-                     | Target "+=" Expression      [strict(2)]
-                     | Target "-=" Expression      [strict(2)]
-                     | Target "*=" Expression      [strict(2)]
-                     | Target "/=" Expression      [strict(2)]
-                     | Target "floor/=" Expression [strict(2)]
-                     | Target "%=" Expression      [strict(2)]
-                     | Target "**=" Expression     [strict(2)]
-                     | Target ">>=" Expression     [strict(2)]
-                     | Target "<<=" Expression     [strict(2)]
-                     | Target "&=" Expression      [strict(2)]
-                     | Target "^=" Expression      [strict(2)]
-                     | Target "|=" Expression      [strict(2)]
-                     | "assert" Expressions
+  syntax Stmt ::= Exp ";" [strict, klabel('Expr)] //TODO: subsort
+                     //since many instances of Exp are also intsances of Target,
+                     //this conflicts with AssignmentTargets itself. But we
+                     //never use raw AssignmentTargets outside an assignment
+                     //statement. So to fix this ambiguity (which never occurs
+                     //in complete programs), we prefer the assignemnt statement
+                     | AssignTargets "=" Exp [strict(2)] 
+                     | Target "+=" Exp       [strict(2)]
+                     | Target "-=" Exp       [strict(2)]
+                     | Target "*=" Exp       [strict(2)]
+                     | Target "/=" Exp       [strict(2)]
+                     | Target "floor/=" Exp  [strict(2), klabel('_FloorDiv=_)] //TODO: use //=
+                     | Target "%=" Exp       [strict(2)]
+                     | Target "**=" Exp      [strict(2)]
+                     | Target ">>=" Exp      [strict(2)]
+                     | Target "<<=" Exp      [strict(2)]
+                     | Target "&=" Exp       [strict(2)]
+                     | Target "^=" Exp       [strict(2)]
+                     | Target "|=" Exp       [strict(2)]
+                     | "assert" Exp
+                     | "assert" Exp "," Exp
                      | "pass"
-                     | "del" Targets
-                     | "return" Expression [strict]
+                     | "del" NeTargets
+                     | "return" Exp [strict]
                      | "return"
                      | "raise"
-                     | "raise" Expression [strict]
-                     | "raise" Expression "from" Expression [seqstrict]
+                     | "raise" Exp [strict]
+                     | "raise" Exp "from" Exp [seqstrict]
                      | "break"
                      | "continue"
                      | "import" Aliases
                      | "from" RelativeModule "import" Aliases
-                     | "from" Expression "import" "*"
+                     | "from" Exp "import" "*"
                      | "global" NAMES
-                     | "nonlocal" NAMES
-                     > "if" Expression ":" Statements "else" ":" Statements [strict(1)]
-                     | "while" Expression ":" Statements "else" ":" Statements
-                     | "for" Target "in" Expression ":" Statements "else" ":" Statements
-                     | "try" ":" Statements ExceptClauses "else" ":" Statements //"finally" ":" Statements
-                     | "try" ":" Statements ExceptClauses "else" ":" Statements "finally" ":" Statements
-                     | "try" ":" Statements "finally" ":" Statements
-                     | "with" Aliases ":" Statements [strict(1)]
+                     | "nonlocal" NAMES 
+                     //TODO: elif
+                     > "if" Exp ":" Stmts
+                     | "if" Exp ":" Stmts "else" ":" Stmts [strict(1)]
+                     | "while" Exp ":" Stmts
+                     | "while" Exp ":" Stmts "else" ":" Stmts
+                     | "for" Target "in" Exp ":" Stmts
+                     | "for" Target "in" Exp ":" Stmts "else" ":" Stmts
+                     | "try" ":" Stmts ExceptClauses
+                     | "try" ":" Stmts ExceptClauses "else" ":" Stmts //"finally" ":" Stmts
+                     | "try" ":" Stmts ExceptClauses "else" ":" Stmts "finally" ":" Stmts
+                     | "try" ":" Stmts "finally" ":" Stmts
+                     | "with" Aliases ":" Stmts [strict(1)]
                      | Decorated
 
-  syntax Statements ::= Statement
-                      > Statement "newline" Statements 
+  syntax Stmts ::= Stmt
+                      > List{Stmt,"newline"}
 
-  syntax ExceptClause ::= "except" ":" Statements
-                        | "except" Expression ":" Statements [strict(1)]
-                        | "except" Expression "as" NAME ":" Statements [strict(1)]
+  syntax ExceptClause ::= "except" ":" Stmts
+                        | "except" Exp ":" Stmts [strict(1)]
+                        | "except" Exp "as" NAME ":" Stmts [strict(1)]
 
   syntax Decorated ::= ClassDef
                      | FuncDef
-                     | "@" Expression "newline" Decorated [strict(1)]
+                     | "@" Exp Decorated [strict(1)]
 
   syntax Parameters ::= List{Parameter,","} [seqstrict]
   syntax Parameter ::= Argument
-                     | Argument ":" Expression
+                     | Argument ":" Exp [klabel('annotation)]
                      | "*"
 
-  syntax FuncDef ::= "def" NAME "(" Parameters ")" "->" Expression ":" Statements
-                   | "def" NAME "(" Parameters ")" ":" Statements
+  syntax FuncDef ::= "def" NAME "(" Parameters ")" "->" Exp ":" Stmts
+                   | "def" NAME "(" Parameters ")" ":" Stmts
 
 
-  syntax ClassDef ::= "class" NAME "(" Arguments ")" ":" Statements [strict(2)]
+  syntax ClassDef ::= "class" NAME "(" Arguments ")" ":" Stmts [strict(2)]
 
 endmodule

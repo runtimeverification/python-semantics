@@ -4,13 +4,13 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   imports PYTHON-SEMANTICS-OPS
 
   syntax ObjRef ::= bool(K) [strict]
-                  | coerceBoolean(Expression, Expression, Expression, Expression, String) [strict(1, 2)]
-                  | len(Expression) [strict]
-                  | checkBool(Expression) [strict]
-                  | checkInt(Expression) [strict]
-                  | checkLen(Expression) [strict]
-                  | contains(K, Expression) [strict]
-                  | index(Expression) [strict]
+                  | coerceBoolean(Exp, Exp, Exp, Exp, String) [strict(1, 2)]
+                  | len(Exp) [strict]
+                  | checkBool(Exp) [strict]
+                  | checkInt(Exp) [strict]
+                  | checkLen(Exp) [strict]
+                  | contains(K, Exp) [strict]
+                  | index(Exp) [strict]
 
   rule bool(true) => ref("True")
   rule bool(false) => ref("False")
@@ -27,25 +27,25 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule checkLen(.Obj) => .Obj
   rule invokeBuiltin(obj("len",_), ListItem(O), .) => len(O) -> raiseInternal("TypeError", "object has no len()")
 
-  syntax Test ::= plbool(Expression) [strict]
-  rule plbool(obj(_, <oattrs>... "__value__" |-> I:Int ...</oattrs>)) => I =/=Int 0 [function, anywhere]
+  syntax Test ::= plbool(Exp) [strict]
+  rule plbool(obj(_, <oattrs>... "__value__" |-> I:Int ...</oattrs>)) => I =/=Int 0 
 
   rule not O:Object => bool(negate(plbool(bool(O))))
   rule O:Object and K:K => test(plbool(bool(O)), K, O)
   rule O:Object or K => test(plbool(bool(O)), O, K)
 
-  syntax ObjRef ::= "comparison" "(" Expression "," Expression "," KLabel ")" [strict(1), klabel('comparison)]
+  syntax ObjRef ::= "comparison" "(" Exp "," Exp "," KLabel ")" [strict(1), klabel('comparison)]
 
-  rule A:Expression is B:Expression => comparison(A, B, '_is_) [macro, anywhere]
-  rule A:Expression is not B:Expression => comparison(A, B, '_isnot_) [macro, anywhere]
-  rule A:Expression < B:Expression => comparison(A, B, '_<_) [macro, anywhere]
-  rule A:Expression > B:Expression => comparison(A, B, '_>_) [macro, anywhere]
-  rule A:Expression <= B:Expression => comparison(A, B, '_<=_) [macro, anywhere]
-  rule A:Expression >= B:Expression => comparison(A, B, '_>=_) [macro, anywhere]
-  rule A:Expression != B:Expression => comparison(A, B, '_!=_) [macro, anywhere]
-  rule A:Expression == B:Expression => comparison(A, B, '_==_) [macro, anywhere]
-  rule A:Expression in B:Expression => comparison(A, B, '_in_) [macro, anywhere]
-  rule A:Expression not in B:Expression => comparison(A, B, '_notin_) [macro, anywhere]
+  rule A:Exp is B:Exp => comparison(A, B, '_is_) [macro]
+  rule A:Exp is not B:Exp => comparison(A, B, '_isnot_) [macro]
+  rule A:Exp < B:Exp => comparison(A, B, '_<_) [macro]
+  rule A:Exp > B:Exp => comparison(A, B, '_>_) [macro]
+  rule A:Exp <= B:Exp => comparison(A, B, '_<=_) [macro]
+  rule A:Exp >= B:Exp => comparison(A, B, '_>=_) [macro]
+  rule A:Exp != B:Exp => comparison(A, B, '_!=_) [macro]
+  rule A:Exp == B:Exp => comparison(A, B, '_==_) [macro]
+  rule A:Exp in B:Exp => comparison(A, B, '_in_) [macro]
+  rule A:Exp not in B:Exp => comparison(A, B, '_notin_) [macro]
 
   context comparison(O:Object, HOLE, _) when getKLabel HOLE =/=KLabel 'comparison
   context comparison(O:Object, comparison(HOLE, _, _), _)

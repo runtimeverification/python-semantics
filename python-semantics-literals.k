@@ -5,45 +5,45 @@ module PYTHON-SEMANTICS-LITERALS
   imports PYTHON-SEMANTICS-COMMON
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
-  syntax ObjRef ::= "hash" "(" Expression ")" [strict]
+  syntax ObjRef ::= "hash" "(" Exp ")" [strict]
 
-  syntax K ::= "processDict" "(" Expression "," Map ")" [strict(1)]
-             | "processDictElement" "(" Expression "," Expression "," Expression "," Expression ")" [strict]
-             | "processSet" "(" Expression "," List ")" [strict(1)]
-             | "processSetElement" "(" Expression "," Expression "," Expression ")" [strict]
-             | "tableInsert" "(" ObjId "," Int "," Expression "," K ")" [strict(3)]
-             | "tableLookup" "(" ObjId "," Int "," Expression ")" [strict(3)]
-             | "tableDelete" "(" ObjId "," Int "," Expression ")" [strict(3)]
-             | "bucketInsert" "(" ObjId "," Int "," Expression "," Expression "," List "," List ")" [strict(3, 4)]
-             | "bucketLookup" "(" Expression "," List ")" [strict(1)]
-             | "bucketDelete" "(" ObjId "," Int "," Expression "," List "," List ")" [strict(3)]
+  syntax K ::= "processDict" "(" Exp "," Map ")" [strict(1)]
+             | "processDictElement" "(" Exp "," Exp "," Exp "," Exp ")" [strict]
+             | "processSet" "(" Exp "," List ")" [strict(1)]
+             | "processSetElement" "(" Exp "," Exp "," Exp ")" [strict]
+             | "tableInsert" "(" ObjId "," Int "," Exp "," K ")" [strict(3)]
+             | "tableLookup" "(" ObjId "," Int "," Exp ")" [strict(3)]
+             | "tableDelete" "(" ObjId "," Int "," Exp ")" [strict(3)]
+             | "bucketInsert" "(" ObjId "," Int "," Exp "," Exp "," List "," List ")" [strict(3, 4)]
+             | "bucketLookup" "(" Exp "," List ")" [strict(1)]
+             | "bucketDelete" "(" ObjId "," Int "," Exp "," List "," List ")" [strict(3)]
              | "setBucket" "(" ObjId "," Int "," List ")"
  
   syntax ObjId ::= "key" "(" KeyDatum ")" [function]
-  rule key(B : _) => B [function, anywhere]
+  rule key(B : _) => B 
 
   syntax ObjId ::= "value" "(" KeyDatum ")" [function]
-  rule value(_ : B) => B [function, anywhere]
+  rule value(_ : B) => B 
 
   rule <k> I:Int => immutable(I,ref("int")) ...</k>
   rule <k> S:String => immutable(S,ref("str")) ...</k>
   rule <k> b S:String => immutable(S, ref("bytes")) ...</k>
   rule <k> F:Float => immutable(F,ref("float")) ...</k>
-  rule <k> tuple(Osc:Expressions) => immutable(list(Refify(Idify(Listify(Osc)))), ref("tuple")) ...</k> when isKResult(Osc)
-  rule <k> [ Osc:Expressions ] => mutable(list(Refify(Idify(Listify(Osc)))), ref("list")) ...</k> when isKResult(Osc)
-  rule [set]: <k> { Osc:Expressions } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k> when isKResult(Osc)
+  rule <k> tuple(Osc:Exps) => immutable(list(Refify(Idify(Listify(Osc)))), ref("tuple")) ...</k> when isKResult(Osc)
+  rule <k> [ Osc:Exps ] => mutable(list(Refify(Idify(Listify(Osc)))), ref("list")) ...</k> when isKResult(Osc)
+  rule [set]: <k> { Osc:NeExps } => processSet(mutable(map(.),ref("set")), Listify(Osc)) ...</k> when isKResult(Osc)
   rule <k> { OPs:KeyData } => processDict(mutable(map(.),ref("dict")), Mapify(OPs)) ...</k> when isKResult(OPs)
 
-  rule <k> (. => processDictElement(Dict:Object, Key:Object, (ref("hash")(Key, .Arguments)), Value:K)) ~> processDict(Dict, _ (Key |-> Value => .)) ...</k>
+  rule <k> (. => processDictElement(Dict:Object, Key:Object, (ref("hash")(Key)), Value:K)) ~> processDict(Dict, _ (Key |-> Value => .)) ...</k>
 
   rule <k> processDict(Dict:Object, .) => ref(id(Dict)) ...</k>
 
-  rule <k> (. => processSetElement(SetObj:Object, Element:Object, (ref("hash")(Element, .Arguments)))) ~> processSet(SetObj, (ListItem(Element) => .) _) ...</k>
+  rule <k> (. => processSetElement(SetObj:Object, Element:Object, (ref("hash")(Element)))) ~> processSet(SetObj, (ListItem(Element) => .) _) ...</k>
   context processSet(_, ListItem(HOLE) _) when getKLabel HOLE ==KLabel 'ref`(_`)
 
   rule <k> processSet(SetObj:Object, .) => ref(id(SetObj)) ...</k>
 
-  syntax K ::= "checkHash" "(" Expression ")" [strict]
+  syntax K ::= "checkHash" "(" Exp ")" [strict]
 
   rule <k> invokeBuiltin(obj("hash",_), ListItem(O:Object), .) => checkHash(getmember(O, "__hash__", true, false, false) (.Arguments) -> (raiseInternal("TypeError", "unhashable type"))) ...</k>
 
@@ -62,7 +62,7 @@ module PYTHON-SEMANTICS-LITERALS
   rule <k> tableInsert(B, H, Key, K) => bucketInsert(B, H, Key, K, Values:List, .) ...</k>
        <object>...
          <id>B</id>
-         <oattrs>... "__value__" |-> map(_ H |-> list(Values)) ...</oattrs>
+         <oattrs>... "__value__" |-> map(_ (H |-> list(Values))) ...</oattrs>
        ...</object>
 
   rule bucketInsert(B, H, Key, K, ListItem(Key2 : Value2) Suffix:List, Prefix:List) => test(plbool(Key == Key2), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem(Key2 : Value2)))
@@ -88,32 +88,32 @@ module PYTHON-SEMANTICS-LITERALS
   rule <k> tableLookup(B, H, Key) => bucketLookup(Key, Values) ...</k>
        <object>...
          <id>B</id>
-         <oattrs>... "__value__" |-> map(_ H |-> list(Values)) ...</oattrs>
+         <oattrs>... "__value__" |-> map(_ (H |-> list(Values))) ...</oattrs>
        ...</object>
 
-  rule <k> tableLookup(B, H:Int, Key) => raise ref("KeyError") (Key, .Arguments) ...</k>
+  rule <k> tableLookup(B, H:Int, Key:Object) => raise ref("KeyError") (Key) ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
   rule bucketLookup(Key, ListItem(Key2 : Value2) Suffix) => test(plbool(Key == Key2), Value2, bucketLookup(Key, Suffix))
-  rule bucketLookup(Key, .) => raise ref("KeyError") (Key, .Arguments)
+  rule bucketLookup(Key:Object, .) => raise ref("KeyError") (Key)
 
   rule <k> tableDelete(B, H, Key) => bucketDelete(B, H, Key, Values, .) ...</k>
        <object>...
          <id>B</id>
-         <oattrs>... "__value__" |-> map(_ H |-> list(Values)) ...</oattrs>
+         <oattrs>... "__value__" |-> map(_ (H |-> list(Values))) ...</oattrs>
        ...</object>
 
-  rule <k> tableDelete(B, H:Int, Key) => raise ref("KeyError") (Key, .Arguments) ...</k>
+  rule <k> tableDelete(B, H:Int, Key:Object) => raise ref("KeyError") (Key) ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
   rule bucketDelete(B, H, Key, ListItem(Key2 : Value2) Suffix, Prefix) => test(plbool(Key == Key2), setBucket(B, H, Prefix Suffix), bucketDelete(B, H, Key, Suffix, Prefix ListItem(Key2 : Value2)))
-  rule bucketDelete(_, _, Key, ., _) => raise ref("KeyError") (Key, .Arguments)
+  rule bucketDelete(_, _, Key:Object, ., _) => raise ref("KeyError") (Key)
 
   rule <k> mutable(V:Value,O) => mutable("__value__" |-> V "__revision__" |-> 0, O) ...</k>
   rule <k> mutable(M,obj(B,ObjState)) => mutable(M,N,obj(B,ObjState)) ...</k>
@@ -129,7 +129,7 @@ module PYTHON-SEMANTICS-LITERALS
   rule immutable(V:Value, O) => immutable("__value__" |-> V, O)
 
   syntax K ::= pair(Map, ObjId)
-  syntax ObjRef ::= mutable(Map, Int, Expression) [strict(3)]
+  syntax ObjRef ::= mutable(Map, Int, Exp) [strict(3)]
 
   rule <k> immutable(M, obj(B,_)) => O ...</k>
        <literals>... pair(M, B) |-> O ...</literals>

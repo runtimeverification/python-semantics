@@ -19,6 +19,6 @@ module PYTHON-SEMANTICS-ARITHMETIC-OPS
   rule <k> O ^ O2 => coerceBinary(O, O2, "__xor__", "__rxor__", "^") ...</k>
   rule <k> O | O2 => coerceBinary(O, O2, "__or__", "__ror__", "|") ...</k>
 
-  rule [subscript]: <k> O [ O2 ] => (getmember(O, "__getitem__", true, false, false) (O2, .Arguments)) -> raiseInternal("TypeError", "object is not subscriptable") ...</k>
+  rule [subscript]: <k> O:Object [ O2:Object ] => (getmember(O, "__getitem__", true, false, false) (O2)) -> raiseInternal("TypeError", "object is not subscriptable") ...</k>
 
 endmodule

@@ -61,16 +61,16 @@ module PYTHON-SEMANTICS-DICTS
 
   rule invokeBuiltin(obj("setitem_dict",_), ListItem(O) ListItem(Key) ListItem(Value:Object), .) => processDict(O, Key |-> Value) ; ~> ref("None") 
 
-  rule invokeBuiltin(obj("delitem_dict",_), ListItem(obj(B,_)) ListItem(Key), .) => ref("hash")(Key, .Arguments) ~> tableDelete(B, 0, Key) ~> ref("None")
+  rule invokeBuiltin(obj("delitem_dict",_), ListItem(obj(B,_)) ListItem(Key:Object), .) => ref("hash")(Key) ~> tableDelete(B, 0, Key) ~> ref("None")
   rule (O:Object => .) ~> tableDelete(_,(_ => intvalue(O)),_)
 
-  syntax K ::= makeDict(Int, Expression) [strict(2)]
+  syntax K ::= makeDict(Int, Exp) [strict(2)]
 
   rule invokeBuiltin(obj("new_dict",_), ListItem(O) _, .) => newHelper(O, ref("dict"), .) ~> {.KeyData}
   rule invokeBuiltin(obj("init_dict",_), ListItem(_:Object), .) => ref("None")
   rule invokeBuiltin(obj("init_dict",_), ListItem(O) ListItem(O2:Object), .) => mapping(O2, .Obj) -> iterate(O2, .) ~> makeDict(0, O)
 
-  rule (. => O[Key:K], .Expressions := Value) ~> map((Key |-> Value => .) _) ~> makeDict(_, O) 
+  rule (. => O[Key:K] = Value:Exp) ~> map((Key |-> Value => .) _) ~> makeDict(_, O) 
   rule map(.) ~> makeDict(_, O) => ref("None")
 
   rule <k> list(_) ~> (. => map(.)) ~> makeDict(_, _) ...</k>
@@ -81,10 +81,10 @@ module PYTHON-SEMANTICS-DICTS
 
   rule invokeBuiltin(obj("eq_dict",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "dict", "dict", equalDict(O, O2))
 
-  syntax ObjRef ::= equalDict(Expression, Expression) [strict]
+  syntax ObjRef ::= equalDict(Exp, Exp) [strict]
   rule equalDict(O:Object, O2) => bool(lengthList DeSetify(keys(mapvalue(O))) ==Int lengthList DeSetify(keys(mapvalue(O2)))) and equalDict(mapvalue(O), O2)
-  syntax ObjRef ::= equalDict(Map, Expression) [strict(2)]
-  rule equalDict(Key |-> Value M, Dict) => Key in Dict and Dict[Key] == Value and equalDict(M, Dict)
+  syntax ObjRef ::= equalDict(Map, Exp) [strict(2)]
+  rule equalDict(Key |-> Value M:Map, Dict) => Key in Dict and Dict[Key] == Value and equalDict(M, Dict)
   rule equalDict(.Map, _) => ref("True")
 
   rule invokeBuiltin(obj("contains_dict",_), ListItem(Dict) ListItem(Key:Object), .) => try: (ref("hash")(Key) ~> tableLookup(id(Dict), 0, Key) ; ~> ref("True")) except ref("KeyError"): ref("False") else: pass

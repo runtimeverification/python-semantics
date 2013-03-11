@@ -3,27 +3,27 @@ require "python-semantics-literals.k"
 module PYTHON-SEMANTICS-CALLS
   imports PYTHON-SEMANTICS-LITERALS
 
-  syntax K ::= "processArgs" "(" List "," Map "," Expression "," Expression ")" [strict(3, 4)]
+  syntax K ::= "processArgs" "(" List "," Map "," Exp "," Exp ")" [strict(3, 4)]
              | "sortArgs" "(" List ")"
-             | "matchArgs" "(" Expression "," Expression "," List "," Map "," Map "," Int "," Bool "," Bool ")" [strict(1, 2)]
-             | "addArg" "(" Expression "," Expression ")" [strict]
-             | "addKwArg" "(" String "," Expression "," Expression ")" [strict(2)]
-             | "addDefaults" "(" Int "," Expression ")" [strict(2)]
-             | "addDefault" "(" Expression ")" [strict]
-             | "addKwDefaults" "(" Int "," Expression ")" [strict(2)]
-             | "addKwDefault" "(" Expression ")" [strict]
+             | "matchArgs" "(" Exp "," Exp "," List "," Map "," Map "," Int "," Bool "," Bool ")" [strict(1, 2)]
+             | "addArg" "(" Exp "," Exp ")" [strict]
+             | "addKwArg" "(" String "," Exp "," Exp ")" [strict(2)]
+             | "addDefaults" "(" Int "," Exp ")" [strict(2)]
+             | "addDefault" "(" Exp ")" [strict]
+             | "addKwDefaults" "(" Int "," Exp ")" [strict(2)]
+             | "addKwDefault" "(" Exp ")" [strict]
 
   syntax Int ::= "numArgs" "(" Object ")" [function]
-  rule numArgs(O) => getattr(O, "co_argcount") +Int getattr(O, "co_kwonlyargcount") +Int ((getattr(O, "co_flags") &Int 4) >>Int 2) +Int ((getattr(O, "co_flags") &Int 8) >>Int 3) [function, anywhere]
+  rule numArgs(O) => getattr(O, "co_argcount") +Int getattr(O, "co_kwonlyargcount") +Int ((getattr(O, "co_flags") &Int 4) >>Int 2) +Int ((getattr(O, "co_flags") &Int 8) >>Int 3) 
 
   rule <k> obj(S:String,ObjState:Bag) (Args:K) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeBuiltin(obj(S,ObjState), ., .) ...</k> when isKResult(Args)
   rule <k> invokeBuiltin(obj("call_function",_), ListItem(O:Object) L:List, M:Map) => invokeFunction(O, L, M) ...</k>
   rule <k> invokeFunction(O, L, M) => matchArgs(O, O . String2Id("__code__"), L, M, ., 0, false, false) ...</k>
 
-  rule isKResult(_ = K) => true when isKResult(K) [function, anywhere]
+  rule isKResult(_:NAME = K) => true when isKResult(K) 
 
   rule sortArgs((ListItem(O:Object) => .) _) ~> processArgs(_ (. => ListItem(O)),.,_,_)
-  rule sortArgs((ListItem(X:Id = O:Object) => .) _) ~> processArgs(_,M (. => Id2String(X) |-> O),_,_) when notBool(Id2String(X) in keys(M))
+  rule sortArgs((ListItem(X:NAME = O:Object) => .) _) ~> processArgs(_,M (. => Id2String(X) |-> O),_,_) when notBool(Id2String(X) in keys(M))
   rule sortArgs((ListItem(* O:Object) => .) _) ~> processArgs(_,_,(_ => O),_)
   rule sortArgs((ListItem(** O:Object) => .) _) ~> processArgs(_,_,_,(_ => O))
   rule sortArgs(.) => .
@@ -54,7 +54,7 @@ module PYTHON-SEMANTICS-CALLS
   rule (. => if S in Code . String2Id("co_varnames") [0 : getattr(Code, "co_argcount") +Int getattr(Code, "co_kwonlyargcount") : ] : addArg(S, O) else: addKwArg(S, O, Code . String2Id("co_varnames") [numArgs(Code) -Int 1])) ~> matchArgs(_, Code:Object, ., (S |-> O => .) _, M, _, _, HasKwarg) when notBool(String2Id(S) in keys(M)) andBool (HasKwarg orBool getattr(Code, "co_flags") &Int 8 ==Int 0)
  
   // cannot specify a parameter both positionally and as a keyword
-  rule matchArgs(Function:Object, Code:Object, ., _ S |-> _, _ X |-> _, _, _, _) => raiseInternal("TypeError", name(Function) + "() got multiple values for keyword argument '" +String S +String "'") when Id2String(X) ==String S
+  rule matchArgs(Function:Object, Code:Object, ., _ (S |-> _), _ (X |-> _), _, _, _) => raiseInternal("TypeError", name(Function) + "() got multiple values for keyword argument '" +String S +String "'") when Id2String(X) ==String S
 
   // create dict for kwargs if present
   rule (. => addArg(Code . String2Id("co_varnames") [numArgs(Code) -Int 1], {.KeyData})) ~> matchArgs(_, Code:Object, _, _, M, _, _, (false => true)) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
@@ -71,15 +71,15 @@ module PYTHON-SEMANTICS-CALLS
 
   context addKwArg(S, _, HOLE) ~> matchArgs(_, Code:Object, _, _, _, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
   rule addKwArg(S, _, _) ~> matchArgs(Function:Object, Code:Object, _, _, _, _, _, _) => raiseInternal("TypeError", name(Function) + "() got an unexpected keyword argument '" +String S +String "'") when (getattr(Code, "co_flags") &Int 8) ==Int 0
-  rule (addKwArg(S:String, O:Object, O2:Object) => (M:Map(String2Id(strvalue(O2))) [S:String], .Expressions) := O) ~> matchArgs(_, Code:Object, _, _, M, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
+  rule (addKwArg(S:String, O:Object, O2:Object) => (M:Map(String2Id(strvalue(O2))) [S:String]) = O) ~> matchArgs(_, Code:Object, _, _, M, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
 
   rule <k> matchArgs(obj(B:ObjId,_),Code:Object,.,.,M,_, HasVararg, HasKwarg) => invoke(ref(B), M) ...</k> when lengthMap M ==Int numArgs(Code) andBool (HasVararg orBool getattr(Code, "co_flags") &Int 4 ==Int 0) andBool (HasKwarg orBool getattr(Code, "co_flags") &Int 8 ==Int 0)
 
   syntax ListItem ::= (K, Bag, Int, List)
-  syntax ObjRef ::= makeLocals(Expression, Expression) [strict(1, 2)]
-                  | makeLocals(List, List, Expression) [strict(3)]
-                  | makeCells(Expression, Expression, Expression, Int) [strict(1, 2, 3)]
-                  | makeCells(List, List, List, Expression, Int) [strict(4)]
+  syntax ObjRef ::= makeLocals(Exp, Exp) [strict(1, 2)]
+                  | makeLocals(List, List, Exp) [strict(3)]
+                  | makeCells(Exp, Exp, Exp, Int) [strict(1, 2, 3)]
+                  | makeCells(List, List, List, Exp, Int) [strict(4)]
 
   rule <k> invoke(obj(_:Int,<oattrs>... "__closure__" |-> Closure "__code__" |-> ref(Code) "__globals__" |-> Globals ...</oattrs>), M) ~> K:K => executeFrame(N, ref(Code), ref(Frame), makeLocals(ref(Code) . String2Id("co_freevars"), Closure), Globals, Globals ["__builtins__"], makeCells(ref(Code) . String2Id("co_freevars"), ref(Code) . String2Id("co_cellvars"), Closure, N), M) ~> return </k>
        <nextLoc> N => N +Int 1 </nextLoc>
@@ -101,12 +101,12 @@ module PYTHON-SEMANTICS-CALLS
   rule newFrame => <xstack> .List </xstack> <lstack> .List </lstack>
 
   rule makeLocals(Free:Object, O:Object) => makeLocals(listvalue(Free), listvalue(O), {.KeyData})
-  rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (((O[N:K]), .Expressions) := getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
+  rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (((O[N:K])) = getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
   rule makeLocals(.List, .List, O:Object) => ref(id(O))
 
   rule makeCells(Free:Object, Cells:Object, O:Object, N) => makeCells(listvalue(Free), listvalue(Cells), listvalue(O), {.KeyData}, N)
-  rule (. => ((O[N:K]), .Expressions) := N2) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
-  rule <k> (. => ((O[N:K]), .Expressions) := ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O:Object, Frame:Int) ...</k>
+  rule (. => ((O[N:K])) = N2) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
+  rule <k> (. => ((O[N:K])) = ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O:Object, Frame:Int) ...</k>
        <nextLoc> N2 => N2 +Int 1 </nextLoc>
        (. => <object>...
          <id>N2</id>

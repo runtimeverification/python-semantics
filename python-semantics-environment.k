@@ -3,11 +3,11 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-ENVIRONMENT
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ObjRef ::= "envLookup" "(" String "," Expression "," Expression ")" [strict(2, 3)]
-  syntax K ::= "doBind2" "(" String "," Expression "," Expression "," Expression ")" [strict(3, 4)]
+  syntax ObjRef ::= "envLookup" "(" String "," Exp "," Exp ")" [strict(2, 3)]
+  syntax K ::= "doBind2" "(" String "," Exp "," Exp "," Exp ")" [strict(3, 4)]
 
-  rule unbind(X) => bind(X, ref(0)) [macro, anywhere]
-  rule <k> bind(X:Id, B:Expression) => doBind(Id2String(X), B, ref(N)) ...</k>
+  rule unbind(X) => bind(X, ref(0)) [macro]
+  rule <k> bind(X:Id, B:Exp) => doBind(Id2String(X), B, ref(N)) ...</k>
        <frameObject> N </frameObject>
 
   rule <k> X:Id => envLookup(Id2String(X),ref(N),ref(N) . String2Id("f_code")) ...</k>
@@ -44,8 +44,8 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                             S in Code . String2Id("co_cellvars") or
                                             S in Code . String2Id("co_freevars") :
                                               test(B ==K 0,
-                                                   (del Frame . String2Id("f_locals") [S], .Expressions),
-                                                   Frame . String2Id("f_locals") [S], .Expressions := ref(B))
+                                                   (del Frame . String2Id("f_locals") [S]),
+                                                   Frame . String2Id("f_locals") [S] = ref(B))
                                          else: pass ~>
                                          if S in Code . String2Id("co_cellvars") or 
                                             S in Code . String2Id("co_freevars") :
@@ -58,8 +58,8 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                          else: pass ~>
                                          if S in Code . String2Id("co_names") :
                                               test(B ==K 0,
-                                                   (del ((Frame . String2Id("f_globals") [S]), .Expressions)),
-                                                   (((Frame . String2Id("f_globals") [S]), .Expressions) := ref(B)))
+                                                   (del ((Frame . String2Id("f_globals") [S]))),
+                                                   (((Frame . String2Id("f_globals") [S])) = ref(B)))
                                          else: pass
 
   rule [globals]: <k> invokeBuiltin(obj("globals",_), ., .) => ref(N) . String2Id("f_globals") ...</k>

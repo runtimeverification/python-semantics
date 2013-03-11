@@ -567,21 +567,21 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "O_EXCL": Constants("posix.O_EXCL")
          }) ~>
          module "sys"({
-           "builtin_module_names" : ["_imp", "_io", "_warnings", "_weakref", "builtins", "marshal", "posix", "sys", "types", .Expressions]
+           "builtin_module_names" : ["_imp", "_io", "_warnings", "_weakref", "builtins", "marshal", "posix", "sys", "types"]
          , "dont_write_bytecode" : ref("True")
          , "exc_info" : ref("sys_exc_info")
-         , "flags": ref("sys.flags")(tuple(#if Constants("__debug__") #then 0 #else 1 #fi, #if Constants("PYTHONVERBOSE") #then 1 #else 0 #fi, .Expressions))
-         , "hash_info" : ref("sys.hash_info")(tuple(Constants("sys.hash_info.width"), Constants("sys.hash_info.modulus"), Constants("sys.hash_info.inf"), Constants("sys.hash_info.nan"), Constants("sys.hash_info.imag"), .Expressions))
+         , "flags": ref("sys.flags")(tuple(#if Constants("__debug__") #then 0 #else 1 #fi, #if Constants("PYTHONVERBOSE") #then 1 #else 0 #fi, .Exps))
+         , "hash_info" : ref("sys.hash_info")(tuple(Constants("sys.hash_info.width"), Constants("sys.hash_info.modulus"), Constants("sys.hash_info.inf"), Constants("sys.hash_info.nan"), Constants("sys.hash_info.imag"), .Exps))
          , "hexversion": 50528496
-         , "implementation" : ref("sys.implementation")(tuple("kpython", ref("sys.version_info")(tuple(1, 0, 0, "alpha", 1, .Expressions)), 16777377 /* 0x010000A1 */, ref("None")))
-         , "meta_path": [.Expressions]
+         , "implementation" : ref("sys.implementation")(tuple("kpython", ref("sys.version_info")(tuple(1, 0, 0, "alpha", 1)), 16777377 /* 0x010000A1 */, ref("None")))
+         , "meta_path": [.Exps]
          , "modules" : {.KeyData}
          , "path" : [DeListify(L)]
-         , "path_hooks" : [.Expressions]
+         , "path_hooks" : [.Exps]
          , "path_importer_cache" : {.KeyData}
          , "platform" : Constants("sys.platform")
          , "version" : "3.3.0 (kpython version 1.0.0a1)"
-         , "version_info" : ref("sys.version_info")(tuple(3, 3, 0, "final", 0, .Expressions))
+         , "version_info" : ref("sys.version_info")(tuple(3, 3, 0, "final", 0))
          }) ~>
          module "types"({
            "BuiltinFunctionType" : ref("builtin-function")

@@ -17,18 +17,18 @@ module PYTHON-SEMANTICS-GENERATOR
   rule invokeBuiltin(obj("throw_generator",_), ListItem(O) ListItem(Type) ListItem(Value), .) => ref("throw_generator")(O, Type, Value, ref("None"))
   rule invokeBuiltin(obj("throw_generator",_), ListItem(O) ListItem(Type) ListItem(Value) ListItem(Traceback), .) => test(or(istype(Traceback, ref("NoneType")), istype(Traceback, ref("traceback"))), test(or(istype(Type, ref("BaseException")), hasbase(Type, ref("BaseException"))), test(and(istype(Type, ref("BaseException")), negate(istype(Value, ref("NoneType")))), raiseInternal("TypeError", "instance exception may not have a separate value"), createRaiseStatement(O, Type, .Obj if Value is ref("None") else Value, .Obj if Traceback is ref("None") else Traceback)), raiseInternal("TypeError", "exceptions must be classes or instances deriving from BaseException")), raiseInternal("TypeError", "throw() third argument must be a traceback object"))
 
-  syntax ObjRef ::= createRaiseStatement(Expression, Expression, Expression, Expression) [strict]
+  syntax ObjRef ::= createRaiseStatement(Exp, Exp, Exp, Exp) [strict]
 
   rule createRaiseStatement(O, Type, .Obj, .Obj) => throwGenerator(O, Type)
-  rule createRaiseStatement(O, Type, Value:Object, .Obj) => throwGenerator(O, Type(Value, .Arguments))
-  rule createRaiseStatement(O, Type, .Obj, Traceback:Object) => test(istype(Type, ref("BaseException")), throwGenerator(O, Type . String2Id("with_traceback")(Traceback, .Arguments)), throwGenerator(O, Type(.Arguments) . String2Id("with_traceback")(Traceback, .Arguments)))
-  rule createRaiseStatement(O, Type, Value:Object, Traceback:Object) => throwGenerator(O, Type(Value, .Arguments) . String2Id("with_traceback")(Traceback, .Arguments))
+  rule createRaiseStatement(O, Type, Value:Object, .Obj) => throwGenerator(O, Type(Value))
+  rule createRaiseStatement(O, Type, .Obj, Traceback:Object) => test(istype(Type, ref("BaseException")), throwGenerator(O, Type . String2Id("with_traceback")(Traceback)), throwGenerator(O, Type(.Arguments) . String2Id("with_traceback")(Traceback)))
+  rule createRaiseStatement(O, Type, Value:Object, Traceback:Object) => throwGenerator(O, Type(Value) . String2Id("with_traceback")(Traceback))
 
-  rule invokeBuiltin(obj("close_generator",_), ListItem(O), .) => try: throwGenerator(O, ref("GeneratorExit")) ; except ref("GeneratorExit") : ref("None") except except ref("StopIteration") : ref("None") else: raiseInternal("RuntimeError", "generator ignored GeneratorExit")
+  rule invokeBuiltin(obj("close_generator",_), ListItem(O), .) => try: throwGenerator(O, ref("GeneratorExit")) ; except ref("GeneratorExit") : ref("None") except ref("StopIteration") : ref("None") else: raiseInternal("RuntimeError", "generator ignored GeneratorExit")
 
-  syntax ObjRef ::= runGenerator(Expression, Expression) [strict]
-                  | throwGenerator(Expression, Expression) [strict]
-                  | enterGenerator(Expression, K, K)
+  syntax ObjRef ::= runGenerator(Exp, Exp) [strict]
+                  | throwGenerator(Exp, Exp) [strict]
+                  | enterGenerator(Exp, K, K)
   rule runGenerator(O, Arg) => if Arg is not ref("None") : raiseInternal("TypeError", "can't send non-None value to just-started generator") else: enterGenerator(O, .K, .K) when getattr(O, "gi_state") ==K .K
   rule throwGenerator(O, Ex) => enterGenerator(O, raise Ex, getattr(O, "gi_state"))
   rule runGenerator(O, Arg) => enterGenerator(O, Arg, getattr(O, "gi_state")) when getattr(O, "gi_state") =/=K .K
@@ -57,7 +57,7 @@ module PYTHON-SEMANTICS-GENERATOR
          <cstack> . => generator(Frame, C, FL, XC, K, id(O)) ...</cstack>
        ...</control>
 
-  rule <k> return O ~> _ => setattr(N, "gi_state", (#freezer (HOLE ;)(.KList), SavedC, .List, SavedXC)) ~> raise ref("StopIteration")(#if id(O) ==K None #then .Arguments #else (O, .Arguments) #fi) ~> K </k>
+  rule <k> return O ~> _ => setattr(N, "gi_state", (#freezer (HOLE ;)(.KList), SavedC, .List, SavedXC)) ~> raise ref("StopIteration")(#if id(O) ==K None #then .Arguments #else (O) #fi) ~> K </k>
        <control>...
          <cstack> generator(Frame, C, FL, XC, K, N) => . ...</cstack>
          <currentFrame>

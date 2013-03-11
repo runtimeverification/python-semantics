@@ -11,7 +11,7 @@ module PYTHON-SEMANTICS-SYNTAX
   syntax ObjId ::= Int
                    | String
 
-  syntax Expression ::= ObjRef
+  syntax Exp ::= ObjRef
                 | Null
                 | Undefined
 
@@ -27,7 +27,7 @@ module PYTHON-SEMANTICS-SYNTAX
   rule isKResult(list(_)) => true
   rule isKResult(map(_)) => true
 
-  syntax Statement ::= Expression
+  syntax Stmt ::= Exp
 
   syntax Test ::= Bool
   syntax ObjRef ::= Object
@@ -35,8 +35,8 @@ module PYTHON-SEMANTICS-SYNTAX
   syntax K ::= "map" "(" Map ")"
 
   rule isValue(list(_)) => true
-  rule isExpression(list(_)) => true
+  rule isExp(list(_)) => true
   rule isValue(map(_)) => true
-  rule isExpression(map(_)) => true
+  rule isExp(map(_)) => true
 
 endmodule

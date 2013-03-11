@@ -50,7 +50,7 @@ module PYTHON-SEMANTICS-STATEMENTS
          (_ => C)
        </currentFrame>
 
-  rule for T in E : S1 else: S2 => ref("iter") (E, .Arguments) ~> (for T in HOLE : S1 else: S2) [heat]
+  rule for T in E : S1 else: S2 => ref("iter") (E) ~> (for T in HOLE : S1 else: S2) [heat]
   rule O:Object ~> (for T in HOLE : S1 else: S2) => for T in O : S1 else: S2 [cool]
 
   rule [mark-for]: <k> (. => lmark) ~> (for Targets:K in O:Object : Ss else: Ss2) ~> (K => break) </k>
@@ -59,21 +59,22 @@ module PYTHON-SEMANTICS-STATEMENTS
          C:Bag
        </currentFrame>
 
-  rule [unroll-for]: lmark ~> for Targets in O : Ss else: Ss2 => try: (((Targets, .Expressions) := getmember(O, "__next__", true, false, true) (.Arguments)) ~> Ss ~> lmark ~> for Targets in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
+  rule [unroll-for]: lmark ~> for Targets:AssignTargets in O : Ss else: Ss2 => try: (((Targets) = getmember(O, "__next__", true, false, true) (.Arguments)) ~> Ss ~> lmark ~> for Targets in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
 
   rule O:Object ; => .
 
-  rule Stmt:K newline Ss => Stmt ~> Ss
+  rule Stmt:K newline Ss => Stmt ~> Ss when Ss =/=K .Stmts
+  rule Stmt:K newline .Stmts => Stmt [macro]
 
   rule with O:Object : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), ., Ss)
   rule with O:Object as T:Target : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), T, Ss)
   
-  syntax K ::= doWith(Expression, Expression, K, K) [seqstrict(1, 2)]
+  syntax K ::= doWith(Exp, Exp, K, K) [seqstrict(1, 2)]
 
   rule isKResult(O:KResult as _) => true
 
   // we copy from python-semantics-try.k so we can reuse finally functionality and still choose whether we suppress a raised exception
-  rule <k> (doWith(Exit:Object, Enter:Object, T, Ss) => #if T ==K . #then . #else T, .Expressions := Enter #fi ~> Ss ~> popfinally ~> Exit(* ref("sys_exc_info")(.Arguments)) ;) ~> K </k>
+  rule <k> (doWith(Exit:Object, Enter:Object, T:Target, Ss) => #if T ==K . #then . #else T = Enter #fi ~> Ss ~> popfinally ~> Exit(* ref("sys_exc_info")(.Arguments)) ;) ~> K </k>
        <currentFrame>
          <xstack> (. => finally(if not Exit(* ref("sys_exc_info")(.Arguments)): raise else: (setx(Ex) ~> K), C, XL, LL, FL, Ex)) XL:List </xstack> 
          <lstack> (. => finally(Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex)) LL:List </lstack>

@@ -5,18 +5,18 @@ module PYTHON-SEMANTICS-CLASSES
 
   //TODO: staticmethod
 
-  syntax ObjRef ::= makeType(Expression, Expression) [strict]
-                  | invokeClass(Expression, Expression, Expression, Map) [strict(1, 2, 3)]
-                  | executeClass(Expression, Expression, Expression, Expression, Expression, Expression, Map) [strict(1, 2, 3, 4, 5, 6)] 
-                  | calculateMetaclass(Expression, Expression, Expression, Expression, Expression) [strict]
+  syntax ObjRef ::= makeType(Exp, Exp) [strict]
+                  | invokeClass(Exp, Exp, Exp, Map) [strict(1, 2, 3)]
+                  | executeClass(Exp, Exp, Exp, Exp, Exp, Exp, Map) [strict(1, 2, 3, 4, 5, 6)] 
+                  | calculateMetaclass(Exp, Exp, Exp, Exp, Exp) [strict]
 
   syntax K ::= restoreContext(List, List, Int)
-             | setWinner(Expression) [strict]
+             | setWinner(Exp) [strict]
   rule class(Args, CO:Object) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeClass(getMetaclass(Args), CO, .Obj, .) when isKResult(Args)
 
   rule invokeClass(Metaclass:Object, CO:Object, Bases:Object, M:Map) => executeClass(Metaclass, CO, Bases, ref("builtins"), ref("globals")(.Arguments), doCall(Metaclass . String2Id("__prepare__"), ListItem(CO . String2Id("co_name")) ListItem(Bases), M), M)
 
-  rule <k> executeClass(Metaclass:Object, CO:Object, Bases:Object, Builtins:Object, Globals:Object, Locals:Object, M:Map) => executeFrame(N, CO, ref(Back), Locals, Globals, Builtins, makeCells(CO . String2Id("co_freevars"), CO . String2Id("co_cellvars"), ref("tuple")(ref("map")(getref2(ref(Back), "f_cells") . String2Id("__getitem__"), CO . String2Id("co_freevars"), .Arguments)), N), .) ~> ((Locals["__module__"], .Expressions) := ref("globals")(.Arguments)["__name__"]) ~> (if CO . String2Id("co_consts")[0] is not ref("None") : (Locals["__doc__"], .Expressions) := CO . String2Id("co_consts")[0] else: pass) ~> restoreContext(LL, FL, Back) ~> doCall(Metaclass, ListItem(CO . String2Id("co_name")) ListItem(Bases) ListItem(Locals), M) ...</k>
+  rule <k> executeClass(Metaclass:Object, CO:Object, Bases:Object, Builtins:Object, Globals:Object, Locals:Object, M:Map) => executeFrame(N, CO, ref(Back), Locals, Globals, Builtins, makeCells(CO . String2Id("co_freevars"), CO . String2Id("co_cellvars"), ref("tuple")(ref("map")(getref2(ref(Back), "f_cells") . String2Id("__getitem__"), CO . String2Id("co_freevars"))), N), .) ~> ((Locals["__module__"]) = ref("globals")(.Arguments)["__name__"]) ~> (if CO . String2Id("co_consts")[0] is not ref("None") : (Locals["__doc__"]) = CO . String2Id("co_consts")[0] else: pass) ~> restoreContext(LL, FL, Back) ~> doCall(Metaclass, ListItem(CO . String2Id("co_name")) ListItem(Bases) ListItem(Locals), M) ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
        <frameObject> Back:Int </frameObject>
        <fstack> FL => . </fstack>
@@ -29,15 +29,15 @@ module PYTHON-SEMANTICS-CLASSES
 
   rule (processArgs(L:List, M:Map, .Obj, .Obj) => .) ~> invokeClass(_, _, (.Obj => immutable(list(Refify(Idify(L))), ref("tuple"))), (. => stripMetaclass(M)))
 
-  syntax Expression ::= getMetaclass(Arguments) [function]
-  rule getMetaclass(X = E:Expression, _) => E when Id2String(X) ==String "metaclass" [function, anywhere]
-  rule getMetaclass(Arg, K:K) => getMetaclass(K) when getKLabel Arg =/=KLabel '_=_ [function, anywhere]
-  rule getMetaclass(.Expressions) => ref("type") [function, anywhere]
+  syntax Exp ::= getMetaclass(Arguments) [function]
+  rule getMetaclass(X = E:Exp, _) => E when Id2String(X) ==String "metaclass" 
+  rule getMetaclass(Arg, K:K) => getMetaclass(K) when getKLabel Arg =/=KLabel '_=_ 
+  rule getMetaclass(.Exps) => ref("type") 
 
   syntax Map ::= stripMetaclass(Map) [function]
-  rule stripMetaclass("metaclass" |-> K M) => stripMetaclass(M) [function, anywhere]
-  rule stripMetaclass(S:String |-> K M) => S |-> K stripMetaclass(M) when S=/=String "metaclass" [function, anywhere]
-  rule stripMetaclass(.) => . [function, anywhere]
+  rule stripMetaclass("metaclass" |-> K M) => stripMetaclass(M) 
+  rule stripMetaclass(S:String |-> K M) => S |-> K stripMetaclass(M) when S=/=String "metaclass" 
+  rule stripMetaclass(.) => . 
 
   rule invokeBuiltin(obj("prepare_type",_), _, _) => {.KeyData}
 
@@ -50,9 +50,9 @@ module PYTHON-SEMANTICS-CLASSES
   rule (. => iterate(Bases, .)) ~> calculateMetaclass(_, Bases, _, _, _)
   rule (. => if gettype(O) is ref("type") or bool(hasbase(Winner, gettype(O))) : pass else: test(hasbase(gettype(O), Winner), setWinner(gettype(O)), raiseInternal("TypeError", "metaclass conflict: the metaclass of a derived class must be a (non-strict) subclass of the metaclasses of all its bases"))) ~> list((ListItem(O) => .) _) ~> calculateMetaclass(_, _, _, _, Winner)
   rule (setWinner(O:Object) => .) ~> list(_) ~> calculateMetaclass(_, _, _, _, (_ => O))
-  rule list(.) ~> calculateMetaclass(Name, Bases, Type, Dict, Type) => makeType(mutable("__name__" |-> strvalue(Name) "__bases__" |-> ref(id(Bases)), Type), ref("dict")(Dict, .Arguments))
-  rule list(.) ~> calculateMetaclass(Name, Bases, Type, Dict, Winner) => Winner . String2Id("__new__") (Winner, Name, Bases, Dict, .Arguments) when Winner =/=K Type
+  rule list(.) ~> calculateMetaclass(Name, Bases, Type, Dict:Object, Type) => makeType(mutable("__name__" |-> strvalue(Name) "__bases__" |-> ref(id(Bases)), Type), ref("dict")(Dict))
+  rule list(.) ~> calculateMetaclass(Name:Object, Bases:Object, Type, Dict:Object, Winner:Object) => Winner . String2Id("__new__") (Winner, Name, Bases, Dict) when Winner =/=K Type
 
-  rule makeType(O:Object, Dict:Object) => (if "__doc__" not in Dict : Dict["__doc__"], .Expressions := ref("None") else: pass) ~> (if "__module__" not in Dict : Dict["__module__"], .Expressions := ref("globals")(.Arguments)["__name__"] else: pass) ~> (if getref(O, "__bases__") == tuple(.Expressions) : setref(id(O), "__bases__", tuple(ref("object"))) else: pass) ~> (if "__hash__" not in Dict and "__eq__" in Dict : Dict["__hash__"], .Expressions := ref("None") else: pass) ~> (if "__new__" in Dict and bool(istype(Dict["__new__"], ref("function"))) : Dict["__new__"], .Expressions := ref("staticmethod")(Dict["__new__"]) else: pass) ~> setref(id(O), "__dict__", Dict) ~> setref(id(O), "__mro__", ref("tuple")(getmember(O, "mro", true, false, true) (.Arguments))) ~> ref(id(O))
+  rule makeType(O:Object, Dict:Object) => (if "__doc__" not in Dict : Dict["__doc__"] = ref("None") else: pass) ~> (if "__module__" not in Dict : Dict["__module__"] = ref("globals")(.Arguments)["__name__"] else: pass) ~> (if getref(O, "__bases__") == tuple(.Exps) : setref(id(O), "__bases__", tuple(ref("object"))) else: pass) ~> (if "__hash__" not in Dict and "__eq__" in Dict : Dict["__hash__"] = ref("None") else: pass) ~> (if "__new__" in Dict and bool(istype(Dict["__new__"], ref("function"))) : Dict["__new__"] = ref("staticmethod")(Dict["__new__"]) else: pass) ~> setref(id(O), "__dict__", Dict) ~> setref(id(O), "__mro__", ref("tuple")(getmember(O, "mro", true, false, true) (.Arguments))) ~> ref(id(O))
 
 endmodule

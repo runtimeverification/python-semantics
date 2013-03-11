@@ -12,14 +12,14 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
              | "incref" "(" List "," Int ")"
              | "incref" "(" ObjId "," Int ")"
              | "genv" "(" String "," String ")"
-             | "module" ObjId "(" Expression ")" [strict(2)]
-             | "struct" ObjId "(" Expressions ")"
+             | "module" ObjId "(" Exp ")" [strict(2)]
+             | "struct" ObjId "(" Exps ")"
 
   syntax ObjRef ::= "def" String "(" Int "," Int "," Bool ")"
 
   syntax ListItem ::= "refs" "(" List ")"
 
-  rule incref(B:ObjId,N) => incref(ListItem(B),N) [macro, anywhere]
+  rule incref(B:ObjId,N) => incref(ListItem(B),N) [macro]
   rule refs(ListItem(S) L) => ListItem(ref(S)) refs(L)
   rule refs(.List) => .List
 
@@ -93,7 +93,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
          <oenv>... . => S |-> ref(S2) ...</oenv>
        ...</object>
 
-  context object N(_, _, S |-> HOLE _, _) when getKLabel HOLE =/=KLabel 'ref`(_`)
+  context object N(_, _, (S |-> HOLE) _, _) when getKLabel HOLE =/=KLabel 'ref`(_`)
 
   rule <k> object N(_,_,(S |-> O:Object => .) _,_) ...</k>
        <object>...
@@ -145,7 +145,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <references>Ref:Map (. => (B |-> N2)) </references> when notBool(B in keys(Ref))
   rule incref(.List,_) => .
 
-  rule <k> module S(O) => ((ref(N) . String2Id("__dict__") ["__name__"]), .Expressions) := S ...</k>
+  rule <k> module S(O) => ((ref(N) . String2Id("__dict__") ["__name__"])) = S:String ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
        (. => <object>...
          <id>N</id>
@@ -170,6 +170,6 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
          <oenv>... . => S |-> ref(S +String "_structseq") ...</oenv>
        ...</object>
 
-  rule struct _(.Expressions) => .
+  rule struct _(.Exps) => .
 
 endmodule

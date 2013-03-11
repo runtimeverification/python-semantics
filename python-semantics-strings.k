@@ -28,30 +28,30 @@ module PYTHON-SEMANTICS-STRINGS
   rule <k> accumulate("", I, Len:Nat) => test((I xorInt Len xorInt hashSuffix(Seed, Width)) ==Int -1, -2, (I xorInt Len xorInt hashSuffix(Seed, Width))) ...</k>
        <constants>... "PYTHONHASHSEED" |-> Seed "sys.hash_info.width" |-> Width ...</constants>
 
-  rule invokeBuiltin(obj("rpartition_str",_), ListItem(O) ListItem(Sep), .) => test(istype(Sep, ref("str")), #if rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) ==Int -1 #then tuple("", "", strvalue(O), .Expressions) #else tuple(substrString(strvalue(O), 0, rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O)))), strvalue(Sep), substrString(strvalue(O), rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) +Int lengthString(strvalue(Sep)), lengthString(strvalue(O))), .Expressions) #fi, raiseInternal("TypeError", "Cannot convert object to str implicitly"))
+  rule invokeBuiltin(obj("rpartition_str",_), ListItem(O) ListItem(Sep), .) => test(istype(Sep, ref("str")), #if rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) ==Int -1 #then tuple("", "", strvalue(O)) #else tuple(substrString(strvalue(O), 0, rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O)))), strvalue(Sep), substrString(strvalue(O), rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) +Int lengthString(strvalue(Sep)), lengthString(strvalue(O)))) #fi, raiseInternal("TypeError", "Cannot convert object to str implicitly"))
 
   rule invokeBuiltin(obj("ord",_), ListItem(O), .) => test(istype(O, ref("str")), test(length(strvalue(O), UTF-8) =/=Int 1, raiseInternal("TypeError", "ord() expected a character, but string of length " +String Int2String(length(strvalue(O), UTF-8)) +String " found"), codePoint(strvalue(O), UTF-8, 0)), raiseInternal("TypeError", "ord() expected string of length 1"))
 
   rule invokeBuiltin(obj("len_str",_), ListItem(O), .) => length(strvalue(O), UTF-8)
 
-  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O), .) => ref("rsplit_str")(O, ref("None"), -1, .Arguments)
-  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep), .) => ref("rsplit_str")(O, Sep, -1, .Arguments)
-  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep) ListItem(MaxSplit), .) => if Sep is ref("None") : rsplit(strvalue(O), ref("index")(MaxSplit, .Arguments)) else: test(istype(Sep, ref("str")), rsplit(strvalue(O), ref("index")(MaxSplit, .Arguments), strvalue(Sep)), raiseInternal("TypeError", "Cannot convert object to str implicitly"))
+  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O), .) => ref("rsplit_str")(O, ref("None"), -1)
+  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep), .) => ref("rsplit_str")(O, Sep, -1)
+  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep) ListItem(MaxSplit), .) => if Sep is ref("None") : rsplit(strvalue(O), ref("index")(MaxSplit)) else: test(istype(Sep, ref("str")), rsplit(strvalue(O), ref("index")(MaxSplit), strvalue(Sep)), raiseInternal("TypeError", "Cannot convert object to str implicitly"))
 
-  syntax ObjRef ::= rsplit(Expression, Expression) [strict]
-                  | rsplit(Expression, Expression, String) [strict(1, 2)]
+  syntax ObjRef ::= rsplit(Exp, Exp) [strict]
+                  | rsplit(Exp, Exp, String) [strict(1, 2)]
 
-  rule rsplit(S:Object, MaxSplit:Object, Sep) => test(intvalue(MaxSplit) ==Int 0, [S], test(rfindString(strvalue(S), Sep, lengthString(strvalue(S))) ==Int -1, [strvalue(S)], rsplit(ref("rpartition_str")(strvalue(S), Sep, .Arguments)[0], intvalue(MaxSplit) -Int 1, Sep) + [ref("rpartition_str")(strvalue(S), Sep, .Arguments)[2]]))
+  rule rsplit(S:Object, MaxSplit:Object, Sep) => test(intvalue(MaxSplit) ==Int 0, [S], test(rfindString(strvalue(S), Sep, lengthString(strvalue(S))) ==Int -1, [strvalue(S)], rsplit(ref("rpartition_str")(strvalue(S), Sep)[0], intvalue(MaxSplit) -Int 1, Sep) + [ref("rpartition_str")(strvalue(S), Sep)[2]]))
   //TODO: rsplit(None, ...)
 
   rule invokeBuiltin(obj("format_str",_), ListItem(Format) L:List, M:Map) => format(strvalue(Format), tuple(DeListify(L)), {DeMapify(M)}, .K)
 
-  syntax ObjRef ::= format(String, Expression, Expression, K) [strict(2, 3)]
+  syntax ObjRef ::= format(String, Exp, Exp, K) [strict(2, 3)]
                   | formatField(String, String, Object, Object, K)
                   | lookupField(String, String, String, Object, Object, K)
                   | lookupField(String, K, String, String, Object, Object, K)
                   | convertField(Object, String)
-                  | checkFormat(Expression) [strict]
+                  | checkFormat(Exp) [strict]
   syntax K ::= lookupArgName(String)
              | lookupElementIndex(String, Object) [function]
 
@@ -85,7 +85,7 @@ module PYTHON-SEMANTICS-STRINGS
   rule [format-getattr]: lookupField(FieldName, O:Object, Field, Format, L, M, IsAuto) => lookupField(substrString(FieldName, findChar(FieldName, ".[", 1), lengthString(FieldName)), ref("getattr")(O, substrString(FieldName, 1, findChar(FieldName, ".[", 1) -Int 1)), Field, Format, L, M, IsAuto) when substrString(FieldName, 0, 1) ==String "."
   rule [format-getitem]: lookupField(FieldName, O:Object, Field, Format, L, M, IsAuto) => lookupField(substrString(FieldName, findChar(FieldName, "]", 1) +Int 1, lengthString(FieldName)), lookupElementIndex(substrString(FieldName, 1, findChar(FieldName, "]", 1) -Int 1), O), Field, Format, L, M, IsAuto) when substrString(FieldName, 0, 1) ==String "["
 
-  context lookupField(_, HOLE, _, _, _, _, _) when isExpression(HOLE)
+  context lookupField(_, HOLE, _, _, _, _, _) when isExp(HOLE)
 
   rule lookupField(_, lookupArgName(""), _, _, _, _, -1) => raiseInternal("ValueError", "cannot switch from manual field specification to automatic field numbering")
   rule [auto-to-manual]: lookupField(_, lookupArgName(ArgName), _, _, _, _, I) => raiseInternal("ValueError", "cannot switch from automatic field numbering to manual field specification") when I >=Int 0 andBool isInt(String2Int(ArgName))
