@@ -151,6 +151,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                      > "if" Expression ":" Statements "else" ":" Statements [strict(1)]
                      | "while" Expression ":" Statements "else" ":" Statements
                      | "for" Target "in" Expression ":" Statements "else" ":" Statements
+                     | "try" ":" Statements ExceptClauses
                      | "try" ":" Statements ExceptClauses "else" ":" Statements //"finally" ":" Statements
                      | "try" ":" Statements ExceptClauses "else" ":" Statements "finally" ":" Statements
                      | "try" ":" Statements "finally" ":" Statements

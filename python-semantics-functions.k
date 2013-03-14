@@ -29,7 +29,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
            setref(N, "__frame__", ref(N2)) ~>
            makeFunction(N, Listify(Ps), Return, false) ~> ref(N) ...</k>
        <nextLoc> N:Int => N +Int 1 </nextLoc>
-       <frameObject> N2 </frameObject>
+       <frameObject> ref(N2) </frameObject>
        (. => <object>
          <id>N</id>
          <oattrs> "__code__" |-> ref(id(O)) "__class__" |-> ref("function") </oattrs>
@@ -87,11 +87,12 @@ module PYTHON-SEMANTICS-FUNCTIONS
   syntax ObjRef ::= "makeClosure" "(" Expression ")" [strict]
                   | "cellNum" "(" Expression "," Expression "," Expression ")" [strict]
 
-  rule [dissolve-makeFunction]: makeFunction(N, ., .Obj, _) => setref(N, "__closure__", makeClosure(ref(N) . String2Id("__code__") . String2Id("co_freevars")))
-  rule makeClosure(O:Object) => makeClosure(list(listvalue(O)))
+  rule [dissolve-makeFunction]: makeFunction(N, ., .Obj, _) => setref(N, "__closure__", makeClosure(getref2(getref2(ref(N), "__code__"), "co_freevars")))
+  rule makeClosure(O:Object) => makeClosure(list(listvalue(O))) when listvalue(O) =/=List .List
+  rule makeClosure(O:Object) => ref("None") when listvalue(O) ==List .List
   rule makeClosure(list(.)) => tuple(.Expressions)
   rule <k> makeClosure(list(ListItem(N) L)) => tuple((getref2(ref(Frame), "f_cells")[N]), .Expressions) + makeClosure(list(L)) ...</k>
-       <frameObject> Frame:Int </frameObject>
+       <frameObject> ref(Frame:Int) </frameObject>
 
   syntax K ::= createFunction(Id, K, K, Expression) [strict(4)]
              | createLambda(K, Expression) [strict(2)]

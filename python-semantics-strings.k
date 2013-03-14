@@ -7,13 +7,15 @@ module PYTHON-SEMANTICS-STRINGS
   imports MACHINE-INTEGERS
   imports UNICODE
 
-  rule <k> invokeBuiltin(obj("add_str",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("str")), strvalue(O) +String strvalue(O2), raiseInternal("TypeError", ("Can't convert '" + name(gettype(O2)) + "' object to str implicitly"))) ...</k>
+  //rule <k> invokeBuiltin(obj("add_str",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("str")), strvalue(O) +String strvalue(O2), raiseInternal("TypeError", ("Can't convert '" + name(gettype(O2)) + "' object to str implicitly"))) ...</k>
 
-  rule <k> invokeBuiltin(obj("eq_str",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "str", "str", bool(strvalue(O) ==String strvalue(O2))) ...</k>
-  rule <k> invokeBuiltin(obj("ne_str",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "str", "str", bool(strvalue(O) =/=String strvalue(O2))) ...</k>
+  //rule <k> invokeBuiltin(obj("eq_str",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "str", "str", bool(strvalue(O) ==String strvalue(O2))) ...</k>
+  //rule <k> invokeBuiltin(obj("ne_str",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "str", "str", bool(strvalue(O) =/=String strvalue(O2))) ...</k>
 
-  rule [hash-str]: <k> invokeBuiltin(obj("hash_str",_), ListItem(O), .) => test(lengthString(strvalue(O)) ==Int 0, 0, accumulate(strvalue(O), (asciiString(substrString(strvalue(O), 0, 1)) <<Int 7) xorInt hashPrefix(Seed, Width), lengthString(strvalue(O)))) ...</k>
+  rule <k> invokeBuiltin("str.__hash__", "self" |-> Self:Object) => return hashString(strvalue(Self), Seed, Width) ...</k>
        <constants>... "PYTHONHASHSEED" |-> Seed "sys.hash_info.width" |-> Width ...</constants>
+
+  rule hashString(S, Seed, Width) => test(lengthString(S) ==Int 0, 0, accumulate(S, (asciiString(substrString(S, 0, 1)) <<Int 7) xorInt hashPrefix(Seed, Width), lengthString(S)))
 
   syntax ObjRef ::= accumulate(String, Int, Int)
   syntax Int ::= hashPrefix(Int, Int) [function]
@@ -28,15 +30,15 @@ module PYTHON-SEMANTICS-STRINGS
   rule <k> accumulate("", I, Len:Nat) => test((I xorInt Len xorInt hashSuffix(Seed, Width)) ==Int -1, -2, (I xorInt Len xorInt hashSuffix(Seed, Width))) ...</k>
        <constants>... "PYTHONHASHSEED" |-> Seed "sys.hash_info.width" |-> Width ...</constants>
 
-  rule invokeBuiltin(obj("rpartition_str",_), ListItem(O) ListItem(Sep), .) => test(istype(Sep, ref("str")), #if rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) ==Int -1 #then tuple("", "", strvalue(O), .Expressions) #else tuple(substrString(strvalue(O), 0, rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O)))), strvalue(Sep), substrString(strvalue(O), rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) +Int lengthString(strvalue(Sep)), lengthString(strvalue(O))), .Expressions) #fi, raiseInternal("TypeError", "Cannot convert object to str implicitly"))
+  //rule invokeBuiltin(obj("rpartition_str",_), ListItem(O) ListItem(Sep), .) => test(istype(Sep, ref("str")), #if rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) ==Int -1 #then tuple("", "", strvalue(O), .Expressions) #else tuple(substrString(strvalue(O), 0, rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O)))), strvalue(Sep), substrString(strvalue(O), rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) +Int lengthString(strvalue(Sep)), lengthString(strvalue(O))), .Expressions) #fi, raiseInternal("TypeError", "Cannot convert object to str implicitly"))
 
-  rule invokeBuiltin(obj("ord",_), ListItem(O), .) => test(istype(O, ref("str")), test(length(strvalue(O), UTF-8) =/=Int 1, raiseInternal("TypeError", "ord() expected a character, but string of length " +String Int2String(length(strvalue(O), UTF-8)) +String " found"), codePoint(strvalue(O), UTF-8, 0)), raiseInternal("TypeError", "ord() expected string of length 1"))
+  //rule invokeBuiltin(obj("ord",_), ListItem(O), .) => test(istype(O, ref("str")), test(length(strvalue(O), UTF-8) =/=Int 1, raiseInternal("TypeError", "ord() expected a character, but string of length " +String Int2String(length(strvalue(O), UTF-8)) +String " found"), codePoint(strvalue(O), UTF-8, 0)), raiseInternal("TypeError", "ord() expected string of length 1"))
 
-  rule invokeBuiltin(obj("len_str",_), ListItem(O), .) => length(strvalue(O), UTF-8)
+  //rule invokeBuiltin(obj("len_str",_), ListItem(O), .) => length(strvalue(O), UTF-8)
 
-  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O), .) => ref("rsplit_str")(O, ref("None"), -1, .Arguments)
-  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep), .) => ref("rsplit_str")(O, Sep, -1, .Arguments)
-  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep) ListItem(MaxSplit), .) => if Sep is ref("None") : rsplit(strvalue(O), ref("index")(MaxSplit, .Arguments)) else: test(istype(Sep, ref("str")), rsplit(strvalue(O), ref("index")(MaxSplit, .Arguments), strvalue(Sep)), raiseInternal("TypeError", "Cannot convert object to str implicitly"))
+  //rule invokeBuiltin(obj("rsplit_str",_), ListItem(O), .) => ref("rsplit_str")(O, ref("None"), -1, .Arguments)
+  //rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep), .) => ref("rsplit_str")(O, Sep, -1, .Arguments)
+  //rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep) ListItem(MaxSplit), .) => if Sep is ref("None") : rsplit(strvalue(O), ref("index")(MaxSplit, .Arguments)) else: test(istype(Sep, ref("str")), rsplit(strvalue(O), ref("index")(MaxSplit, .Arguments), strvalue(Sep)), raiseInternal("TypeError", "Cannot convert object to str implicitly"))
 
   syntax ObjRef ::= rsplit(Expression, Expression) [strict]
                   | rsplit(Expression, Expression, String) [strict(1, 2)]
@@ -44,7 +46,7 @@ module PYTHON-SEMANTICS-STRINGS
   rule rsplit(S:Object, MaxSplit:Object, Sep) => test(intvalue(MaxSplit) ==Int 0, [S], test(rfindString(strvalue(S), Sep, lengthString(strvalue(S))) ==Int -1, [strvalue(S)], rsplit(ref("rpartition_str")(strvalue(S), Sep, .Arguments)[0], intvalue(MaxSplit) -Int 1, Sep) + [ref("rpartition_str")(strvalue(S), Sep, .Arguments)[2]]))
   //TODO: rsplit(None, ...)
 
-  rule invokeBuiltin(obj("format_str",_), ListItem(Format) L:List, M:Map) => format(strvalue(Format), tuple(DeListify(L)), {DeMapify(M)}, .K)
+  //rule invokeBuiltin(obj("format_str",_), ListItem(Format) L:List, M:Map) => format(strvalue(Format), tuple(DeListify(L)), {DeMapify(M)}, .K)
 
   syntax ObjRef ::= format(String, Expression, Expression, K) [strict(2, 3)]
                   | formatField(String, String, Object, Object, K)
@@ -105,11 +107,11 @@ module PYTHON-SEMANTICS-STRINGS
   rule convertField(O:Object, Conversion) => raiseInternal("ValueError", "unknown conversion specifier" +String substrString(Conversion, 1, 1)) when substrString(Conversion, 0, 1) ==String "!" andBool (substrString(Conversion, 2, 1) ==String ":" orBool lengthString(Conversion) ==Int 2)
   rule convertField(O:Object, Conversion) => raiseInternal("ValueError", "expected ':' after format specifier") when substrString(Conversion, 0, 1) ==String "!" andBool (substrString(Conversion, 1, 1) ==String "s" orBool substrString(Conversion, 1, 1) ==String "r" orBool substrString(Conversion, 1, 1) ==String "a") andBool substrString(Conversion, 2, 1) =/=String "" andBool substrString(Conversion, 2, 1) =/=String ":"
 
-  rule invokeBuiltin(obj("format",_), ListItem(O:Object), .) => ref("format")(O, "")
-  rule invokeBuiltin(obj("format",_), ListItem(O:Object) ListItem(Format:Object), .) => checkFormat(getmember(O, "__format__", true, false, true)(Format))
+  //rule invokeBuiltin(obj("format",_), ListItem(O:Object), .) => ref("format")(O, "")
+  //rule invokeBuiltin(obj("format",_), ListItem(O:Object) ListItem(Format:Object), .) => checkFormat(getmember(O, "__format__", true, false, true)(Format))
   rule checkFormat(O:Object) => test(istype(O, ref("str")), O, raiseInternal("TypeError", "__format__ method did not return string"))
 
-  rule invokeBuiltin(obj("format_object",_), ListItem(O:Object) ListItem(Format:Object), .) => getmember(ref("str")(O), "__format__", true, false, true)(Format)
+  //rule invokeBuiltin(obj("format_object",_), ListItem(O:Object) ListItem(Format:Object), .) => getmember(ref("str")(O), "__format__", true, false, true)(Format)
 
   syntax FormatSpec ::= parseFormatSpec(String) [function]
                       | parseFormatSpec(String, String) [function]
@@ -124,7 +126,7 @@ module PYTHON-SEMANTICS-STRINGS
 
   syntax ObjRef ::= doFormatStr(String, FormatSpec)
 
-  rule invokeBuiltin(obj("__format___str",_), ListItem(O:Object) ListItem(Format:Object), .) => doFormatStr(strvalue(O), parseFormatSpec(strvalue(Format)))
+  //rule invokeBuiltin(obj("__format___str",_), ListItem(O:Object) ListItem(Format:Object), .) => doFormatStr(strvalue(O), parseFormatSpec(strvalue(Format)))
   rule parseFormatSpec(Format) => #if substrString(Format, 1, 1) =/=String "<" andBool substrString(Format, 1, 1) =/=String ">" andBool substrString(Format, 1, 1) =/=String "=" andBool substrString(Format, 1, 1) =/=String "^" #then parseFormatSpec("", Format) #else parseFormatSpec(substrString(Format, 0, 1), substrString(Format, 1, lengthString(Format))) #fi
   rule parseFormatSpec(Fill, Format) => #if substrString(Format, 0, 1) ==String "<" orBool substrString(Format, 0, 1) ==String ">" orBool substrString(Format, 0, 1) ==String "=" orBool substrString(Format, 0, 1) ==String "^" #then parseFormatSpec(Fill, substrString(Format, 0, 1), substrString(Format, 1, lengthString(Format))) #else parseFormatSpec(Fill, "", Format) #fi
   rule parseFormatSpec(Fill, Align, Format) => #if substrString(Format, 0, 1) ==String "+" orBool substrString(Format, 0, 1) ==String "-" orBool substrString(Format, 0, 1) ==String " " #then parseFormatSpec(Fill, Align, substrString(Format, 0, 1), substrString(Format, 1, lengthString(Format))) #else parseFormatSpec(Fill, Align, "", Format) #fi

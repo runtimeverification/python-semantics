@@ -7,7 +7,7 @@ module PYTHON-SEMANTICS-COMMON
                   <k> initialize($PGM:K) </k>
                   <control>
                     <currentFrame>
-                      <frameObject> .K </frameObject>
+                      <frameObject> ref("None") </frameObject>
                       <xstack> .List </xstack>
                       <xcontext> ref("None") </xcontext>
                       <lstack> .List </lstack>
@@ -29,8 +29,8 @@ module PYTHON-SEMANTICS-COMMON
                   <literals> .Map </literals>
                   <symbols> .Map </symbols>
                   <builtinModules> .Map </builtinModules>
-                  <references> .Map </references>
-                  <bootstrapping> 3 </bootstrapping>
+                  <references> .Set </references>
+                  <bootstrapping> 4 </bootstrapping>
                   <nextLoc> 1 </nextLoc>
                   <sysPath> $SYSPATH:List </sysPath>
                   <environ> $ENVIRON:Map </environ>
@@ -53,14 +53,19 @@ module PYTHON-SEMANTICS-COMMON
              | "setref" "(" ObjId "," String "," Expression ")" [strict(3)]
              | "setenv" "(" ObjId "," Expression "," Expression ")" [strict(2, 3)]
              | "executeModule" "(" Expression "," Expression "," Expression ")" [strict]
-             | executeFrame(Int, Expression, Expression, Expression, Expression, Expression, Expression, Map) [strict(2, 3, 4, 5, 6, 7)]
-             | makeFrame(Int, Expression, Expression, Expression, Expression, Expression, Expression, Map) [strict(2, 3, 4, 5, 6, 7)]
+             | executeFrame(Int, Expression, Expression, Expression, Expression, Expression, Expression, Map, Bool) [strict(2, 3, 4, 5, 6, 7)]
+             | makeFrame(Int, Expression, Expression, Expression, Expression, Expression, Expression, Map, Bool) [strict(2, 3, 4, 5, 6, 7)]
              | setArgs(Int, Map)
              | getMro(Expression, Expression) [strict]
              | doBind(String, Expression, Expression) [strict(3)]
 
   syntax Test ::= "istype" "(" Expression "," Expression ")" [strict]
                 | "hasbase" "(" K "," Expression ")" [strict]
+                | "hasmember" "(" Expression "," Expression ")" [strict(1, 2)]
+
+  syntax Bool ::= isBareFunction(ObjId)
+
+  syntax Int ::= hashString(String, Int, Int) [function]
 
   // TODO: figure out why the good goddamn fuck it is that if I make ref(K) of sort ObjRef then parsing dicts takes exponential time.
   syntax Expression ::= "ref" "(" K ")"
@@ -72,8 +77,7 @@ module PYTHON-SEMANTICS-COMMON
                   | "binaryOp" "(" Expression "," Expression "," String "," String "," K ")" [strict(1, 2)]
                   | "unaryOp" "(" Expression "," String "," K ")" [strict(1)]
                   | "invoke" "(" Expression "," Map ")" [strict(1)]
-                  | "invokeBuiltin" "(" Expression "," List "," Map ")" [strict(1)]
-                  | "invokeFunction" "(" Expression "," List "," Map ")" [strict(1)]
+                  | invokeBuiltin(String, Map)
                   | "doCall" "(" Expression "," List "," Map ")"
                   | "mutable" "(" Value "," Expression ")" [strict(2)]
                   | "mutable" "(" Map "," Expression ")" [strict(2)]
@@ -202,6 +206,9 @@ module PYTHON-SEMANTICS-COMMON
   syntax List ::= "getl" "(" K ")" [function]
   rule getl(list(L)) => L [function, anywhere]
 
+  syntax Map ::= getm(K) [function]
+  rule getm(map(M)) => M
+
   syntax K ::= "getattr" "(" Expression "," K ")" [function]
   rule getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs:Map(S) [function, anywhere]
   rule getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String[I:Int]) => get(getl(Attrs(S)), I)
@@ -266,12 +273,12 @@ module PYTHON-SEMANTICS-COMMON
   rule hasbase(list(ListItem(N) L), Base) => or(hasbase(N, Base),hasbase(list(L), Base))
   rule hasbase(list(.List), Base) => false
 
-  rule invokeBuiltin(obj("get_attr",_), ListItem(Self) ListItem(Instance) ListItem(Owner), .) => describe(Self, Instance, Owner, "get_attr")
-  rule invokeBuiltin(obj("set_attr",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => doCall(getref(Self, "__set__"), ListItem(Self) ListItem(Instance) ListItem(Value), .)
-  rule invokeBuiltin(obj("set_ref_default",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => setref(id(Instance), getattr(Self, "__get__"), Value) ~> ref("None")
-  rule invokeBuiltin(obj("set_attr_string",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => test(istype(Value, ref("str")), setattr(id(Instance), getattr(Self, "__get__"), getattr(Value, "__value__")), raiseInternal("TypeError", getattr(Self, "__get__") +String " must be set to a string object")) ~> ref("None")
-  rule doDescribe(Self, .Obj, _, "get_attr") => Self
-  rule doDescribe(Self, O:Object, _, "get_attr") => getattr(O, getattr(Self, "__get__"))
+  rule invokeBuiltin("attribute.__get__", _) => return describe(self, instance, owner, "attribute.__get__")
+  //rule invokeBuiltin(obj("set_attr",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => doCall(getref(Self, "__set__"), ListItem(Self) ListItem(Instance) ListItem(Value), .)
+  //rule invokeBuiltin(obj("set_ref_default",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => setref(id(Instance), getattr(Self, "__get__"), Value) ~> ref("None")
+  //rule invokeBuiltin(obj("set_attr_string",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => test(istype(Value, ref("str")), setattr(id(Instance), getattr(Self, "__get__"), getattr(Value, "__value__")), raiseInternal("TypeError", getattr(Self, "__get__") +String " must be set to a string object")) ~> ref("None")
+  rule doDescribe(Self, .Obj, _, "attribute.__get__") => Self
+  rule doDescribe(Self, O:Object, _, "attribute.__get__") => getattr(O, getattr(Self, "__get__"))
 
   rule <k> ref(S:String) => ref(N:Int) ...</k>
        <symbols>... S |-> N ...</symbols>
@@ -288,13 +295,13 @@ module PYTHON-SEMANTICS-COMMON
          <id>N</id>
          <oattrs>Attrs</oattrs>
        ...</object>
-
+/*
   rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> N "__method__" |-> T:Bool ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when (T andBool lengthList L -Int 1 =/=Int N) orBool ((notBool T) andBool lengthList L =/=Int N)
 
   rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at least " +String Int2String(N) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when N =/=Int I andBool ((T andBool lengthList L -Int 1 <Int N) orBool ((notBool T) andBool lengthList L <Int N))
 
   rule <k> invokeBuiltin(obj(S,<oattrs>... "__min__" |-> N "__max__" |-> I "__method__" |-> T ...</oattrs>), L, .) => raiseInternal("TypeError", S +String " expected at most " +String Int2String(I) +String " arguments, got " +String Int2String(lengthList L -Int 1)) ...</k> when I >=Int 0 andBool N =/=Int I andBool ((T andBool lengthList L -Int 1 >Int I) orBool ((notBool T) andBool lengthList L >Int I))
-
+*/
   context list(.) ~> iterate(HOLE,_)
 
   rule iterate(O:Object, K) => try: (list(.) ~> iterate(ref("iter") (O, .Arguments), K)) except ref("TypeError") : test(K ==K ., raise, K) else: pass
@@ -304,7 +311,6 @@ module PYTHON-SEMANTICS-COMMON
   rule Lbl:KLabel(Kl:KList) ~> popx => popx ~> Lbl(Kl) when isKResult(Lbl(Kl))
 
   rule <k> mapping(O, K) => iterate(getmember(O, "keys", true, false, false) (.Arguments) -> K, raiseInternal("TypeError", "o.keys() are not iterable")) ~> map(.) ~> mapping(O, K) ...</k>
-  rule <k> iterate(.Obj, _) ~> map(.) ~> mapping(_, _) => .Obj ...</k>
   rule <k> list((ListItem(O2:Object) => .) _) ~> (. => addPair(O2, (O [ O2 ]))) ~> map(_) ~> mapping(O,_) ...</k>
   rule <k> list(_) ~> (addPair(O:Object, O2:Object) => .) ~> map(_ (. => O |-> O2)) ...</k>
   rule <k> (list(.) => .) ~> map(_) ~> (mapping(_,_) => .) ...</k>
@@ -318,7 +324,7 @@ module PYTHON-SEMANTICS-COMMON
 
   rule raiseInternal(S, O) => raise mutable("args" |-> undefined(strvalue(O)),ref(S))
 
-  rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => (Dict [ "__name__"], .Expressions := CO . String2Id("co_name")) ~> (Dict [ "__doc__" ], .Expressions := CO . String2Id("co_consts") [0]) ~> (Dict [ "__builtins__" ], .Expressions := Builtins) ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple(.Expressions)) ~> setref(id(CO), "co_cellvars", tuple(.Expressions)) ~> ref("sys") . String2Id("modules")[CO . String2Id("co_name")], .Expressions := ref(N) ~> executeFrame(N:Int +Int 1, ref(id(CO)), ref("None"), Dict, Dict, Builtins, {.KeyData}, .) ...</k>
+  rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => (Dict [ "__name__"], .Expressions := CO . String2Id("co_name")) ~> (Dict [ "__doc__" ], .Expressions := CO . String2Id("co_consts") [0]) ~> (Dict [ "__builtins__" ], .Expressions := Builtins) ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple(.Expressions)) ~> setref(id(CO), "co_cellvars", tuple(.Expressions)) ~> ref("sys") . String2Id("modules")[CO . String2Id("co_name")], .Expressions := ref(N) ~> executeFrame(N:Int +Int 1, ref(id(CO)), ref("None"), Dict, Dict, Builtins, {.KeyData}, ., false) ...</k>
        <nextLoc> N => N +Int 2 </nextLoc>
        (. => <object>...
          <id>N</id>
@@ -326,16 +332,22 @@ module PYTHON-SEMANTICS-COMMON
        ...</object>) [allocation]
 
 
-  rule <k> makeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . String2Id("__dict__")), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells)  ~> setArgs(N, Args) ...</k>
+  rule <k> makeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map, false) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setref(N, "f_locals", Locals) ~> setref(N, "f_globals", Globals) ~> test(istype(Builtins, ref("module")), setref(N, "f_builtins", Builtins . String2Id("__dict__")), setref(N, "f_builtins", Builtins)) ~> setref(N, "f_cells", Cells)  ~> setArgs(N, Args) ...</k>
        (. => <object>...
          <id>N</id>
-         <oattrs> "__class__" |-> ref("frame") </oattrs>
+         <oattrs> "__class__" |-> ref("frame") "f_isbuiltin" |-> false </oattrs>
        ...</object>) [allocation]
 
-  rule [executeFrame]: <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => makeFrame(N, CO, Back, Locals, Globals, Builtins, Cells, Args) ~> getattr(CO, "co_code") ...</k>
-       <frameObject> _ => N </frameObject>
+  rule <k> makeFrame(N, CO:Object, Back:Object, _, _, _, _, Args, true) => setref(N, "f_code", CO) ~> setref(N, "f_back", Back) ~> setattr(N, "f_locals", map(.)) ~> setArgs(N, Args) ...</k>
+       (. => <object>...
+         <id>N</id>
+         <oattrs> "__class__" |-> ref("frame") "f_isbuiltin" |-> true </oattrs>
+       ...</object>) [allocation]
 
-  rule (. => doBind(Id2String(X), ref(B), ref(N))) ~> setArgs(N, (X |-> ref(B) => .) _)
+  rule [executeFrame]: <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map, T:Bool) => makeFrame(N, CO, Back, Locals, Globals, Builtins, Cells, Args, T:Bool) ~> getattr(CO, "co_code") ...</k>
+       <frameObject> _ => ref(N) </frameObject>
+
+  rule (. => doBind(X, ref(B), ref(N))) ~> setArgs(N, (X |-> ref(B) => .) _)
   rule [dissolve-setArgs]: setArgs(_, .) => .
 
   rule <k> describe(Self, Instance, Owner, S) => doDescribe(Self, Instance, gettype(Instance), S) ...</k>

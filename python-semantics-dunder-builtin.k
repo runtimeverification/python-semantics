@@ -13,7 +13,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "args" |-> ref("args")
            "__cause__" |-> ref("__cause__")
            "__context__" |-> ref("__context__")
-           "__new__" |-> def "BaseException.__new__" (1, -1, false)
+//           "__new__" |-> def "BaseException.__new__" (1, -1, false)
            "__suppress_context__" |-> ref("__suppress_context__")
            "__traceback__" |-> ref("__traceback__")
            ,.) ~>
@@ -31,7 +31,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "ImportError"("type",ListItem("Exception"),
            "name" |-> ref("name")
            "path" |-> ref("path")
-           "__init__" |-> def "ImportError.__init__"(0, -1, true)
+//           "__init__" |-> def "ImportError.__init__"(0, -1, true)
            ,.) ~>
 	 object "name"("attribute",.,.,"__get__" |-> "name") ~>
          object "path"("attribute",.,.,"__get__" |-> "path") ~>
@@ -60,140 +60,141 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "ValueError"("type",ListItem("Exception"),.,.) ~>
          object "Warning"("type",ListItem("Exception"),.,.) ~>
          object "ZeroDivisionError"("type", ListItem("ArithmeticError"),.,.) ~>
-         (def "all"(1, 1, false) ;) ~>
+//         (def "all"(1, 1, false) ;) ~>
          object "bool"("type",ListItem("int"),
-           "__new__" |-> def "new_bool" (1, 2, false)
+//           "__new__" |-> def "new_bool" (1, 2, false)
+.
            ,.) ~>
          object "bytes"("type",ListItem("object"),
-           "__add__" |-> def "add_bytes"(1, 1, true)
-           "__eq__" |-> def "eq_bytes"(1, 1, true)
-           "__ge__" |-> def "ge_bytes" (1, 1, true)
-           "__gt__" |-> def "gt_bytes" (1, 1, true)
-           "__le__" |-> def "le_bytes" (1, 1, true)
-           "__lt__" |-> def "lt_bytes" (1, 1, true)
-           "__mul__" |-> def "mul_bytes" (1, 1, true)
-           "__ne__" |-> def "ne_bytes" (1, 1, true)
-           "__new__" |-> def "new_bytes" (0, 3, true)
-           "__radd__" |-> def "radd_bytes"(1, 1, true)
-           "__rmul__" |-> def "rmul_bytes" (1, 1, true)
-           ,.) ~>
+//           "__add__" |-> def "add_bytes"(1, 1, true)
+//           "__eq__" |-> def "eq_bytes"(1, 1, true)
+//           "__ge__" |-> def "ge_bytes" (1, 1, true)
+//           "__gt__" |-> def "gt_bytes" (1, 1, true)
+//           "__le__" |-> def "le_bytes" (1, 1, true)
+//           "__lt__" |-> def "lt_bytes" (1, 1, true)
+//           "__mul__" |-> def "mul_bytes" (1, 1, true)
+//           "__ne__" |-> def "ne_bytes" (1, 1, true)
+//           "__new__" |-> def "new_bytes" (0, 3, true)
+//           "__radd__" |-> def "radd_bytes"(1, 1, true)
+//           "__rmul__" |-> def "rmul_bytes" (1, 1, true)
+.           ,.) ~>
          object "classmethod"("type", ListItem("object"),
-           "__get__" |-> def "get_classmethod"(1, 2, true)
-           "__init__" |-> def "init_classmethod"(1, 1, true)
-           "__new__" |-> def "new_classmethod"(2, 2, false)
-           ,.) ~>
-         (def "compile"(3, 6, false) ;) ~>
+//           "__get__" |-> def "get_classmethod"(1, 2, true)
+//           "__init__" |-> def "init_classmethod"(1, 1, true)
+//           "__new__" |-> def "new_classmethod"(2, 2, false)
+.           ,.) ~>
+//         (def "compile"(3, 6, false) ;) ~>
          object "complex"("type",ListItem("object"),.,.) ~>
          object "dict"("type",ListItem("object"),
-           "get" |-> def "get_dict" (1, 2, true)
-           "keys" |-> def "keys_dict" (0, 0, true)
-           "update" |-> ref("init_dict")
-           "__contains__" |-> def "contains_dict" (1, 1, true)
-           "__delitem__" |-> def "delitem_dict" (1, 1, true)
-           "__eq__" |-> def "eq_dict" (1, 1, true)
-           "__getitem__" |-> def "getitem_dict" (1, 1, true)
-           "__init__" |-> def "init_dict" (0, 1, true)
-           "__iter__" |-> def "iter_dict" (0, 0, true)
-           "__len__" |-> def "len_dict" (0, 0, true)
-           "__new__" |-> def "new_dict" (1, -1, false)
-           "__setitem__" |-> def "setitem_dict" (2, 2, true)
+//           "get" |-> def "get_dict" (1, 2, true)
+//           "keys" |-> def "keys_dict" (0, 0, true)
+           "update" |-> ref("dict.__init__")
+//           "__contains__" |-> def "contains_dict" (1, 1, true)
+//           "__delitem__" |-> def "delitem_dict" (1, 1, true)
+//           "__eq__" |-> def "eq_dict" (1, 1, true)
+//           "__getitem__" |-> def "getitem_dict" (1, 1, true)
+           "__init__" |-> def "dict.__init__" (true, String2Id("") = .Obj, ** String2Id("kwarg"))
+//           "__iter__" |-> def "iter_dict" (0, 0, true)
+//           "__len__" |-> def "len_dict" (0, 0, true)
+           "__new__" |-> def "dict.__new__" (false, String2Id("cls"), * String2Id("args"), ** String2Id("kwargs"))
+//           "__setitem__" |-> def "setitem_dict" (2, 2, true)
            ,.) ~>
          object "dict_keys" ("type",ListItem("object"),
-           "__iter__" |-> def "iter_dict_keys" (0, 0, true)
-           ,.) ~>
+//           "__iter__" |-> def "iter_dict_keys" (0, 0, true)
+.           ,.) ~>
          object "float"("type",ListItem("object"),
-           "__eq__" |-> def "eq_float"(1, 1, true)
-           "__ge__" |-> def "ge_float" (1, 1, true)
-           "__gt__" |-> def "gt_float" (1, 1, true)
-           "__le__" |-> def "le_float" (1, 1, true)
-           "__lt__" |-> def "lt_float" (1, 1, true)
-           "__ne__" |-> def "ne_float" (1, 1, true)
-           ,.) ~>
-         (def "format" (1, 2, false) ;) ~>
-         (def "getattr" (2, 3, false) ;) ~>
-         (def "globals" (0, 0, false) ;) ~>
-	 (def "hasattr" (2, 2, false) ;) ~>
-         (def "hash" (1, 1, false) ;) ~>
-         (def "id"(1, 1, false) ;) ~>
-         (def "index" (1, 1, false) ;) ~>
+//           "__eq__" |-> def "eq_float"(1, 1, true)
+//           "__ge__" |-> def "ge_float" (1, 1, true)
+//           "__gt__" |-> def "gt_float" (1, 1, true)
+//           "__le__" |-> def "le_float" (1, 1, true)
+//           "__lt__" |-> def "lt_float" (1, 1, true)
+//           "__ne__" |-> def "ne_float" (1, 1, true)
+.           ,.) ~>
+//         (def "format" (1, 2, false) ;) ~>
+//         (def "getattr" (2, 3, false) ;) ~>
+//         (def "globals" (0, 0, false) ;) ~>
+//	 (def "hasattr" (2, 2, false) ;) ~>
+         (def "hash" (false, String2Id("object")) ;) ~>
+//         (def "id"(1, 1, false) ;) ~>
+//         (def "index" (1, 1, false) ;) ~>
          object "int"("type",ListItem("object"),
-           "__abs__" |-> def "abs_int" (0, 0, true)
-           "__add__" |-> def "add_int" (1, 1, true)
-           "__and__" |-> def "and_int" (1, 1, true)
-           "__bool__" |-> def "bool_int" (0, 0, true)
-           "__ceil__" |-> def "ceil_int" (0, 0, true)
+//           "__abs__" |-> def "abs_int" (0, 0, true)
+//           "__add__" |-> def "add_int" (1, 1, true)
+//           "__and__" |-> def "and_int" (1, 1, true)
+//           "__bool__" |-> def "bool_int" (0, 0, true)
+//           "__ceil__" |-> def "ceil_int" (0, 0, true)
            //TODO: divmod, doc
-           "__eq__" |-> def "eq_int"(1, 1, true)
+//           "__eq__" |-> def "eq_int"(1, 1, true)
            //TODO: float
-           "__floor__" |-> def "floor_int" (0, 0, true)
-           "__floordiv__" |-> def "floordiv_int" (1, 1, true)
+//           "__floor__" |-> def "floor_int" (0, 0, true)
+//           "__floordiv__" |-> def "floordiv_int" (1, 1, true)
            //TODO: format
-           "__ge__" |-> def "ge_int" (1, 1, true)
+//           "__ge__" |-> def "ge_int" (1, 1, true)
            //TODO: getattribute, getnewargs
-           "__gt__" |-> def "gt_int" (1, 1, true)
-           "__hash__" |-> def "hash_int" (0, 0, true)
+//           "__gt__" |-> def "gt_int" (1, 1, true)
+//           "__hash__" |-> def "hash_int" (0, 0, true)
            "__index__" |-> ref("int_int")
-           "__int__" |-> def "int_int" (0, 0, true)
-           "__invert__" |-> def "invert_int" (0, 0, true)
-           "__le__" |-> def "le_int" (1, 1, true)
-           "__lshift__" |-> def "lshift_int" (1, 1, true)
-           "__lt__" |-> def "lt_int" (1, 1, true)
-           "__mod__" |-> def "mod_int" (1, 1, true)
-           "__mul__" |-> def "mul_int" (1, 1, true)
-           "__ne__" |-> def "ne_int" (1, 1, true)
-           "__neg__" |-> def "neg_int" (0, 0, true)
-           "__new__" |-> def "new_int" (1, 3, false)
-           "__or__" |-> def "or_int" (1, 1, true)
-           "__pos__" |-> def "pos_int" (0, 0, true)
-           "__pow__" |-> def "pow_int" (1, 2, true)
-           "__radd__" |-> def "radd_int" (1, 1, true)
-           "__rand__" |-> def "rand_int" (1, 1, true)
+//           "__int__" |-> def "int_int" (0, 0, true)
+//           "__invert__" |-> def "invert_int" (0, 0, true)
+//           "__le__" |-> def "le_int" (1, 1, true)
+//           "__lshift__" |-> def "lshift_int" (1, 1, true)
+//           "__lt__" |-> def "lt_int" (1, 1, true)
+//           "__mod__" |-> def "mod_int" (1, 1, true)
+//           "__mul__" |-> def "mul_int" (1, 1, true)
+//           "__ne__" |-> def "ne_int" (1, 1, true)
+//           "__neg__" |-> def "neg_int" (0, 0, true)
+//           "__new__" |-> def "new_int" (1, 3, false)
+//           "__or__" |-> def "or_int" (1, 1, true)
+//           "__pos__" |-> def "pos_int" (0, 0, true)
+//           "__pow__" |-> def "pow_int" (1, 2, true)
+//           "__radd__" |-> def "radd_int" (1, 1, true)
+//           "__rand__" |-> def "rand_int" (1, 1, true)
            //TODO: rdivmod, repr
-           "__rfloordiv__" |-> def "rfloordiv_int" (1, 1, true)
-           "__rlshift__" |-> def "rlshift_int" (1, 1, true)
-           "__rmod__" |-> def "rmod_int" (1, 1, true)
-           "__rmul__" |-> def "rmul_int" (1, 1, true)
-           "__ror__" |-> def "ror_int" (1, 1, true)
+//           "__rfloordiv__" |-> def "rfloordiv_int" (1, 1, true)
+//           "__rlshift__" |-> def "rlshift_int" (1, 1, true)
+//           "__rmod__" |-> def "rmod_int" (1, 1, true)
+//           "__rmul__" |-> def "rmul_int" (1, 1, true)
+//           "__ror__" |-> def "ror_int" (1, 1, true)
            //TODO: round
-           "__rpow__" |-> def "rpow_int" (1, 1, true)
-           "__rrshift__" |-> def "rrshift_int" (1, 1, true)
-           "__rshift__" |-> def "rshift_int" (1, 1, true)
-           "__rsub__" |-> def "rsub_int" (1, 1, true)
-           "__rtruediv__" |-> def "rtruediv_int" (1, 1, true)
-           "__rxor__" |-> def "rxor_int" (1, 1, true)
+//           "__rpow__" |-> def "rpow_int" (1, 1, true)
+//           "__rrshift__" |-> def "rrshift_int" (1, 1, true)
+//           "__rshift__" |-> def "rshift_int" (1, 1, true)
+//           "__rsub__" |-> def "rsub_int" (1, 1, true)
+//           "__rtruediv__" |-> def "rtruediv_int" (1, 1, true)
+//           "__rxor__" |-> def "rxor_int" (1, 1, true)
            //TODO: sizeof, str
-           "__sub__" |-> def "sub_int" (1, 1, true)
-           "__truediv__" |-> def "truediv_int" (1, 1, true)
-           "__trunc__" |-> def "trunc_int" (0, 0, true)
-           "__xor__" |-> def "xor_int" (1, 1, true)
+//           "__sub__" |-> def "sub_int" (1, 1, true)
+//           "__truediv__" |-> def "truediv_int" (1, 1, true)
+//           "__trunc__" |-> def "trunc_int" (0, 0, true)
+//           "__xor__" |-> def "xor_int" (1, 1, true)
            //TODO: bit_length, conjugate, denominator, from_bytes, imag,
            //        numerator, real, to_bytes
            ,.) ~>
-         (def "isinstance" (2, 2, false) ;) ~>
-         (def "issubclass" (2, 2, false) ;) ~>
-         (def "iter" (1, 2, false) ;) ~>
+//         (def "isinstance" (2, 2, false) ;) ~>
+//         (def "issubclass" (2, 2, false) ;) ~>
+         (def "iter" (false, String2Id("object"), String2Id("sentinel") = .Obj) ;) ~>
          object "iterator"("type",ListItem("object"),
-           "__iter__" |-> def "iter_iter" (0, 0, true)
-           "__next__" |-> def "iter_next" (0, 0, true)
-           ,.) ~> 
-         (def "len" (1, 1, false) ;) ~>
+//           "__iter__" |-> def "iter_iter" (0, 0, true)
+//           "__next__" |-> def "iter_next" (0, 0, true)
+.           ,.) ~> 
+         (def "len" (false, String2Id("s")) ;) ~>
          object "list"("type",ListItem("object"),
-           "append" |-> def "append_list"(1, 1, true)
-           "extend" |-> def "extend_list"(1, 1, true)
-           "__add__" |-> def "add_list" (1, 1, true)
-           "__eq__" |-> def "eq_list" (1, 1,  true)
-           "__init__" |-> def "init_list" (0, 1, true)
-           "__iter__" |-> def "get_iter" (0, 0, true)
-           "__getitem__" |-> def "getitem_list" (1, 1, true)
-           "__len__" |-> def "len_list" (0, 0, true)
-           "__ne__" |-> def "ne_list" (1, 1, true)
-           "__new__" |-> def "new_list" (1, -1, false)
-           ,.) ~>
-         (def "locals" (0, 0, false) ;) ~>
+//           "append" |-> def "append_list"(1, 1, true)
+//           "extend" |-> def "extend_list"(1, 1, true)
+//           "__add__" |-> def "add_list" (1, 1, true)
+//           "__eq__" |-> def "eq_list" (1, 1,  true)
+//           "__init__" |-> def "init_list" (0, 1, true)
+//           "__iter__" |-> def "get_iter" (0, 0, true)
+//           "__getitem__" |-> def "getitem_list" (1, 1, true)
+//           "__len__" |-> def "len_list" (0, 0, true)
+//           "__ne__" |-> def "ne_list" (1, 1, true)
+//           "__new__" |-> def "new_list" (1, -1, false)
+.           ,.) ~>
+//         (def "locals" (0, 0, false) ;) ~>
          object "map"("type",ListItem("object"),
            "__iter__" |-> ref("iter_iter")
-           "__new__" |-> def "new_map" (3, -1, false)
-           "__next__" |-> def "map_next" (0, 0, true)
+//           "__new__" |-> def "new_map" (3, -1, false)
+//           "__next__" |-> def "map_next" (0, 0, true)
            ,.) ~>
          object "module"("type",ListItem("object"),
            "__dict__" |-> ref("__dict__module")
@@ -201,108 +202,108 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "__dict__module"("attribute",.,., "__get__" |-> "__dict__") ~>
          object "object"("type",.,
            "__class__" |-> ref("__class__")
-           "__getattribute__" |-> def "getattribute_object" (1, 1, true)
-           "__eq__" |-> def "eq_object" (1, 1, true)
-           "__format__" |-> def "format_object" (1, 1, true)
-           "__init__" |-> def "init_object" (0, -1, true)
-           "__ne__" |-> def "ne_object" (1, 1, true)
-           "__new__" |-> def "new_object" (1, -1, false)
-           "__setattr__" |-> def "setattr_object"(2, 2, true)
-           "__subclasshook__" |-> def "subclasshook_object"(0, -1, false)
+//           "__getattribute__" |-> def "getattribute_object" (1, 1, true)
+//           "__eq__" |-> def "eq_object" (1, 1, true)
+//           "__format__" |-> def "format_object" (1, 1, true)
+//           "__init__" |-> def "init_object" (0, -1, true)
+//           "__ne__" |-> def "ne_object" (1, 1, true)
+//           "__new__" |-> def "new_object" (1, -1, false)
+//           "__setattr__" |-> def "setattr_object"(2, 2, true)
+//           "__subclasshook__" |-> def "subclasshook_object"(0, -1, false)
            ,.) ~>
          object "__class__" ("attribute",.,., "__get__" |-> "__class__") ~>
-         (def "ord" (1, 1, false) ;) ~>
+//         (def "ord" (1, 1, false) ;) ~>
          object "range" ("type",ListItem("object"),
-           "__iter__" |-> def "iter_range" (0, 0, true)
-           "__new__" |-> def "new_range" (1, 4, false)
-           ,.) ~>
+//           "__iter__" |-> def "iter_range" (0, 0, true)
+//           "__new__" |-> def "new_range" (1, 4, false)
+.           ,.) ~>
          object "reversed" ("type", ListItem("object"),
-           "__new__" |-> def "reversed.__init__"(1, 1, true)
-           ,.) ~>
+//           "__new__" |-> def "reversed.__init__"(1, 1, true)
+.           ,.) ~>
          object "set" ("type", ListItem("object"),
-           "__contains__" |-> def "contains_set" (1, 1, true)
-           "__eq__" |-> def "eq_set" (1, 1, true)
-           "__init__" |-> def "init_set" (0, 1, true)
-           "__ior__" |-> def "ior_set"(1, 1, true)
-           "__le__" |-> def "le_set"(1, 1, true)
-           "__lt__" |-> def "lt_set"(1, 1, true)
-           "__ne__" |-> def "ne_set"(1, 1, true)
-           "__new__" |-> def "new_set" (1, -1, false)
-           ,.) ~>
-	 (def "setattr" (3, 3, false) ;) ~>
+//           "__contains__" |-> def "contains_set" (1, 1, true)
+//           "__eq__" |-> def "eq_set" (1, 1, true)
+//           "__init__" |-> def "init_set" (0, 1, true)
+//           "__ior__" |-> def "ior_set"(1, 1, true)
+//           "__le__" |-> def "le_set"(1, 1, true)
+//           "__lt__" |-> def "lt_set"(1, 1, true)
+//           "__ne__" |-> def "ne_set"(1, 1, true)
+//           "__new__" |-> def "new_set" (1, -1, false)
+.           ,.) ~>
+//	 (def "setattr" (3, 3, false) ;) ~>
          object "slice" ("type",ListItem("object"),
-           "indices" |-> def "indices_slice" (1, 1, true)
+//           "indices" |-> def "indices_slice" (1, 1, true)
            "start" |-> ref("start")
            "stop" |-> ref("stop")
            "step" |-> ref("step")
-           "__new__" |-> def "new_slice" (1, 4, false)
+//           "__new__" |-> def "new_slice" (1, 4, false)
            ,.) ~>
          object "start"("attribute",.,., "__get__" |-> "start") ~>
          object "stop"("attribute",.,., "__get__" |-> "stop") ~>
          object "step"("attribute",.,., "__get__" |-> "step") ~>
          object "staticmethod"("type", ListItem("object"),
-           "__get__" |-> def "get_staticmethod"(1, 2, true)
-           "__init__" |-> def "init_staticmethod"(1, 1, true)
-           "__new__" |-> def "new_staticmethod"(2, 2, false)
-           ,.) ~>
+//           "__get__" |-> def "get_staticmethod"(1, 2, true)
+//           "__init__" |-> def "init_staticmethod"(1, 1, true)
+//           "__new__" |-> def "new_staticmethod"(2, 2, false)
+.           ,.) ~>
          object "str"("type",ListItem("object"),
-           "format" |-> def "format_str"(0, -1, true)
-           "join" |-> def "join_str"(1, 1, true)
-           "lower" |-> def "lower_str"(0, 0, true)
-           "partition" |-> def "partition_str"(1, 1, true)
-           "rpartition" |-> def "rpartition_str"(1, 1, true)
-           "rsplit" |-> def "rsplit_str"(0, 2, true)
-           "startswith" |-> def "startswith_str"(1, 3, true)
-           "__add__" |-> def "add_str" (1, 1, true)
-           "__eq__" |-> def "eq_str" (1, 1, true)
-           "__format__" |-> def "__format___str"(1, 1, true)
-           "__hash__" |-> def "hash_str" (0, 0, true)
-           "__len__" |-> def "len_str"(0, 0, true)
-           "__mod__" |-> def "mod_str"(1, 1, true)
-           "__ne__" |-> def "ne_str" (1, 1, true)
-           ,.) ~>
+//           "format" |-> def "format_str"(0, -1, true)
+//           "join" |-> def "join_str"(1, 1, true)
+//           "lower" |-> def "lower_str"(0, 0, true)
+//           "partition" |-> def "partition_str"(1, 1, true)
+//           "rpartition" |-> def "rpartition_str"(1, 1, true)
+//           "rsplit" |-> def "rsplit_str"(0, 2, true)
+//           "startswith" |-> def "startswith_str"(1, 3, true)
+//           "__add__" |-> def "add_str" (1, 1, true)
+//           "__eq__" |-> def "eq_str" (1, 1, true)
+//           "__format__" |-> def "__format___str"(1, 1, true)
+           "__hash__" |-> def "str.__hash__" (true, String2Id("self"))
+//           "__len__" |-> def "len_str"(0, 0, true)
+//           "__mod__" |-> def "mod_str"(1, 1, true)
+//           "__ne__" |-> def "ne_str" (1, 1, true)
+ .          ,.) ~>
          object "super"("type",ListItem("object"),
-           "__getattribute__" |-> def "super.__getattribute__"(1, 1, true)
-           "__init__" |-> def "super.__init__"(0, 2, true)
-           ,.) ~>
+//           "__getattribute__" |-> def "super.__getattribute__"(1, 1, true)
+//           "__init__" |-> def "super.__init__"(0, 2, true)
+  .         ,.) ~>
          object "tuple"("type",ListItem("object"),
-           "__add__" |-> def "add_tuple" (1, 1, true)
-           "__contains__" |-> def "contains_tuple" (1, 1, true)
-           "__eq__" |-> def "eq_tuple" (1, 1, true)
-           "__getitem__" |-> def "getitem_tuple" (1, 1, true)
-           "__hash__" |-> def "hash_tuple" (0, 0, true)
-           "__iter__" |-> ref("get_iter")
-           "__len__" |-> def "len_tuple" (0, 0, true)
-           "__ne__" |-> def "ne_tuple" (1, 1, true)
-           "__new__" |-> def "new_tuple" (1, 2, false)
+//           "__add__" |-> def "add_tuple" (1, 1, true)
+//           "__contains__" |-> def "contains_tuple" (1, 1, true)
+//           "__eq__" |-> def "eq_tuple" (1, 1, true)
+//           "__getitem__" |-> def "getitem_tuple" (1, 1, true)
+//           "__hash__" |-> def "hash_tuple" (0, 0, true)
+             "__iter__" |-> def "tuple.__iter__" (true, String2Id("self"))
+//           "__len__" |-> def "len_tuple" (0, 0, true)
+//           "__ne__" |-> def "ne_tuple" (1, 1, true)
+//           "__new__" |-> def "new_tuple" (1, 2, false)
            ,.) ~>
          object "type"("type",ListItem("object"),
-           "mro" |-> def "mro_type"(0, 0, true)
+//           "mro" |-> def "mro_type"(0, 0, true)
            "__bases__" |-> ref("__bases__")
-           "__call__" |-> def "call_type" (0, -1, true)
-           "__getattribute__" |-> def "getattribute_type" (1, 1, true)
-           "__instancecheck__" |-> def "instancecheck_type" (1, 1, true)
+//           "__call__" |-> def "call_type" (0, -1, true)
+//           "__getattribute__" |-> def "getattribute_type" (1, 1, true)
+//           "__instancecheck__" |-> def "instancecheck_type" (1, 1, true)
            "__mro__" |-> ref("__mro__")
            "__name__" |-> ref("__name__type")
-           "__new__" |-> def "new_type"(2, 4, false)
-           "__prepare__" |-> def "prepare_type"(0, -1, false)
-           "__setattr__" |-> def "setattr_type"(2, 2, true)
-           "__subclasscheck__" |-> def "subclasscheck_type"(1, 1, true)
+//           "__new__" |-> def "new_type"(2, 4, false)
+//           "__prepare__" |-> def "prepare_type"(0, -1, false)
+//           "__setattr__" |-> def "setattr_type"(2, 2, true)
+//           "__subclasscheck__" |-> def "subclasscheck_type"(1, 1, true)
            ,.) ~>
          object "__name__type" ("attribute",.,., "__get__" |-> "__name__") ~>
          object "__bases__" ("attribute",.,., "__get__" |-> "__bases__") ~>
          object "__mro__" ("attribute",.,., "__get__" |-> "__mro__") ~>
          // module "types"
          object "attribute"("type",ListItem("object"),
-           "__get__" |-> def "get_attr" (1, 2, true)
-           "__set__" |-> def "set_attr" (2, 2, true)
-           , "__name__" |-> undefined("internal type name")) ~>
+           "__get__" |-> def "attribute.__get__" (true, String2Id("self"), String2Id("instance"), String2Id("owner") = ref("None"))
+//           "__set__" |-> def "set_attr" (2, 2, true)
+.           , "__name__" |-> undefined("internal type name")) ~>
          object "builtin-function" ("type",ListItem("object"),
-             "__call__" |-> def "call_builtin_function" (0, -1, true)
-           , "__name__" |-> undefined("internal type name")) ~>
+//             "__call__" |-> def "call_builtin_function" (0, -1, true)
+.           , "__name__" |-> undefined("internal type name")) ~>
          object "builtin-method" ("type",ListItem("object"),
-           "__get__" |-> def "get_builtin_method" (1, 2, true)
-           , "__name__" |-> undefined("internal type name")) ~>
+           "__get__" |-> def "builtin-method.__get__" (true, String2Id("self"), String2Id("instance"), String2Id("owner") = ref("None"))
+.           , "__name__" |-> undefined("internal type name")) ~>
          object "code"("type",ListItem("object"),
            "co_name" |-> ref("co_name")
            "co_argcount" |-> ref("co_argcount")
@@ -335,17 +336,17 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "f_locals" ("attribute",.,., "__get__" |-> "f_locals") ~>
          object "function"("type",ListItem("object"),
            "__annotations__" |-> ref("__annotations__")
-           "__call__" |-> def "call_function" (0, -1, true)
+//           "__call__" |-> def "call_function" (0, -1, true)
            "__closure__" |-> ref("__closure__")
            "__code__" |-> ref("__code__")
            "__defaults__" |-> ref("__defaults__")
            "__dict__" |-> ref("__dict__function")
            "__doc__" |-> ref("__doc__")
-           "__get__" |-> def "get_function" (1, 2, true)
+//           "__get__" |-> def "get_function" (1, 2, true)
            "__globals__" |-> ref("__globals__")
            "__kwdefaults__" |-> ref("__kwdefaults__")
-           "__module__" |-> ref("__module__") 
-           "__name__" |-> ref("__name__function")
+//           "__module__" |-> ref("__module__") 
+//           "__name__" |-> ref("__name__function")
            ,.) ~>
          object "__annotations__" ("attribute",.,., "__get__" |-> "__annotations__") ~>
          object "__closure__" ("attribute",.,., "__get__" |-> "__closure__") ~>
@@ -355,17 +356,17 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "__doc__" ("attribute",.,., "__get__" |-> "__doc__" "__set__" |-> ref("set_ref_default")) ~>
          object "__globals__" ("attribute",.,., "__get__" |-> "__globals__") ~>
          object "__kwdefaults__" ("attribute",.,., "__get__" |-> "__kwdefaults__") ~>
-         object "__module__" ("attribute",.,., "__get__" |-> "__module__" "__set__" |-> def "set_ref_default"(3, 3, false)) ~>
-         object "__name__function"("attribute",.,., "__get__" |-> "__name__" "__set__" |-> def "set_attr_string"(3, 3, false)) ~>
+//         object "__module__" ("attribute",.,., "__get__" |-> "__module__" "__set__" |-> def "set_ref_default"(3, 3, false)) ~>
+//         object "__name__function"("attribute",.,., "__get__" |-> "__name__" "__set__" |-> def "set_attr_string"(3, 3, false)) ~>
          object "generator"("type",ListItem("object"),
-           "close" |-> def "close_generator"(0, 0, true)
-           "send" |-> def "send_generator"(1, 1, true)
-           "throw" |-> def "throw_generator"(1, 3, true)
-           "__iter__" |-> def "iter_generator"(0, 0, true)
-           "__next__" |-> def "next_generator"(0, 0, true)
-           ,.) ~>
+//           "close" |-> def "close_generator"(0, 0, true)
+//           "send" |-> def "send_generator"(1, 1, true)
+//           "throw" |-> def "throw_generator"(1, 3, true)
+//           "__iter__" |-> def "iter_generator"(0, 0, true)
+//           "__next__" |-> def "next_generator"(0, 0, true)
+.           ,.) ~>
          object "method" ("type", ListItem("object"),
-           "__call__" |-> def "call_method" (0, -1, true)
+           "__call__" |-> def "method.__call__" (true, String2Id("self"), * String2Id("args"), ** String2Id("kwargs"))
            "__func__" |-> ref("__func__")
            "__self__" |-> ref("__self__")
            , .) ~>
@@ -382,71 +383,71 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "cell"("type",ListItem("object"),
            ., .) ~>
          object "cell_contents" ("attribute",.,., "__get__" |-> "cell_contents") ~>
-         (def "new_structseq" (2, 2, false) ;) ~>
+//         (def "new_structseq" (2, 2, false) ;) ~>
 
          //module "sys"
-         (def "sys_exc_info" (0, 0, false) ;) ~>
+//         (def "sys_exc_info" (0, 0, false) ;) ~>
          struct "sys.flags"("optimize","verbose") ~>
          struct "sys.hash_info"("width", "modulus", "inf", "nan", "imag") ~>
          struct "sys.version_info"("major", "minor", "micro", "releaselevel", "serial") ~>
          struct "sys.implementation"("name", "version", "hexversion", "cache_tag") ~>
 
          //module "_imp"
-         (def "imp__fix_co_filename"(2, 2, false) ;) ~>
-         (def "imp_acquire_lock" (0, 0, false) ;) ~>
-         (def "imp_extension_suffixes" (0, 0, false) ;) ~>
-         (def "imp_init_builtin" (1, 1, false) ;) ~>
-         (def "imp_init_frozen" (1, 1, false) ;) ~>
-         (def "imp_is_builtin" (1, 1, false) ;) ~>
-         (def "imp_is_frozen" (1, 1, false) ;) ~>
-         (def "imp_is_frozen_package" (1, 1, false) ;) ~>
-         (def "imp_get_frozen_object" (1, 1, false) ;) ~>
-         (def "imp_load_dynamic" (2, 3, false) ;) ~>
-         (def "imp_release_lock" (0, 0, false) ;) ~>
+//         (def "imp__fix_co_filename"(2, 2, false) ;) ~>
+//         (def "imp_acquire_lock" (0, 0, false) ;) ~>
+//         (def "imp_extension_suffixes" (0, 0, false) ;) ~>
+//         (def "imp_init_builtin" (1, 1, false) ;) ~>
+//         (def "imp_init_frozen" (1, 1, false) ;) ~>
+//         (def "imp_is_builtin" (1, 1, false) ;) ~>
+//         (def "imp_is_frozen" (1, 1, false) ;) ~>
+//         (def "imp_is_frozen_package" (1, 1, false) ;) ~>
+//         (def "imp_get_frozen_object" (1, 1, false) ;) ~>
+//         (def "imp_load_dynamic" (2, 3, false) ;) ~>
+//         (def "imp_release_lock" (0, 0, false) ;) ~>
 
          //module "_io"
          object "BytesIO"("type", ListItem("_BufferedIOBase"),
-           "__init__" |-> def "BytesIO.__init__"(0, 1, true)
-           "readline" |-> def "BytesIO.readline"(0, 1, true)
-           ,.) ~>
+//           "__init__" |-> def "BytesIO.__init__"(0, 1, true)
+//           "readline" |-> def "BytesIO.readline"(0, 1, true)
+.           ,.) ~>
          object "FileIO"("type", ListItem("_RawIOBase"),
-           "__init__" |-> def "FileIO.__init__"(1, 4, true)
-           "read" |-> def "FileIO.read"(0, 1, true)
-           "write" |-> def "FileIO.write"(1, 1, true)
-           ,.) ~>
+//           "__init__" |-> def "FileIO.__init__"(1, 4, true)
+//           "read" |-> def "FileIO.read"(0, 1, true)
+//           "write" |-> def "FileIO.write"(1, 1, true)
+.           ,.) ~>
          object "IncrementalNewlineDecoder"("type", ListItem("object"),
-           "__init__" |-> def "IncrementalNewlineDecoder.__init__"(2, 3, true)
-           "decode" |-> def "IncrementalNewlineDecoder.decode"(1, 2, true)
-           ,.) ~>
+//           "__init__" |-> def "IncrementalNewlineDecoder.__init__"(2, 3, true)
+//           "decode" |-> def "IncrementalNewlineDecoder.decode"(1, 2, true)
+.           ,.) ~>
          object "_IOBase"("type", ListItem("object"),
-           "__new__" |-> def "_IOBase.__new__"(1, -1, false)
-           ,.) ~>
+//           "__new__" |-> def "_IOBase.__new__"(1, -1, false)
+.           ,.) ~>
          object "_RawIOBase"("type", ListItem("_IOBase"),
-           "read" |-> def "_RawIOBase.read"(0, 1, true)
-           ,.) ~>
+//           "read" |-> def "_RawIOBase.read"(0, 1, true)
+.           ,.) ~>
          object "_BufferedIOBase"("type", ListItem("_IOBase"),.,.) ~>
 
          //module "_warnings" 
-         (def "_warnings.warn" (1, 3, false) ;) ~>
+//         (def "_warnings.warn" (1, 3, false) ;) ~>
 
          //module "_weakref"
          object "weakref"("type", ListItem("object"),
-           "__call__" |-> def "weakref.__call__"(0, 0, true)
-           "__new__" |-> def "weakref.__new__"(2, 3, false)
-           ,.) ~>
+//           "__call__" |-> def "weakref.__call__"(0, 0, true)
+//           "__new__" |-> def "weakref.__new__"(2, 3, false)
+.           ,.) ~>
 
          //module "marshal"
-         (def "marshal.dumps"(1, 2, false) ;) ~>
-         (def "marshal.loads"(1, 1, false) ;) ~>
+//         (def "marshal.dumps"(1, 2, false) ;) ~>
+//         (def "marshal.loads"(1, 1, false) ;) ~>
 
          //module "posix"
-         (def "getcwd"(0, 0, false) ;) ~>
-         (def "listdir"(0, 1, false) ;) ~>
-         (def "mkdir"(1, 2, false) ;) ~>
-         (def "open"(2, 3, false) ;) ~>
-         (def "replace"(2, 2, false) ;) ~>
-         (def "stat"(1, 1, false) ;) ~>
-         (def "unlink"(1, 1, false) ;) ~>
+//         (def "getcwd"(0, 0, false) ;) ~>
+//         (def "listdir"(0, 1, false) ;) ~>
+//         (def "mkdir"(1, 2, false) ;) ~>
+//         (def "open"(2, 3, false) ;) ~>
+//         (def "replace"(2, 2, false) ;) ~>
+//         (def "stat"(1, 1, false) ;) ~>
+//         (def "unlink"(1, 1, false) ;) ~>
          .K
        )
        ...</k>

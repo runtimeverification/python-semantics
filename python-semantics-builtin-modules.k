@@ -1,36 +1,42 @@
-require "python-semantics-common.k"
+require "python-semantics-functions.k"
 
 
 module PYTHON-SEMANTICS-BUILTIN-MODULES
-  imports PYTHON-SEMANTICS-COMMON
+  imports PYTHON-SEMANTICS-FUNCTIONS
 
   syntax K ::= "builtins"
              | "resolve"
              | "modules"
              | "importlib"
              | "object" ObjId "(" String "," List "," Map "," Map ")"
-             | "incref" "(" List "," Int ")"
-             | "incref" "(" ObjId "," Int ")"
+             | "incref" "(" ObjId "," Set ")"
              | "genv" "(" String "," String ")"
              | "module" ObjId "(" Expression ")" [strict(2)]
              | "struct" ObjId "(" Expressions ")"
+             | invokeBuiltin(String)
 
-  syntax ObjRef ::= "def" String "(" Int "," Int "," Bool ")"
+  syntax ObjRef ::= "def" String "(" Bool "," Parameters")"
 
   syntax ListItem ::= "refs" "(" List ")"
 
-  rule incref(B:ObjId,N) => incref(ListItem(B),N) [macro, anywhere]
   rule refs(ListItem(S) L) => ListItem(ref(S)) refs(L)
   rule refs(.List) => .List
 
+  rule <k> incref(B:ObjId, (SetItem(N) => .) _) ...</k>
+       <references>... . => (B, N) ...</references>
+
+  syntax SetItem ::= (ObjId, Int)
+
+  rule incref(B, .) => .
+
   rule <k> initialize(Program:K) => builtins ~> resolve ~> modules ~> importlib ~> executeModule(codeObject(String2Id("__main__"), .Parameters, Program, true), ref("builtins"), {.KeyData}) ...</k>
 
-  rule <k> (. => setref(B, "__dict__", { DeMapify(Env:Map) })) ~> resolve ...</k>
+  rule <k> (. => setref(N, "__dict__", { DeMapify(Env:Map) })) ~> resolve ...</k>
        <object>...
-         <id>B</id>
+         <id>N:Int</id>
          <oenv> Env </oenv>
        ...</object>
-       <references>... B |-> (1 => 0) ...</references>
+       <references>... (N, 1) => . ...</references>
        <bootstrapping> 1 </bootstrapping>
 
   rule <k> (. => setref(B, "__bases__", immutable(list(L), ref("tuple")))) ~> resolve ...</k>
@@ -38,27 +44,57 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
          <id>B</id>
          <oattrs>... "__bases__" |-> list(L:List) ...</oattrs>
        ...</object>
-       <references>... B |-> (3 => 2) ...</references> 
-       <bootstrapping> 3 </bootstrapping>
+       <references>... (B, 4) => . ...</references> 
+       <bootstrapping> 4 </bootstrapping>
 
   rule <k> (. => setref(B, "__mro__", immutable(getMro(ref(B), getref2(ref(B), "__bases__")), ref("tuple")))) ~> resolve ...</k>
        <object>...
          <id>B</id>
          <oattrs>... "__mro__" |-> _ ...</oattrs>
        ...</object>
-       <references>... B |-> (2 => 1) </references>
-       <bootstrapping> 2 </bootstrapping>        
+       <references>... (B, 3) => . ...</references>
+       <bootstrapping> 3 </bootstrapping>        
 
-  rule <references>... (_ |-> 0) => . ...</references>
+  rule <k> . => setref(S, "__code__", codeObject(String2Id(S), Ps, invokeBuiltin(S), false)) ~> setref(S, "__closure__", ref("None")) ~> setattr(S, "__globals__", .Obj) ~> setref(S, "__defaults__", ref("None")) ~> setref(S, "__kwdefaults__", ref("None")) ~> makeBuiltinDefaults(S, Listify(Ps), false, ., .) ...</k>
+       <object>...
+         <id>S:String</id>
+         <oattrs>... "__code__" |-> Ps ...</oattrs>
+       ...</object>
+       <references>... (S, 2) => . ...</references>
+       <bootstrapping> 2 </bootstrapping>
+
+  rule <k> invokeBuiltin(S) => invokeBuiltin(S, M) ...</k>
+       <frameObject> ref(N) </frameObject>
+       <object>...
+         <id>N</id>
+         <oattrs>... "f_locals" |-> map(M) ...</oattrs>
+       ...</object>
+
+  context invokeBuiltin(_, _ (_ |-> HOLE))
+
+  syntax K ::= makeBuiltinDefaults(String, List, Bool, List, Map)
+  rule makeBuiltinDefaults(S, (ListItem(X = K:K) => .) _, false, _ (. => ListItem(K)), _)
+  rule makeBuiltinDefaults(S, (ListItem(X = K:K) => .) _, true, _, _ (. => Id2String(X) |-> K))
+  rule makeBuiltinDefaults(S, (ListItem(X) => .) _, _, _, _)
+  rule makeBuiltinDefaults(S, (ListItem(* _) => ListItem(*)) _, _, _, _)
+  rule makeBuiltinDefaults(S, (ListItem(*) => .) _, false => true, _, _)
+  rule makeBuiltinDefaults(S, (ListItem(** _) => .) _, _, _, _)
+  rule makeBuiltinDefaults(S, ., _, Defaults, KwDefaults) => setref(S, "__defaults__", tuple(DeListify(Defaults))) ~> setref(S, "__kwdefaults__", { DeMapify(KwDefaults) })
 
   rule <k> resolve => . ...</k>
-       <references> .Map </references>
+       <references> .Set </references>
 
   rule <k> resolve ...</k>
-       <references> M:Map </references>
-       <bootstrapping> N => N -Int 1 </bootstrapping> when notBool (N in values M)
+       <references> S:Set </references>
+       <bootstrapping> N => N -Int 1 </bootstrapping> when notBool (N in values S)
 
-  rule <k> (. => incref(N, #if S2 ==String "type" #then 3 #else 0 #fi)) ~> object (S:String => N:Int)(S2:String,_,_,_) ...</k>
+  syntax Set ::= "values" Set [function]
+  rule values ((_, N:Int) S:Set) => SetItem(N) values S
+  rule values .Set => .Set
+
+  syntax Set ::= "#if" Bool "#then" Set "#else" Set "#fi" [function]
+
+  rule <k> (. => #if S2 ==String "type" #then incref(N, SetItem(4) SetItem(3) SetItem(1)) #else . #fi) ~> object (S:String => N:Int)(S2:String,_,_,_) ...</k>
        <nextLoc>N => N +Int 1</nextLoc>
        <store>... . =>
          <object>...
@@ -101,49 +137,34 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
          <oenv>... . => S |-> ref(id(O)) ...</oenv>
        ...</object>
 
-  rule <k> (def S:String(Min:Int, Max:Int, IsMethod:Bool) => ref(S)) ...</k>
+  rule <k> def S:String(IsMethod, Ps) => incref(S, SetItem(2)) ~> ref(S) ...</k>
        (. => <object>...
          <id>S</id>
-         <oattrs> "__min__" |-> Min "__max__" |-> Max "__method__" |-> IsMethod "__class__" |-> #if IsMethod #then ref("builtin-method") #else ref("builtin-function") #fi </oattrs>
+         <oattrs> "__class__" |-> #if IsMethod #then ref("builtin-method") #else ref("builtin-function") #fi "__code__" |-> Ps </oattrs>
          <oenv> .Map </oenv>
        ...</object>)
        <symbols> M:Map => M[S / S] </symbols> when notBool(S in keys(M))
-
-  rule <k> object N(_,_,_,(S |-> def S2:String(Min, Max, IsMethod) => .) _) ...</k>
-       <object>...
-         <id>N</id>
-         <oattrs> OAttrs:Map => OAttrs[ref(S2) / S] </oattrs>
-       ...</object>
-       (. => <object>...
-         <id>S2</id>
-         <oattrs> "__min__" |-> Min "__max__" |-> Max "__method__" |-> IsMethod "__class__" |-> #if IsMethod #then ref("builtin-method") #else ref("builtin-function") #fi </oattrs>
-         <oenv> .Map </oenv>
-       ...</object>)
-       <symbols> M => M[S2 / S2] </symbols> when notBool(S2 in keys(M))
 
   rule <k> object N(_,_,_,(S |-> K:K => .) _) ...</k>
        <object>...
          <id>N</id>
          <oattrs> OAttrs => OAttrs[K / S] </oattrs>
-       ...</object> when getKLabel K =/=KLabel 'ref`(_`) andBool getKLabel K =/=KLabel 'def_`(_`,_`,_`)
+       ...</object> when isObject(K) =/=K true
 
-  rule <k> object N(_,_,_,(S |-> ref(S2) => .) _) ...</k>
+  rule <k> object N(_,_,_,(S |-> K:K => .) _) ...</k>
        <object>...
          <id>N</id>
-         <oattrs> OAttrs => OAttrs[ref(S2) / S] </oattrs>
-       ...</object>
+         <oattrs> OAttrs => OAttrs[ref(id(K)) / S] </oattrs>
+       ...</object> when isObject(K)
+
+
+  context object N(_,_,_,(S |-> HOLE) _) when getKLabel HOLE ==KLabel 'def_`(_`,_`)
 
   rule <k> object N(.,.,.,.) => . ...</k>
        <object>...
          <id>N</id>
          <oattrs> OAttrs </oattrs>
        ...</object> when "__bases__" in keys(OAttrs) orBool OAttrs:Map("__class__") =/=K ref("type")
-
-  rule <k> incref((ListItem(B) => .) _, N2:Int) ...</k>
-       <references>... B |-> (N => N +Int N2) ...</references>
-  rule <k> incref((ListItem(B) => .) _, N2) ...</k>
-       <references>Ref:Map (. => (B |-> N2)) </references> when notBool(B in keys(Ref))
-  rule incref(.List,_) => .
 
   rule <k> module S(O) => ((ref(N) . String2Id("__dict__") ["__name__"]), .Expressions) := S ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
@@ -154,7 +175,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <symbols>... (. => S |-> N) ...</symbols>
        <builtinModules>... (. => S |-> N) ...</builtinModules> [allocation]
 
-  rule <k> (. => incref(N, 3)) ~> struct (S:String => N)(K) ...</k>
+  rule <k> (. => incref(N, SetItem(4) SetItem(3) SetItem(1))) ~> struct (S:String => N)(K) ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
        (. => <object>...
          <id>N</id>

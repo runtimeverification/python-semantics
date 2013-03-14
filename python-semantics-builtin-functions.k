@@ -5,7 +5,7 @@ module PYTHON-SEMANTICS-BUILTIN-FUNCTIONS
 
   syntax K ::= doAll(Expression) [strict]
 
-  rule invokeBuiltin(obj("all",_), ListItem(O:Object), .) => try: doAll(ref("iter")(O)) except ref("StopIteration"): ref("True") else: pass
+  //rule invokeBuiltin(obj("all",_), ListItem(O:Object), .) => try: doAll(ref("iter")(O)) except ref("StopIteration"): ref("True") else: pass
   rule doAll(Iter:Object) => if not getmember(Iter, "__next__", true, false, true)(.Arguments) : ref("False") else: doAll(Iter)
 
 endmodule

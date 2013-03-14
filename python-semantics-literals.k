@@ -43,11 +43,15 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule <k> processSet(SetObj:Object, .) => ref(id(SetObj)) ...</k>
 
-  syntax K ::= "checkHash" "(" Expression ")" [strict]
-
-  rule <k> invokeBuiltin(obj("hash",_), ListItem(O:Object), .) => checkHash(getmember(O, "__hash__", true, false, false) (.Arguments) -> (raiseInternal("TypeError", "unhashable type"))) ...</k>
-
-  rule [checkHash]: <k> checkHash(O:Object) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__hash__ method should return an integer")) ...</k>
+  syntax #Id ::= "__hash__"
+  rule invokeBuiltin("hash", _) => if hasmember(String2Id("object"), "__hash__") :
+                                  String2Id("object"), .Expressions := getmember(String2Id("object"), "__hash__", true, false, true) (.Arguments) newline
+                                  if istype(String2Id("object"), ref("int")) :
+                                    return String2Id("object")
+                                  else:
+                                    raiseInternal("TypeError", "__hash__ method should return an integer")
+                                else:
+                                  raiseInternal("TypeError", "unhashable type")
 
   rule <k> processDictElement(obj(B:ObjId,_), Key:Object, Hash:Object, Value:K) => tableInsert(B, intvalue(Hash), Key, ref(id(Key)) : ref(id(Value))) ...</k>
 
@@ -138,7 +142,7 @@ module PYTHON-SEMANTICS-LITERALS
        <literals> Literals:Map (. => pair(M, B) |-> ref(N)) </literals>
        <nextLoc> N => N +Int 1 </nextLoc> when notBool(pair(M, B) in keys(Literals)) [allocation]
 
-  rule invokeBuiltin(obj("new_structseq",_), ListItem(Type) ListItem(Sequence), .) => iterate(Sequence, raiseInternal("TypeError", "constructor requires a sequence")) ~> makeStructSeq(Type)
+  //rule invokeBuiltin(obj("new_structseq",_), ListItem(Type) ListItem(Sequence), .) => iterate(Sequence, raiseInternal("TypeError", "constructor requires a sequence")) ~> makeStructSeq(Type)
 
   syntax K ::= makeStructSeq(Object)
 

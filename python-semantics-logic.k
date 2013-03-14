@@ -7,6 +7,8 @@ module PYTHON-SEMANTICS-LOGIC
 
   syntax K ::= "test" "(" Test "," K "," K ")" [strict(1)]
 
+  syntax K ::= "if" Test ":" K "else" ":" K [strict(1)]
+
   syntax Test ::= "and" "(" Test "," Test ")" [strict(1)]
   syntax Test ::= "or" "(" Test "," Test ")" [strict(1)]
   syntax Test ::= "negate" "(" Test ")" [strict]
@@ -25,8 +27,11 @@ module PYTHON-SEMANTICS-LOGIC
 
   rule test(true, K:K, _) => K
   rule test(false, _, K) => K
+  rule if true : K else: _ => K
+  rule if false : _ else: K => K
 
   rule (O:Object -> _) => O
+  rule T:Bool -> _ => T
   rule map(M:Map) -> _ => map(M)
   rule .Obj -> Chain:K => Chain
   rule .Obj (_) => .Obj

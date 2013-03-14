@@ -49,7 +49,7 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
 
   rule refcountbag(<xcontext> K </xcontext>) => refcountk(K)
 
-  rule refcountbag(<frameObject> Frame </frameObject>) => SetItem(Frame)
+  rule refcountbag(<frameObject> Frame </frameObject>) => refcountk(Frame)
 
   rule refcountbag(<xstack> finally(K, C, XL, LL, FL, K2) XL2:List </xstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL XL2 </xstack> <lstack> LL </lstack> <fstack> FL </fstack>)
   rule refcountbag(<lstack> finally(K, C, XL, LL, FL, K2) LL2:List </lstack>) => refcountk(K ~> K2) refcountbag(C <xstack> XL </xstack> <lstack> LL LL2 </lstack> <fstack> FL </fstack>)

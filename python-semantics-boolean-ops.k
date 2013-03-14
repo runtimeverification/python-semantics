@@ -14,18 +14,34 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
 
   rule bool(true) => ref("True")
   rule bool(false) => ref("False")
-  rule bool(O:Object) => test(plbool(O is ref("None")), ref("False"), checkBool(getmember(O, "__bool__", true, false, false) (.Arguments)) -> checkInt(len(O)) -> ref("True")) 
-  rule checkBool(O:Object) => test(istype(O, ref("bool")), O, raiseInternal("TypeError", "__bool__ should return bool"))
-  rule checkBool(.Obj) => .Obj
-  rule checkInt(O:Object) => test(intvalue(O) ==Int 0, ref("False"), ref("True"))
-  rule checkInt(.Obj) => .Obj
-  rule invokeBuiltin(obj("new_bool",_), ListItem(O), .) => newHelper(O, ref("bool"), .) ~> ref("False")
-  rule invokeBuiltin(obj("new_bool",_), ListItem(O:Object) ListItem(O2:Object), .) => newHelper(O, ref("bool"), .) ~> bool(O2)
-
-  rule len(O) => checkLen(index(getmember(O, "__len__", true, false, false) (.Arguments)))
-  rule checkLen(O:Object) => test(intvalue(O) >=Int 0, O, raiseInternal("ValueError", "__len__() should return >= 0"))
-  rule checkLen(.Obj) => .Obj
-  rule invokeBuiltin(obj("len",_), ListItem(O), .) => len(O) -> raiseInternal("TypeError", "object has no len()")
+  rule bool(O:Object) => ref("bool")(O)
+  //rule invokeBuiltin(obj("new_bool",_), ListItem(O), .) => newHelper(O, ref("bool"), .) ~> ref("False")
+  //rule invokeBuiltin(obj("new_bool",_), ListItem(O:Object) ListItem(O2:Object), .) => newHelper(O, ref("bool"), .) ~> bool(O2)
+  rule invokeBuiltin("bool.__new__",_) => newHelper(String2Id("x"), ref("bool"), .) newline
+                                        if plbool(String2Id("x") is ref("None")):
+                                          return ref("False")
+                                        else:
+                                          if hasmember(String2Id("x"), "__bool__") :
+                                            String2Id("bool"), .Expressions := getmember(String2Id("x"), "__bool__", true, false, true) (.Arguments) newline
+                                            if istype(String2Id("bool"), ref("bool")):
+                                              return String2Id("bool")
+                                            else:
+                                              raiseInternal("TypeError", "__bool__ should return bool")
+                                          else:
+                                            if hasmember(String2Id("x"), "__len__") :
+                                              return ref("len")(String2Id("x")) != 0
+                                            else:
+                                              return ref("True")
+                                           
+  rule invokeBuiltin("len",_) => if hasmember(String2Id("s"), "__len__") :
+                                 String2Id("len"), .Expressions := getmember(String2Id("s"), "__len__", true, false, true) (.Arguments) newline
+                                 String2Id("len"), .Expressions := ref("index")(String2Id("len")) newline
+                                 if String2Id("len") >= 0 :
+                                   return String2Id("len")
+                                 else:
+                                   raiseInternal("ValueError", "__len__() should return >= 0")
+                               else:
+                                 raiseInternal("TypeError", "object has no len()")
 
   syntax Test ::= plbool(Expression) [strict]
   rule plbool(obj(_, <oattrs>... "__value__" |-> I:Int ...</oattrs>)) => I =/=Int 0 [function, anywhere]

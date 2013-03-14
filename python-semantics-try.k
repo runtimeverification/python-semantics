@@ -58,7 +58,7 @@ module PYTHON-SEMANTICS-TRY
   rule <k> (. => savetb(mutable("tb_next" |-> Tb "tb_frame" |-> ref(Frame), ref("traceback")))) ~> raise ...</k>
        <currentFrame>...
          <xcontext> ref(B) </xcontext>
-         <frameObject> Frame </frameObject>
+         <frameObject> ref(Frame) </frameObject>
          <xstack> try(_, _, _:Bag, _, false) => . ...</xstack>
        ...</currentFrame>
        <object>...
@@ -86,7 +86,7 @@ module PYTHON-SEMANTICS-TRY
   rule <k> raise O:Object from O2:Object => doRaise(test(istype(O, ref("type")), O(.Arguments), O), test(istype(O2, ref("type")), O2(.Arguments), O2), false) ...</k>
 
   rule <k> doRaise(O, O2, T:Bool) => test(istype(O, ref("BaseException")), test(or(id(O2) ==K NoneId,istype(O2, ref("BaseException"))), (setcause(O, O2) ~> setref(id(O), "__suppress_context__", test(T, ref("False"), test(id(O2) ==K NoneId, ref("True"), ref("False")))) ~> savex(O) ~> savetb(mutable("tb_next" |-> ref("None") "tb_frame" |-> ref(Frame), ref("traceback"))) ~> raise) , raiseInternal("TypeError", "exception causes must derive from BaseException")), raiseInternal("TypeError", "exceptions must derive from BaseException")) ...</k>
-       <frameObject> Frame </frameObject>
+       <frameObject> ref(Frame) </frameObject>
        <symbols>... "None" |-> NoneId ...</symbols>
 
   rule <k> savex(obj(B,_)) => . ...</k>
@@ -125,8 +125,7 @@ module PYTHON-SEMANTICS-TRY
   rule <k> doExcept(Type:Object, Except, X) => test(istype(B, Type), test(Id2String(X) ==String "", except: Except, (X, .Expressions := B ~> except: (try: Except finally: unbind(X)))), .) ...</k>
        <xcontext> B </xcontext>
 
-  rule <k> invokeBuiltin(obj("sys_exc_info",_), ., .) => tuple(#if Ex ==K ref("None") #then ref("None") #else Ex . String2Id("__class__") #fi, Ex, #if Ex ==K ref("None") 
-#then ref("None") #else Ex . String2Id("__traceback__") #fi, .Expressions) ...</k>
-       <xcontext> Ex </xcontext>
+  //rule <k> invokeBuiltin(obj("sys_exc_info",_), ., .) => tuple(#if Ex ==K ref("None") #then ref("None") #else Ex . String2Id("__class__") #fi, Ex, #if Ex ==K ref("None") #then ref("None") #else Ex . String2Id("__traceback__") #fi, .Expressions) ...</k>
+  //     <xcontext> Ex </xcontext>
 
 endmodule

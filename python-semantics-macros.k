@@ -30,6 +30,7 @@ module PYTHON-SEMANTICS-MACROS
 
   rule @ K:K newline K2:K => K2 newline declName(K2) , .Expressions := K(declName(K2)) [macro, anywhere]
 
+  rule try: Try ExceptClauses => try: Try ExceptClauses else: pass [macro]
   rule try: Try ExceptClauses else: Else finally: Finally => try: try: Try ExceptClauses else: Else finally: Finally [macro, anywhere]
 
   rule with W, W2, W3 : Body => with W, .Aliases : with W2, W3: Body [macro, anywhere]
