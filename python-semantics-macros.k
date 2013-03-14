@@ -35,6 +35,8 @@ module PYTHON-SEMANTICS-MACROS
 
   rule with W, W2, W3 : Body => with W, .Aliases : with W2, W3: Body [macro, anywhere]
 
+  rule for Target in Exp : Body => for Target in Exp : Body else: pass [macro]
+
   rule [ E Comp ] => ref("list")(generator(E Comp)) [macro, anywhere]
   rule { E Comp } => ref("set")(generator(E Comp)) [macro, anywhere]
   rule { E : E2 Comp } => ref("dict")(generator(tuple(E, E2, .Expressions) Comp)) [macro, anywhere]

@@ -27,7 +27,7 @@ module PYTHON-SEMANTICS-STRINGS
   rule <k> accumulate((S:String => substrString(S, 1, lengthString(S) -Int 1)), (I:Int => (mult(Imag, I, Width) xorInt asciiString(substrString(S, 0, 1)))), _) ...</k>
        <constants>... "sys.hash_info.width" |-> Width "sys.hash_info.imag" |-> Imag ...</constants> when lengthString(S) =/=Int 0
 
-  rule <k> accumulate("", I, Len:Nat) => test((I xorInt Len xorInt hashSuffix(Seed, Width)) ==Int -1, -2, (I xorInt Len xorInt hashSuffix(Seed, Width))) ...</k>
+  rule <k> accumulate("", I, Len:Int) => test((I xorInt Len xorInt hashSuffix(Seed, Width)) ==Int -1, -2, (I xorInt Len xorInt hashSuffix(Seed, Width))) ...</k>
        <constants>... "PYTHONHASHSEED" |-> Seed "sys.hash_info.width" |-> Width ...</constants>
 
   //rule invokeBuiltin(obj("rpartition_str",_), ListItem(O) ListItem(Sep), .) => test(istype(Sep, ref("str")), #if rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) ==Int -1 #then tuple("", "", strvalue(O), .Expressions) #else tuple(substrString(strvalue(O), 0, rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O)))), strvalue(Sep), substrString(strvalue(O), rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) +Int lengthString(strvalue(Sep)), lengthString(strvalue(O))), .Expressions) #fi, raiseInternal("TypeError", "Cannot convert object to str implicitly"))

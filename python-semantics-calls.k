@@ -19,7 +19,7 @@ module PYTHON-SEMANTICS-CALLS
   rule numArgs(O) => getattr(O, "co_argcount") +Int getattr(O, "co_kwonlyargcount") +Int ((getattr(O, "co_flags") &Int 4) >>Int 2) +Int ((getattr(O, "co_flags") &Int 8) >>Int 3) [function, anywhere]
 
   //can't use descriptors because method descriptors use it
-  rule [call]: obj(N:Nat,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), "__call__", false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable"))
+  rule [call]: obj(N:Int,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), "__call__", false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable"))
   rule <k> obj(S:String,ObjState:Bag) (Args:K) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeBuiltin(obj(S,ObjState), ., .) ...</k> when isKResult(Args)
   rule <k> invokeBuiltin(O:Object, L:List, M:Map) => invokeFunction(O, L, M) ...</k> when isBareFunction(id(O)) =/=K true
   rule <k> invokeBuiltin(obj("function.__call__",_), ListItem(O:Object) L, M) => invokeFunction(O, L, M) ...</k>
@@ -91,7 +91,7 @@ module PYTHON-SEMANTICS-CALLS
        ...</object> when (getattr(obj(Code,ObjState), "co_flags") &Int 8) =/=Int 0
 
   // fill in default value for unspecified parameter
-  rule (. => addDefaults(0, ref("len")(getref(Function, "__defaults__")) if getref(Function, "__defaults__") is not ref("None") else 0) ~> addKwDefaults(0, getref(Function, "__kwdefaults__"))) ~> matchArgs(Function:Object,Code:Object, ., ., M, _, HasVararg, HasKwarg) when lengthMap M <Int numArgs(Code) andBool (HasVararg orBool getattr(Code, "co_flags") &Int 4 ==Int 0) andBool (HasKwarg orBool getattr(Code, "co_flags") &Int 8 ==Int 0)
+  rule (. => addDefaults(0, ref("len")(getref(Function, "__defaults__")) if getref(Function, "__defaults__") is not None else 0) ~> addKwDefaults(0, getref(Function, "__kwdefaults__"))) ~> matchArgs(Function:Object,Code:Object, ., ., M, _, HasVararg, HasKwarg) when lengthMap M <Int numArgs(Code) andBool (HasVararg orBool getattr(Code, "co_flags") &Int 4 ==Int 0) andBool (HasKwarg orBool getattr(Code, "co_flags") &Int 8 ==Int 0)
   rule (addDefaults(N, _) => .) ~> addKwDefaults(_,_) ~> matchArgs(_,Code:Object, _, _, _, _, _, _) when N ==Int getattr(Code, "co_argcount")
   rule (. => addDefault(Code . String2Id("co_varnames") [N:Int])) ~> addDefaults(N, O:Object) ~> addKwDefaults(_,_) ~> matchArgs(_,Code:Object, _, _, _, _, _, _) when N <Int getattr(Code, "co_argcount")
   rule addDefault(O:Object) ~> addDefaults(N2:Int, O2) ~> addKwDefaults(_,_) ~> matchArgs(Function:Object, Code:Object, _, _, M, N, _, _) => raiseInternal("TypeError", name(Function) + "() takes at least " +String Int2String(getattr(Code, "co_argcount") -Int intvalue(O2)) +String " arguments (" +String Int2String(N) +String " given)") when notBool(strvalue(O) in keys(M)) andBool N2 <Int getattr(Code, "co_argcount") -Int intvalue(O2)
@@ -131,11 +131,11 @@ module PYTHON-SEMANTICS-CALLS
   syntax Bag ::= "newFrame"
   rule newFrame => <xstack> .List </xstack> <lstack> .List </lstack>
 
-  rule makeLocals(Free:Object, O:Object) => if plbool(O is ref("None")) : makeLocals(listvalue(Free), .List, {.KeyData}) else: makeLocals(listvalue(Free), listvalue(O), {.KeyData})
+  rule makeLocals(Free:Object, O:Object) => if O is None : makeLocals(listvalue(Free), .List, {.KeyData}) else: makeLocals(listvalue(Free), listvalue(O), {.KeyData})
   rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (((O[N:K]), .Expressions) := getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
   rule makeLocals(.List, .List, O:Object) => ref(id(O))
 
-  rule makeCells(Free:Object, Cells:Object, O:Object, N) => if plbool(O is ref("None")) : makeCells(listvalue(Free), listvalue(Cells), .List, {.KeyData}, N) else: makeCells(listvalue(Free), listvalue(Cells), listvalue(O), {.KeyData}, N)
+  rule makeCells(Free:Object, Cells:Object, O:Object, N) => if O is None : makeCells(listvalue(Free), listvalue(Cells), .List, {.KeyData}, N) else: makeCells(listvalue(Free), listvalue(Cells), listvalue(O), {.KeyData}, N)
   rule (. => ((O[N:K]), .Expressions) := N2) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
   rule <k> (. => ((O[N:K]), .Expressions) := ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O:Object, Frame:Int) ...</k>
        <nextLoc> N2 => N2 +Int 1 </nextLoc>

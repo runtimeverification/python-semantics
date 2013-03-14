@@ -111,7 +111,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
 //           "__ne__" |-> def "ne_float" (1, 1, true)
 .           ,.) ~>
 //         (def "format" (1, 2, false) ;) ~>
-//         (def "getattr" (2, 3, false) ;) ~>
+         (def "getattr" (false, String2Id("object"), String2Id("name"), String2Id("default") = .Obj) ;) ~>
 //         (def "globals" (0, 0, false) ;) ~>
 //	 (def "hasattr" (2, 2, false) ;) ~>
          (def "hash" (false, String2Id("object")) ;) ~>
@@ -133,7 +133,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            //TODO: getattribute, getnewargs
 //           "__gt__" |-> def "gt_int" (1, 1, true)
 //           "__hash__" |-> def "hash_int" (0, 0, true)
-           "__index__" |-> ref("int_int")
+//           "__index__" |-> ref("int_int")
 //           "__int__" |-> def "int_int" (0, 0, true)
 //           "__invert__" |-> def "invert_int" (0, 0, true)
 //           "__le__" |-> def "le_int" (1, 1, true)
@@ -169,7 +169,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
 //           "__xor__" |-> def "xor_int" (1, 1, true)
            //TODO: bit_length, conjugate, denominator, from_bytes, imag,
            //        numerator, real, to_bytes
-           ,.) ~>
+.           ,.) ~>
 //         (def "isinstance" (2, 2, false) ;) ~>
 //         (def "issubclass" (2, 2, false) ;) ~>
          (def "iter" (false, String2Id("object"), String2Id("sentinel") = .Obj) ;) ~>
@@ -192,10 +192,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
 .           ,.) ~>
 //         (def "locals" (0, 0, false) ;) ~>
          object "map"("type",ListItem("object"),
-           "__iter__" |-> ref("iter_iter")
+//           "__iter__" |-> ref("iter_iter")
 //           "__new__" |-> def "new_map" (3, -1, false)
 //           "__next__" |-> def "map_next" (0, 0, true)
-           ,.) ~>
+.           ,.) ~>
          object "module"("type",ListItem("object"),
            "__dict__" |-> ref("__dict__module")
            ,.) ~>
@@ -280,7 +280,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "type"("type",ListItem("object"),
 //           "mro" |-> def "mro_type"(0, 0, true)
            "__bases__" |-> ref("__bases__")
-//           "__call__" |-> def "call_type" (0, -1, true)
+           "__call__" |-> def "type.__call__" (true, String2Id("self"), * String2Id("args"), ** String2Id("kwargs"))
 //           "__getattribute__" |-> def "getattribute_type" (1, 1, true)
 //           "__instancecheck__" |-> def "instancecheck_type" (1, 1, true)
            "__mro__" |-> ref("__mro__")
@@ -383,7 +383,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "cell"("type",ListItem("object"),
            ., .) ~>
          object "cell_contents" ("attribute",.,., "__get__" |-> "cell_contents") ~>
-//         (def "new_structseq" (2, 2, false) ;) ~>
+         (def "structseq.__new__" (false, String2Id("cls"), String2Id("sequence"), String2Id("dict")) ;) ~>
 
          //module "sys"
 //         (def "sys_exc_info" (0, 0, false) ;) ~>
@@ -456,26 +456,26 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
 
          // module declarations
          module "_imp"({
-           "_fix_co_filename": ref("imp__fix_co_filename")
-         , "acquire_lock" : ref("imp_acquire_lock")
-         , "extension_suffixes" : ref("imp_extension_suffixes")
-         , "init_builtin" : ref("imp_init_builtin")
-         , "init_frozen" : ref("imp_init_frozen")
-         , "is_builtin" : ref("imp_is_builtin")
-         , "is_frozen" : ref("imp_is_frozen")
-         , "is_frozen_package" : ref("imp_is_frozen_package")
-         , "get_frozen_object" : ref("imp_get_frozen_object")
-         , "load_dynamic": ref("imp_load_dynamic")
-         , "release_lock" : ref("imp_release_lock")
-         }) ~>
+//           "_fix_co_filename": ref("imp__fix_co_filename")
+//         , "acquire_lock" : ref("imp_acquire_lock")
+//         , "extension_suffixes" : ref("imp_extension_suffixes")
+//         , "init_builtin" : ref("imp_init_builtin")
+//         , "init_frozen" : ref("imp_init_frozen")
+//         , "is_builtin" : ref("imp_is_builtin")
+//         , "is_frozen" : ref("imp_is_frozen")
+//         , "is_frozen_package" : ref("imp_is_frozen_package")
+//         , "get_frozen_object" : ref("imp_get_frozen_object")
+//         , "load_dynamic": ref("imp_load_dynamic")
+//         , "release_lock" : ref("imp_release_lock")
+.KeyData         }) ~>
          module "_io"({
            "BytesIO" : ref("BytesIO")
          , "FileIO" : ref("FileIO")
          , "IncrementalNewlineDecoder" : ref("IncrementalNewlineDecoder")
 	 }) ~>
          module "_warnings"({
-           "warn" : ref("_warnings.warn")
-         }) ~>
+//           "warn" : ref("_warnings.warn")
+.KeyData         }) ~>
          module "_weakref"({
            "ref" : ref("weakref")
          }) ~>
@@ -551,18 +551,18 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "type" : ref("type")
          }) ~>
          module "marshal"({
-           "dumps" : ref("marshal.dumps")
-         , "loads" : ref("marshal.loads")
-         }) ~>
+//           "dumps" : ref("marshal.dumps")
+//         , "loads" : ref("marshal.loads")
+.KeyData         }) ~>
          module "posix"({
            "environ" : {DeMapify(M)}
-         , "getcwd" : ref("getcwd")
-         , "listdir" : ref("listdir")
-         , "mkdir" : ref("mkdir")
-         , "open" : ref("open")
-         , "replace" : ref("replace")
-         , "stat" : ref("stat")
-         , "unlink" : ref("unlink")
+//         , "getcwd" : ref("getcwd")
+//         , "listdir" : ref("listdir")
+//         , "mkdir" : ref("mkdir")
+//         , "open" : ref("open")
+//         , "replace" : ref("replace")
+//         , "stat" : ref("stat")
+//         , "unlink" : ref("unlink")
          , "O_WRONLY" : Constants("posix.O_WRONLY")
          , "O_CREAT": Constants("posix.O_CREAT")
          , "O_EXCL": Constants("posix.O_EXCL")
@@ -570,7 +570,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          module "sys"({
            "builtin_module_names" : ["_imp", "_io", "_warnings", "_weakref", "builtins", "marshal", "posix", "sys", "types", .Expressions]
          , "dont_write_bytecode" : ref("True")
-         , "exc_info" : ref("sys_exc_info")
+//         , "exc_info" : ref("sys_exc_info")
          , "flags": ref("sys.flags")(tuple(#if Constants("__debug__") #then 0 #else 1 #fi, #if Constants("PYTHONVERBOSE") #then 1 #else 0 #fi, .Expressions))
          , "hash_info" : ref("sys.hash_info")(tuple(Constants("sys.hash_info.width"), Constants("sys.hash_info.modulus"), Constants("sys.hash_info.inf"), Constants("sys.hash_info.nan"), Constants("sys.hash_info.imag"), .Expressions))
          , "hexversion": 50528496

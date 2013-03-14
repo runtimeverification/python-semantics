@@ -180,7 +180,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        (. => <object>...
          <id>N</id>
          <oattrs> "__class__" |-> ref("type") "__bases__" |-> list(ListItem(ref("tuple"))) "__order__" |-> list(.List) "__name__" |-> S "__mro__" |-> . </oattrs>
-         <oenv> "__new__" |-> ref("new_structseq") </oenv>
+         <oenv> "__new__" |-> ref("structseq.__new__") </oenv>
        ...</object>)
        <symbols>... (. => S |-> N) ...</symbols> [allocation]
 

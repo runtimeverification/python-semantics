@@ -66,32 +66,31 @@ module PYTHON-SEMANTICS-DICTS
 
   syntax K ::= makeDict(Int, Expression) [strict(2)]
 
-  syntax #Id ::= "cls"
-  rule invokeBuiltin("dict.__new__") => newHelper(cls, ref("dict"), .) ~> return {.KeyData}
-  rule invokeBuiltin("dict.__init__") => if String2Id("") =/=Obj .Obj :
-                                           if hasmember(String2Id(""), "keys") :
-                                             for String2Id("key") in getmember(String2Id(""), "keys", true, false, true) :
-                                               self[String2Id("key"] := String2Id("") [ String2Id("key") ]
-                                           else:
-                                             for String2Id("tuple") in String2Id("") :
-                                               (try:
-                                                 String2Id("iter") := ref("iter")(String2Id("tuple")) newline
-                                               except ref("TypeError") :
-                                                 raiseInternal("TypeError", "cannot convert dictionary update sequence element to a sequence")) newline
-                                               (try:
-                                                 String2Id("key") := String2Id("iter") . __next__ (.Arguments) newline
-                                                 String2Id("value") := String2Id("iter") . __next__ (.Arguments)
-                                               except ref("StopIteration") :
-                                                 raiseInternal("TypeError", "dictionary update sequence element has length less than 2; 2 is required")) newline
-                                               self[String2Id("key")] := String2Id("value") newline
-                                               try:
-                                                 String2Id("iter") . __next__ (.Arguments) newline
-                                                 raiseInternal("TypeError", "dictionary update sequence element has length greater than 2; 2 is required")
-                                               except ref("StopIteration") : pass
-                                         else: pass ~>
-                                         for String2Id("key") in kwargs:
-                                           self[String2Id("key"] := kwargs[String2Id("key"] ~>
-                                         return ref("None")
+  syntax #Id ::= "cls" | "__next__" | "kwargs"
+  rule invokeBuiltin("dict.__new__",_) => newHelper(cls, ref("dict"), .) ~> return {.KeyData}
+  rule invokeBuiltin("dict.__init__",_) => if String2Id("") =/=Obj .Obj :
+                                             if hasmember(String2Id(""), "keys") :
+                                               for String2Id("key") in getmember(String2Id(""), "keys", true, false, true) :
+                                                 self[String2Id("key")] := String2Id("") [ String2Id("key") ]
+                                             else:
+                                               for String2Id("tuple") in String2Id("") :
+                                                 (try:
+                                                   String2Id("iter") := ref("iter")(String2Id("tuple"))
+                                                 except ref("TypeError") :
+                                                   raiseInternal("TypeError", "cannot convert dictionary update sequence element to a sequence")) newline
+                                                 (try:
+                                                   String2Id("key") := String2Id("iter") . __next__ (.Arguments) newline
+                                                   String2Id("value") := String2Id("iter") . __next__ (.Arguments)
+                                                 except ref("StopIteration") :
+                                                   raiseInternal("TypeError", "dictionary update sequence element has length less than 2; 2 is required")) newline
+                                                 self[String2Id("key")] := String2Id("value") newline
+                                                 (try:
+                                                   String2Id("iter") . __next__ (.Arguments) newline
+                                                   raiseInternal("TypeError", "dictionary update sequence element has length greater than 2; 2 is required")
+                                                 except ref("StopIteration") : pass) ~>
+                                           for String2Id("key") in kwargs:
+                                             self[String2Id("key")] := kwargs[String2Id("key")] ~>
+                                           return ref("None")
                                           
   //rule invokeBuiltin(obj("eq_dict",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "dict", "dict", equalDict(O, O2))
 

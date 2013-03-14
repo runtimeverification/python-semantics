@@ -150,6 +150,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                      | "nonlocal" NAMES
                      > "if" Expression ":" Statements "else" ":" Statements [strict(1)]
                      | "while" Expression ":" Statements "else" ":" Statements
+                     | "for" Target "in" Expression ":" Statements
                      | "for" Target "in" Expression ":" Statements "else" ":" Statements
                      | "try" ":" Statements ExceptClauses
                      | "try" ":" Statements ExceptClauses "else" ":" Statements //"finally" ":" Statements
