@@ -145,7 +145,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <references>Ref:Map (. => (B |-> N2)) </references> when notBool(B in keys(Ref))
   rule incref(.List,_) => .
 
-  rule <k> module S(O) => ((ref(N) . String2Id("__dict__") ["__name__"])) = S:String ...</k>
+  rule <k> module S(O) => ref(N) . String2Id("__dict__") ["__name__"] = S:String ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
        (. => <object>...
          <id>N</id>

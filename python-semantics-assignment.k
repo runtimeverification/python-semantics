@@ -9,24 +9,24 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   rule (. => bind(X:Id, ref(B:ObjId))) ~> (X = Ts => Ts) = obj(B,_)
   rule (. => bindList(Listify(Ts2), O, false)) ~> (tuple(Ts2:Targets) = Ts => Ts) = O:Object
   rule (. => bindList(Listify(Ts2), O, false)) ~> ([ Ts2 ] = Ts => Ts) = O
-  rule (. => ref("setattr")(O, Id2String(X), O2) ;) ~> ((O:Object . X:Id) = Ts => Ts) = O2:Object
-  rule (. => (getmember(O, "__setitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item assignment")) (Key:Object, Value:Object) ;) ~> ((O:Object [ Key:Object ]) = Ts => Ts) = Value
+  rule (. => ref("setattr")(O, Id2String(X), O2) ;) ~> (O:Object . X:Id = Ts => Ts) = O2:Object
+  rule (. => (getmember(O, "__setitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item assignment")) (Key:Object, Value:Object) ;) ~> (O:Object [ Key:Object ] = Ts => Ts) = Value
   rule .AssignTargets = _ => .
 
-  context ((HOLE . _:Id) = _) = K when isKResult(K)
-  context ((HOLE [ _ ]) = _) = K when isKResult(K)
-  context ((K [ HOLE ]) = _) = K2 when isKResult(K) andBool isKResult(K2)
+  context HOLE . _:Id = _ = K when isKResult(K)
+  context HOLE [ _ ] = _ = K when isKResult(K)
+  context K [ HOLE ] = _ = K2 when isKResult(K) andBool isKResult(K2)
 
-  rule (. => unbind(X:Id)) ~> del (X , Ts => Ts)
+  rule (. => unbind(X:Id)) ~> del (X , Ts:Targets => Ts)
   rule (. => unbindList(Listify(Ts2))) ~> del (tuple(Ts2) , Ts => Ts)
   rule (. => unbindList(Listify(Ts2))) ~> del ([ Ts2 ] , Ts => Ts)
-  rule (. => (getmember(O, "__delattr__", true, false, true) (Id2String(X)) ;)) ~> del ((O:Object . X:Id) , Ts => Ts)
-  rule (. => (getmember(O, "__delitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item deletion")) (Key) ;)  ~> del ((O:Object [ Key:Object ]) , Ts => Ts)
+  rule (. => (getmember(O, "__delattr__", true, false, true) (Id2String(X)) ;)) ~> del (O:Object . X:Id , Ts => Ts)
+  rule (. => (getmember(O, "__delitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item deletion")) (Key) ;)  ~> del (O:Object [ Key:Object ] , Ts => Ts)
   rule del .NeTargets => .
 
-  context del ((HOLE . _:Id) , _)
-  context del ((HOLE [ _ ]) , _)
-  context del ((K [ HOLE ]) , _) when isKResult(K)
+  context del HOLE . _:Id , _
+  context del HOLE [ _ ] , _
+  context del K [ HOLE ] , _ when isKResult(K)
 
   rule (. => iterate(O, .)) ~> bindList(_, O, _)
   rule (. => T = O:Object) ~> list((ListItem(O) => .) _) ~> bindList((ListItem(T:Target) => .) _, _, _) when getKLabel T =/=KLabel 'Starred

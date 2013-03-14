@@ -71,7 +71,7 @@ module PYTHON-SEMANTICS-CALLS
 
   context addKwArg(S, _, HOLE) ~> matchArgs(_, Code:Object, _, _, _, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
   rule addKwArg(S, _, _) ~> matchArgs(Function:Object, Code:Object, _, _, _, _, _, _) => raiseInternal("TypeError", name(Function) + "() got an unexpected keyword argument '" +String S +String "'") when (getattr(Code, "co_flags") &Int 8) ==Int 0
-  rule (addKwArg(S:String, O:Object, O2:Object) => (M:Map(String2Id(strvalue(O2))) [S:String]) = O) ~> matchArgs(_, Code:Object, _, _, M, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
+  rule (addKwArg(S:String, O:Object, O2:Object) => M:Map(String2Id(strvalue(O2))) [S:String] = O) ~> matchArgs(_, Code:Object, _, _, M, _, _, _) when (getattr(Code, "co_flags") &Int 8) =/=Int 0
 
   rule <k> matchArgs(obj(B:ObjId,_),Code:Object,.,.,M,_, HasVararg, HasKwarg) => invoke(ref(B), M) ...</k> when lengthMap M ==Int numArgs(Code) andBool (HasVararg orBool getattr(Code, "co_flags") &Int 4 ==Int 0) andBool (HasKwarg orBool getattr(Code, "co_flags") &Int 8 ==Int 0)
 
@@ -101,12 +101,12 @@ module PYTHON-SEMANTICS-CALLS
   rule newFrame => <xstack> .List </xstack> <lstack> .List </lstack>
 
   rule makeLocals(Free:Object, O:Object) => makeLocals(listvalue(Free), listvalue(O), {.KeyData})
-  rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (((O[N:K])) = getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
+  rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (O[N:K] = getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
   rule makeLocals(.List, .List, O:Object) => ref(id(O))
 
   rule makeCells(Free:Object, Cells:Object, O:Object, N) => makeCells(listvalue(Free), listvalue(Cells), listvalue(O), {.KeyData}, N)
-  rule (. => ((O[N:K])) = N2) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
-  rule <k> (. => ((O[N:K])) = ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O:Object, Frame:Int) ...</k>
+  rule (. => O[N:K] = N2) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
+  rule <k> (. => O[N:K] = ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O:Object, Frame:Int) ...</k>
        <nextLoc> N2 => N2 +Int 1 </nextLoc>
        (. => <object>...
          <id>N2</id>

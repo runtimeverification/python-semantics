@@ -59,7 +59,7 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                          if S in Code . String2Id("co_names") :
                                               test(B ==K 0,
                                                    (del ((Frame . String2Id("f_globals") [S]))),
-                                                   (((Frame . String2Id("f_globals") [S])) = ref(B)))
+                                                   (Frame . String2Id("f_globals") [S] = ref(B)))
                                          else: pass
 
   rule [globals]: <k> invokeBuiltin(obj("globals",_), ., .) => ref(N) . String2Id("f_globals") ...</k>
