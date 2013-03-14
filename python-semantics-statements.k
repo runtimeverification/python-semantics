@@ -59,7 +59,7 @@ module PYTHON-SEMANTICS-STATEMENTS
          C:Bag
        </currentFrame>
 
-  rule [unroll-for]: lmark ~> for Targets:AssignTargets in O : Ss else: Ss2 => try: (((Targets) = getmember(O, "__next__", true, false, true) (.Arguments)) ~> Ss ~> lmark ~> for Targets in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
+  rule [unroll-for]: lmark ~> for Target:Target in O : Ss else: Ss2 => try: (((Target) = getmember(O, "__next__", true, false, true) (.Arguments)) ~> Ss ~> lmark ~> for Target in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
 
   rule O:Object ; => .
 
@@ -67,7 +67,7 @@ module PYTHON-SEMANTICS-STATEMENTS
   rule Stmt:K newline .Stmts => Stmt [macro]
 
   rule with O:Object : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), ., Ss)
-  rule with O:Object as T:Target : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), T, Ss)
+  rule with O:Object as T:Exp : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), T, Ss)
   
   syntax K ::= doWith(Exp, Exp, K, K) [seqstrict(1, 2)]
 

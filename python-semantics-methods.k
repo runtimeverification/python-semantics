@@ -13,12 +13,12 @@ module PYTHON-SEMANTICS-METHODS
   rule method(obj(FuncId,_), obj(SelfId,_)) => immutable("__func__" |-> ref(FuncId) "__self__" |-> ref(SelfId), ref("method"))
 
   //can't use descriptors because method descriptors use it
-  rule [call]: obj(N:Nat,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), "__call__", false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable"))
+  rule [call]: obj(N:Int,ObjState:Bag) (Args:K) => (getmember(obj(N,ObjState), "__call__", false, false, false) (obj(N,ObjState), Args)) -> (raiseInternal("TypeError", "object is not callable"))
 
   rule invokeBuiltin(obj("call_method",_), ListItem(obj(N, <oattrs>... "__func__" |-> Func "__self__" |-> Self ...</oattrs>)) L:List, M:Map) => doCall(Func, ListItem(Self) L, M)
 
   rule doCall((O:Object => .), _, _) ~> (. => O (.Arguments))
-  rule doCall(., _ (ListItem(K:K) => .), .) ~> _:Object (Args:K => (K , Args))
+  rule doCall(., _ (ListItem(K:Argument) => .), .) ~> _:Object (Args:K => (K , Args))
   rule doCall(., _, _ (S:String |-> K => .)) ~> _:Object (Args:K => (String2Id(S) = K:Exp, Args))
   rule doCall(., ., .) => .
 

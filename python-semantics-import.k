@@ -35,7 +35,7 @@ module PYTHON-SEMANTICS-IMPORT
 
   // import statement
 
-  rule (. => moduleTarget(Module) = doImport(Module, .Aliases) ) ~> import (Module , Rest => Rest)
+  rule (. => moduleTarget(Module) = doImport(Module, .Aliases) ) ~> import (Module:Alias , Rest => Rest)
   rule import .Aliases => .
 
   rule from Module:RelativeModule import Fromlist:Aliases => tuple(moduleTargets(Fromlist)) = tuple(importFrom(doImport(Module, Fromlist), moduleNameIds(Fromlist)))
@@ -75,7 +75,7 @@ module PYTHON-SEMANTICS-IMPORT
   rule moduleNameIds(.Aliases) => .Exps
 
   syntax Exps ::= importFrom (Exp, Exps) [strict(1)]
-  rule importFrom(O:Object, Name:Exp , Rest:Exps) => O . Name , importFrom(O, Rest)
+  rule importFrom(O:Object, Name:Id , Rest) => O . Name , importFrom(O, Rest)
   rule importFrom(_, .Exps) => .Exps
 
 endmodule

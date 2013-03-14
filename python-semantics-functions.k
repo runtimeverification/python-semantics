@@ -11,7 +11,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule paramName(X:Id) => Id2String(X)
   rule paramName(X = _) => Id2String(X)
-  rule paramName(* X:Exp) => Id2String(X)
+  rule paramName(* X:Id) => Id2String(X)
   rule paramName(** X) => Id2String(X)
 
   syntax ObjRef ::= "function" "(" Parameters "," Exp "," K ")" [strict(2)]
@@ -70,7 +70,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule makeCodeObject(_, ((ListItem(X:NAME = _:Exp) => ListItem(X)) _), _, _)
 
   rule [makeFunction-defaults]: (. => setref(N, "__defaults__", test(plbool(getref2(ref(N), "__defaults__") is ref("None")), tuple(O), (getref2(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(X:NAME = O:Object) => ListItem(X)) _), _, false)
-  rule [makeFunction-kwdefaults]: (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), setref(N, "__kwdefaults__", {Id2String(X) : O}), (getref2(ref(N), "__kwdefaults__")[Id2String(X)] = O))) ~> makeFunction(N, ((ListItem(X:NAME = O:Object) => ListItem(X)) _), _, true)
+  rule [makeFunction-kwdefaults]: (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), setref(N, "__kwdefaults__", {Id2String(X) : O}), (getref2(ref(N), "__kwdefaults__")[Id2String(X)] = O))) ~> makeFunction(N, ((ListItem(X:Id = O:Object) => ListItem(X)) _), _, true)
   rule [makeFunction-parameter]: makeFunction(_, ((ListItem(X:Id) => .) _), _, _)
 
   rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 4)) ~> addParam(* X:Exp)) ~> makeCodeObject(N, ((ListItem(* X:Exp) => ListItem(*)) L), _, false) 
@@ -149,15 +149,15 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule BOUND(Bound, .) => Bound 
   rule PARAMS(ListItem(X:Id) Params) => ListItem(Id2String(X)) PARAMS(Params) 
   rule PARAMS(ListItem(* X:Exp) Params) => PARAMS(Params ListItem(* X)) when Params =/=List . 
-  rule PARAMS(ListItem(** X:Id) ListItem(* Y:Exp)) => ListItem(Id2String(Y)) ListItem(Id2String(X)) 
-  rule PARAMS(ListItem(* X:Exp)) => ListItem(Id2String(X)) 
+  rule PARAMS(ListItem(** X:Id) ListItem(* Y:Id)) => ListItem(Id2String(Y)) ListItem(Id2String(X)) 
+  rule PARAMS(ListItem(* X:Id)) => ListItem(Id2String(X)) 
   rule PARAMS(ListItem(** X:Id)) => ListItem(Id2String(X)) 
-  rule PARAMS(ListItem(* X:Exp) ListItem(** Y:Id)) => ListItem(Id2String(X)) ListItem(Id2String(Y)) 
+  rule PARAMS(ListItem(* X:Id) ListItem(** Y:Id)) => ListItem(Id2String(X)) ListItem(Id2String(Y)) 
   rule PARAMS(.) => . 
 
-  rule createFunction(X:Target, Ps, K:K, O:Object) => visited((X) = function(Ps, O, K))
+  rule createFunction(X:Id, Ps, K:K, O:Object) => visited((X) = function(Ps, O, K))
   rule createLambda(Ps, O:Object) => visited(function(Ps, O, .Obj))
-  rule createClass(X:Target, As, O:Object) => visited((X) = class(As, O))
+  rule createClass(X:Id, As, O:Object) => visited((X) = class(As, O))
   rule createGenerator(O:Object) => visited(function(.Parameters, O, .Obj)(.Arguments))
 
   rule comprehension(E, for T in E2 Comps:Comps) => for T in E2: comprehension(E, Comps) else: pass
