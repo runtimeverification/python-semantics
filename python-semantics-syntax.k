@@ -14,8 +14,11 @@ module PYTHON-SEMANTICS-SYNTAX
   syntax Expression ::= ObjRef
                 | Null
                 | Undefined
+                | ObjId
 
   syntax Null ::= ".Obj"
+
+  syntax ObjectPointer ::= Object | Null
 
   syntax Undefined ::= "undefined" "(" String ")"
 

@@ -55,7 +55,7 @@ module PYTHON-SEMANTICS-TRY
          (_ => C:Bag)
        </currentFrame> when B =/=K ref("None")
 
-  rule <k> (. => savetb(mutable("tb_next" |-> Tb "tb_frame" |-> ref(Frame), ref("traceback")))) ~> raise ...</k>
+  rule <k> (. => savetb(mutable("tb_next" |-> Tb "tb_frame" |-> ref(Frame), ref("traceback")))) ~> raise ~> K </k>
        <currentFrame>...
          <xcontext> ref(B) </xcontext>
          <frameObject> ref(Frame) </frameObject>

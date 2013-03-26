@@ -3,17 +3,17 @@ require "python-semantics-boolean-ops.k"
 module PYTHON-SEMANTICS-INTEGERS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
-  //rule <k> invokeBuiltin(obj("lt_int",_), ListItem(O:Object) ListItem(O2:Object), .) => binaryOp(O, O2, "int", "int", bool(intvalue(O) <Int intvalue(O2))) ...</k>
-  //rule <k> invokeBuiltin(obj("gt_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", bool(intvalue(O) >Int intvalue(O2))) ...</k>
-  //rule <k> invokeBuiltin(obj("le_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", bool(intvalue(O) <=Int intvalue(O2))) ...</k>
-  //rule <k> invokeBuiltin(obj("ge_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", bool(intvalue(O) >=Int intvalue(O2))) ...</k>
-  //rule <k> invokeBuiltin(obj("eq_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", bool(intvalue(O) ==Int intvalue(O2))) ...</k>
-  //rule <k> invokeBuiltin(obj("ne_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", bool(intvalue(O) =/=Int intvalue(O2))) ...</k>
+  rule invokeBuiltin("int.__lt__", "self" |-> Self:Object "other" |-> Other:Object) => return binaryOp(Self, Other, "int", "int", bool(intvalue(Self) <Int intvalue(Other)))
+  rule invokeBuiltin("int.__gt__", "self" |-> Self:Object "other" |-> Other:Object) => return binaryOp(Self, Other, "int", "int", bool(intvalue(Self) >Int intvalue(Other)))
+  rule invokeBuiltin("int.__le__", "self" |-> Self:Object "other" |-> Other:Object) => return binaryOp(Self, Other, "int", "int", bool(intvalue(Self) <=Int intvalue(Other)))
+  rule invokeBuiltin("int.__ge__", "self" |-> Self:Object "other" |-> Other:Object) => return binaryOp(Self, Other, "int", "int", bool(intvalue(Self) >=Int intvalue(Other)))
+  rule invokeBuiltin("int.__eq__", "self" |-> Self:Object "other" |-> Other:Object) => return binaryOp(Self, Other, "int", "int", bool(intvalue(Self) ==Int intvalue(Other)))
+  rule [int-ne]: invokeBuiltin("int.__ne__", "self" |-> Self:Object "other" |-> Other:Object) => return binaryOp(Self, Other, "int", "int", bool(intvalue(Self) =/=Int intvalue(Other)))
 
-  //rule <k> invokeBuiltin(obj("bool_int",_), ListItem(O), .) => bool(plbool(O)) ...</k>
+  rule invokeBuiltin("int.__bool__",_) => return bool(plbool(String2Id("self")))
 
-  //rule <k> invokeBuiltin(obj("add_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", intvalue(O) +Int intvalue(O2)) ...</k>
-  //rule <k> invokeBuiltin(obj("radd_int",_), ListItem(O) ListItem(O2), .) => invokeBuiltin(ref("add_int"), ListItem(O2) ListItem(O), .) ...</k>
+  rule invokeBuiltin("int.__add__","self" |-> Self:Object "other" |-> Other:Object) => return binaryOp(Self, Other, "int", "int", intvalue(Self) +Int intvalue(Other))
+  rule invokeBuiltin("int.__radd__","self" |-> Self:Object "other" |-> Other:Object) => return binaryOp(Self, Other, "int", "int", intvalue(Self) +Int intvalue(Other))
 
   //rule <k> invokeBuiltin(obj("sub_int",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "int", "int", intvalue(O) -Int intvalue(O2)) ...</k>
   //rule <k> invokeBuiltin(obj("rsub_int",_), ListItem(O) ListItem(O2), .) => invokeBuiltin(ref("sub_int"), ListItem(O2) ListItem(O), .) ...</k>
@@ -61,6 +61,7 @@ module PYTHON-SEMANTICS-INTEGERS
   context immutable(intvalue(HOLE), _)
 
   //rule invokeBuiltin(obj("int_int",_), ListItem(O), .) => O
+  rule invokeBuiltin("int.__index__",_) => return self
 
   //rule <k> invokeBuiltin(obj("hash_int",_), ListItem(O), .) => unaryOp(O, "int", #if intvalue(O) %Int Modulus ==Int -1 #then -2 #else intvalue(O) %Int Modulus #fi) ...</k>
   //     <constants>... "sys.hash_info.modulus" |-> Modulus ...</constants>

@@ -8,17 +8,17 @@ module PYTHON-SEMANTICS-ITERATORS
   rule invokeBuiltin("tuple.__iter__",_) => return valueIterator(String2Id("self"))
   rule invokeBuiltin("list.__iter__",_) => return valueIterator(String2Id("self"))
 
-  //rule <k> invokeBuiltin(obj("iter_iter",_), ListItem(O:Object), .) => O ...</k>
-  //rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B:ObjId,_)), .) => B2 ...</k>
-  //     <object>...
-  //       <id>B</id>
-  //       <oattrs>... "__value__" |-> list((ListItem(B2) => .) L:List) ...</oattrs>
-  //     ...</object>
-  //rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => raise ref("StopIteration") ...</k>
-  //     <object>...
-  //       <id>B</id>
-  //       <oattrs>... "__value__" |-> list(.) ...</oattrs>
-  //     ...</object>
+  rule invokeBuiltin("iterator.__iter__",_) => return String2Id("self")
+  rule <k> invokeBuiltin("iterator.__next__", "self" |-> obj(Self,_)) => return B ...</k>
+       <object>...
+         <id>Self</id>
+         <oattrs>... "__value__" |-> list((ListItem(B) => .) L:List) ...</oattrs>
+       ...</object>
+  rule <k> invokeBuiltin("iterator.__next__", "self" |-> obj(Self,_)) => raise ref("StopIteration") ...</k>
+       <object>...
+         <id>Self</id>
+         <oattrs>... "__value__" |-> list(.) ...</oattrs>
+       ...</object>
 
   //rule <k> invokeBuiltin(obj("iter_next",_), ListItem(obj(B,_)), .) => try: (getmember(B2, "__getitem__", true, false, true) (I:Int)) except ref("IndexError"): (setx(.Obj) ~> raise ref("StopIteration")) else: pass  ...</k>
   //     <object>...
@@ -29,10 +29,10 @@ module PYTHON-SEMANTICS-ITERATORS
 
 
   rule invokeBuiltin("iter",_) => (if hasmember(String2Id("object"), "__iter__") :
-                                  String2Id("object") := getmember(String2Id("object"), "__iter__", true, false, true) (.Arguments)
+                                  String2Id("object"), .Expressions := getmember(String2Id("object"), "__iter__", true, false, true) (.Arguments)
                                 else:
                                   if hasmember(String2Id("object"), "__getitem__") :
-                                    String2Id("object") := getitemIterator(String2Id("object"))
+                                    String2Id("object"), .Expressions := getitemIterator(String2Id("object"))
                                   else:
                                     raiseInternal("TypeError", "object is not iterable")) newline
                                 if hasmember(String2Id("object"), "__next__"):

@@ -8,7 +8,7 @@ module PYTHON-SEMANTICS-LOGIC
   syntax K ::= "test" "(" Test "," K "," K ")" [strict(1)]
 
   syntax K ::= "if" Test ":" K "else" ":" K [strict(1)]
-  syntax Expression ::= Expression "if" Bool "else" Expression [strict(2)]
+  syntax Expression ::= Expression "if" Test "else" Expression [strict(2)]
 
   syntax Test ::= "and" "(" Test "," Test ")" [strict(1)]
   syntax Test ::= "or" "(" Test "," Test ")" [strict(1)]
@@ -16,6 +16,8 @@ module PYTHON-SEMANTICS-LOGIC
   syntax Test ::= Expression "==Obj" Expression [strict]
   syntax Test ::= Expression "=/=Obj" Expression [strict]
   syntax Test ::= "not" Test [strict]
+  syntax Test ::= Test "or" Test [strict]
+  syntax Test ::= Test "and" Test [strict]
 
   rule and(false, _) => false
   rule and(_, false) => false
@@ -25,6 +27,12 @@ module PYTHON-SEMANTICS-LOGIC
   rule or(false, K) => K
   rule negate(T:Bool) => notBool T
   rule not T:Bool => notBool T
+  rule true or _ => true
+  rule _ or true => true
+  rule false or K => K
+  rule false and _ => false
+  rule _ and false => false
+  rule true and K => K
   rule O:KResult ==Obj O2:KResult => O ==K O2
   rule O:KResult =/=Obj O2:KResult => O =/=K O2
 
@@ -41,9 +49,12 @@ module PYTHON-SEMANTICS-LOGIC
   rule .Obj -> Chain:K => Chain
   rule .Obj (_) => .Obj
 
-  syntax Bool ::= Expression "is" "not" "None" [strict]
-  syntax Bool ::= Expression "is" "None" [strict]
+  syntax Test ::= Expression "is" "not" "None" [strict]
+  syntax Test ::= Expression "is" "None" [strict]
   rule O:Object is not None => not O is None
   rule <k> obj(B,_) is None => B ==K NoneId ...</k>
        <symbols>... "None" |-> NoneId ...</symbols>
+
+  syntax priorities '_|_ > '_isnotNone '_isNone
+  syntax priorities '_isnotNone '_isNone > 'not_
 endmodule

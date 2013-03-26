@@ -13,7 +13,7 @@ module PYTHON-SEMANTICS-STATEMENTS
   rule nonlocal _ => .
 
   rule if O:Object : Ss:K else : Ss2:K => test(plbool(bool(O)), Ss, Ss2)
-  rule E:K if O else E2:K => test(plbool(bool(O)), E, E2)
+  rule E:K if O:Object else E2:K => test(plbool(bool(O)), E, E2)
 
   rule <k> (. => lmark) ~> (while Condition:K : Ss else: Ss2) ~> (K:K => break) </k>
        <currentFrame>

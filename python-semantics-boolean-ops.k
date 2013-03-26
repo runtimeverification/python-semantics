@@ -17,7 +17,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule bool(O:Object) => ref("bool")(O)
   //rule invokeBuiltin(obj("new_bool",_), ListItem(O), .) => newHelper(O, ref("bool"), .) ~> ref("False")
   //rule invokeBuiltin(obj("new_bool",_), ListItem(O:Object) ListItem(O2:Object), .) => newHelper(O, ref("bool"), .) ~> bool(O2)
-  rule invokeBuiltin("bool.__new__",_) => newHelper(String2Id("x"), ref("bool"), .) newline
+  rule invokeBuiltin("bool.__new__",_) => newHelper(String2Id("cls"), ref("bool"), .) newline
                                         if plbool(String2Id("x") is ref("None")):
                                           return ref("False")
                                         else:
@@ -36,7 +36,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule invokeBuiltin("len",_) => if hasmember(String2Id("s"), "__len__") :
                                  String2Id("len"), .Expressions := getmember(String2Id("s"), "__len__", true, false, true) (.Arguments) newline
                                  String2Id("len"), .Expressions := ref("index")(String2Id("len")) newline
-                                 if String2Id("len") >= 0 :
+                                 if plbool(String2Id("len") >= 0) :
                                    return String2Id("len")
                                  else:
                                    raiseInternal("ValueError", "__len__() should return >= 0")

@@ -79,7 +79,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
   rule makeBuiltinDefaults(S, (ListItem(* _) => ListItem(*)) _, _, _, _)
   rule makeBuiltinDefaults(S, (ListItem(*) => .) _, false => true, _, _)
   rule makeBuiltinDefaults(S, (ListItem(** _) => .) _, _, _, _)
-  rule makeBuiltinDefaults(S, ., _, Defaults, KwDefaults) => setref(S, "__defaults__", tuple(DeListify(Defaults))) ~> setref(S, "__kwdefaults__", { DeMapify(KwDefaults) })
+  rule makeBuiltinDefaults(S, ., _, Defaults, KwDefaults) => setref(S, "__defaults__", immutable(list(Defaults), ref("tuple"))) ~> setref(S, "__kwdefaults__", { DeMapify(KwDefaults) })
 
   rule <k> resolve => . ...</k>
        <references> .Set </references>

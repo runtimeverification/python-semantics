@@ -48,11 +48,14 @@ module PYTHON-SEMANTICS-SLICING
   //       <oattrs>... "current" |-> (Current:Int => Current +Int Step) "stop" |-> Stop "step" |-> Step ...</oattrs>
   //     ...</object>
 
-  rule index(O:Object) => checkIndex(getmember(O, "__index__", true, false, false) (.Arguments))
-  rule index(.Obj) => .Obj
-  rule checkIndex(O:Object) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__index__ returned non-int"))
-  rule checkIndex(.Obj) => .Obj
-  //rule invokeBuiltin(obj("index",_), ListItem(O), .) => index(O) -> raiseInternal("TypeError", "object cannot be interpreted as an integer")
+  rule invokeBuiltin("index",_) => if hasmember(String2Id("a"), "__index__") :
+                                     String2Id("int"), .Expressions := getmember(String2Id("a"), "__index__", true, false, true) (.Arguments) newline
+                                     if istype(String2Id("int"), ref("int")) :
+                                       return String2Id("int")
+                                     else:
+                                       raiseInternal("TypeError", "__index__ returned non-int")
+                                   else:
+                                     raiseInternal("TypeError", "object cannot be interpreted as an integer")
   rule range(O, O2, O3, O4) => mutable("start" |-> intvalue(O) "stop" |-> intvalue(O2) "step" |-> intvalue(O3), O4) when intvalue(O3) =/=Int 0
 
   rule range(_, _, O3, _) => raiseInternal("ValueError", "range() arg 3 must not be zero") when intvalue(O3) ==Int 0
@@ -69,11 +72,11 @@ module PYTHON-SEMANTICS-SLICING
 
   rule indices(StartObj:Object, StopObj:Object, StepObj:Object, LengthObj:Object) => raiseInternal("ValueError", "slice step cannot be zero") when intvalue(StepObj) ==Int 0
 
-  rule <k> indices(StartObj, StopObj, StepObj, LengthObj) => indices2(StartObj, StopObj, #if id(StepObj) ==K None #then 1 #else intvalue(StepObj) #fi, intvalue(LengthObj)) ...</k>
-       <symbols>... "None" |-> None:Nat ...</symbols> when id(StepObj) ==K None orElseBool intvalue(StepObj) =/=Int 0
+  rule <k> indices(StartObj, StopObj, StepObj, LengthObj) => indices2(StartObj, StopObj, #if id(StepObj) ==K NoneId #then 1 #else intvalue(StepObj) #fi, intvalue(LengthObj)) ...</k>
+       <symbols>... "None" |-> NoneId ...</symbols> when id(StepObj) ==K NoneId orElseBool intvalue(StepObj) =/=Int 0
 
-  rule <k> indices2(StartObj, StopObj, Step:Int, Length:Int) => indices3(#if id(StartObj) ==K None #then #if Step <Int 0 #then Length -Int 1 #else 0 #fi #else intvalue(StartObj) #fi, #if id(StopObj) ==K None #then #if Step <Int 0 #then -1 #else Length #fi #else intvalue(StopObj) #fi, Step, Length) ...</k>
-       <symbols>... "None" |-> None:Nat ...</symbols>
+  rule <k> indices2(StartObj, StopObj, Step:Int, Length:Int) => indices3(#if id(StartObj) ==K NoneId #then #if Step <Int 0 #then Length -Int 1 #else 0 #fi #else intvalue(StartObj) #fi, #if id(StopObj) ==K NoneId #then #if Step <Int 0 #then -1 #else Length #fi #else intvalue(StopObj) #fi, Step, Length) ...</k>
+       <symbols>... "None" |-> NoneId ...</symbols>
 
   rule indices3(Start:Int, Stop:Int, Step, Length) => indices4(#if Start <Int 0 #then #if Start +Int Length <Int 0 #then #if Step <Int 0 #then -1 #else 0 #fi #else Start +Int Length #fi #else Start #fi, #if Stop <Int 0 #then #if Stop +Int Length <Int 0 #then #if Step <Int 0 #then -1 #else 0 #fi #else Stop +Int Length #fi #else Stop #fi, Step, Length)
 

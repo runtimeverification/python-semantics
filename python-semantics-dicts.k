@@ -56,10 +56,8 @@ module PYTHON-SEMANTICS-DICTS
   //rule invokeBuiltin(obj("len_dict",_), ListItem(O), .) => lengthMap mapvalue(O)
 
   //rule invokeBuiltin(obj("getitem_dict",_), ListItem(obj(B,_)) ListItem(Key:Object), .) => ref("hash")(Key) ~> tableLookup(B, 0, Key)
-  rule (O:Object => .) ~> tableLookup(_,(_ => intvalue(O)),_)
-  rule (O:Object => .) ~> tableLookup(_,(_ => intvalue(O)),_) ;
-
-  //rule invokeBuiltin(obj("setitem_dict",_), ListItem(O) ListItem(Key) ListItem(Value:Object), .) => processDict(O, Key |-> Value) ; ~> ref("None") 
+  rule invokeBuiltin("dict.__getitem__",_) => return tableLookup(String2Id("self"), ref("hash")(String2Id("key")), String2Id("key"))
+  rule invokeBuiltin("dict.__setitem__","self" |-> Self:Object "key" |-> Key:Object "value" |-> Value:Object) => processDict(Self, Key |-> Value) ; ~> return ref("None")
 
   //rule invokeBuiltin(obj("delitem_dict",_), ListItem(obj(B,_)) ListItem(Key), .) => ref("hash")(Key, .Arguments) ~> tableDelete(B, 0, Key) ~> ref("None")
   rule (O:Object => .) ~> tableDelete(_,(_ => intvalue(O)),_)

@@ -347,7 +347,7 @@ module PYTHON-SEMANTICS-COMMON
   rule [executeFrame]: <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map, T:Bool) => makeFrame(N, CO, Back, Locals, Globals, Builtins, Cells, Args, T:Bool) ~> getattr(CO, "co_code") ...</k>
        <frameObject> _ => ref(N) </frameObject>
 
-  rule (. => doBind(X, ref(B), ref(N))) ~> setArgs(N, (X |-> ref(B) => .) _)
+  rule (. => doBind(X, O, ref(N))) ~> setArgs(N, (X |-> O => .) _)
   rule [dissolve-setArgs]: setArgs(_, .) => .
 
   rule <k> describe(Self, Instance, Owner, S) => doDescribe(Self, Instance, gettype(Instance), S) ...</k>

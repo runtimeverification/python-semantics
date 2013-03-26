@@ -76,10 +76,12 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                                    (((Frame . String2Id("f_globals") [S]), .Expressions) := ref(B)))
                                          else: pass
 
-  //rule [globals]: <k> invokeBuiltin(obj("globals",_), ., .) => ref(N) . String2Id("f_globals") ...</k>
-  //     <frameObject> ref(N) </frameObject>
+  syntax #Id ::= "f_globals" | "f_locals" | "f_back"
+
+  rule <k> invokeBuiltin("globals",_) => return Frame . f_back . f_globals ...</k>
+       <frameObject> Frame </frameObject>
  
-  //rule <k> invokeBuiltin(obj("locals",_), ., .) => ref(N) . String2Id("f_locals") ...</k>
-  //     <frameObject> ref(N) </frameObject>
+  rule <k> invokeBuiltin("locals",_) => return Frame . f_back . f_locals ...</k>
+       <frameObject> Frame </frameObject>
    
 endmodule

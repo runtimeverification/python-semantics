@@ -3,9 +3,10 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-BUILTIN-FUNCTIONS
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax K ::= doAll(Expression) [strict]
-
-  //rule invokeBuiltin(obj("all",_), ListItem(O:Object), .) => try: doAll(ref("iter")(O)) except ref("StopIteration"): ref("True") else: pass
-  rule doAll(Iter:Object) => if not getmember(Iter, "__next__", true, false, true)(.Arguments) : ref("False") else: doAll(Iter)
+  rule invokeBuiltin("all",_) => (for String2Id("element") in String2Id("iterable") :
+                                   if String2Id("element") :
+                                     return ref("True")
+                                 else: pass) ~>
+                                 return ref("False")
 
 endmodule

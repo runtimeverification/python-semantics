@@ -11,19 +11,15 @@ module PYTHON-SEMANTICS-OBJECTS
 
   syntax #Id ::= "__new__"
   rule invokeBuiltin("type.__call__", "self" |-> Self:Object "args" |-> Args:Object "kwargs" |-> KwArgs:Object) =>
-    String2Id("new") := doCall(Self . __new__, ListItem(Self) listvalue(Args), mapvalue(KwArgs)) ~>
+    String2Id("new"), .Expressions := doCall(Self . __new__, ListItem(Self) listvalue(Args), mapvalue(KwArgs)) ~>
     (if istype(String2Id("new"), Self) :
-      String2Id("init") := doCall(getmember(String2Id("new"), "__init__", true, false, true), listvalue(Args), mapvalue(KwArgs)) newline
+      String2Id("init"), .Expressions := doCall(getmember(String2Id("new"), "__init__", true, false, true), listvalue(Args), mapvalue(KwArgs)) newline
       (if negate(plbool(String2Id("init") is ref("None"))) :
         raiseInternal("TypeError", "__init__() should return None")
       else: pass)
     else: pass) ~>
     return String2Id("new")
     
-  //rule <k> invokeBuiltin(obj("call_type",_), ListItem(Type:Object) L:List, M:Map) => init(doCall(Type . String2Id("__new__"), ListItem(Type) L, M), Type, L, M) ...</k>
-
-  rule <k> init(O:Object, Type, L, M) => test(istype(O, Type), test(plbool(doCall(getmember(O, "__init__", true, false, false), L, M) is ref("None")), ref(id(O)), raiseInternal("TypeError", "__init__() should return None")), O) ...</k>
-
   //rule <k> invokeBuiltin(obj("new_object",_), ListItem(O:Object) _, _) => newHelper(O, ref("object"), SetItem("iterator") SetItem("attribute") SetItem("builtin-function") SetItem("builtin-method") SetItem("frame") SetItem("reference")) ~> (if O is not ref("object") : setref(N, "__dict__", {.KeyData}) else: pass) ~> ref(N) ...</k>
   //     <nextLoc> N:Int => N +Int 1 </nextLoc>
   //     (. => <object>
@@ -31,7 +27,7 @@ module PYTHON-SEMANTICS-OBJECTS
   //       <oattrs> "__class__" |-> ref(id(O)) </oattrs>
   //     </object>) [allocation]
 
-//  rule [init-object]: <k> invokeBuiltin(obj("init_object",_), _, _) => ref("None") ...</k>
+  rule invokeBuiltin("object.__init__",_) => return ref("None")
 
   //rule <k> invokeBuiltin(obj("eq_object",_), ListItem(O) ListItem(O2:Object), .) => test(plbool(O is O2), ref("True"), ref("NotImplemented")) ...</k>
   //rule <k> invokeBuiltin(obj("ne_object",_), ListItem(O) ListItem(O2), .) => not (O == O2) ...</k>

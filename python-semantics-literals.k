@@ -12,7 +12,7 @@ module PYTHON-SEMANTICS-LITERALS
              | "processSet" "(" Expression "," List ")" [strict(1)]
              | "processSetElement" "(" Expression "," Expression "," Expression ")" [strict]
              | "tableInsert" "(" ObjId "," Int "," Expression "," K ")" [strict(3)]
-             | "tableLookup" "(" ObjId "," Int "," Expression ")" [strict(3)]
+             | "tableLookup" "(" Expression "," Expression "," Expression ")" [strict(3)]
              | "tableDelete" "(" ObjId "," Int "," Expression ")" [strict(3)]
              | "bucketInsert" "(" ObjId "," Int "," Expression "," Expression "," List "," List ")" [strict(3, 4)]
              | "bucketLookup" "(" Expression "," List ")" [strict(1)]
@@ -89,6 +89,11 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(M => M[undef/H]) ...</oattrs>
        ...</object>
 
+  rule tableLookup(E, H, Key) => E ~> tableLookup(HOLE, H, Key) when isObjId(E) =/=K true [heat]
+  rule O:Object ~> tableLookup(HOLE, H, Key) => tableLookup(id(O), H, Key) [cool]
+  rule tableLookup(E, H, Key) => H ~> tableLookup(E, HOLE, Key) when isInt(H) =/=K true [heat]
+  rule O:Object ~> tableLookup(E, HOLE, Key) => tableLookup(E, intvalue(O), Key) [cool]
+
   rule <k> tableLookup(B, H, Key) => bucketLookup(Key, Values) ...</k>
        <object>...
          <id>B</id>
@@ -142,10 +147,19 @@ module PYTHON-SEMANTICS-LITERALS
        <literals> Literals:Map (. => pair(M, B) |-> ref(N)) </literals>
        <nextLoc> N => N +Int 1 </nextLoc> when notBool(pair(M, B) in keys(Literals)) [allocation]
 
-  //rule invokeBuiltin(obj("new_structseq",_), ListItem(Type) ListItem(Sequence), .) => iterate(Sequence, raiseInternal("TypeError", "constructor requires a sequence")) ~> makeStructSeq(Type)
-
-  syntax K ::= makeStructSeq(Object)
-
-  rule list(L) ~> makeStructSeq(Type) => test(lengthList L =/=Int lengthList getl(getattr(Type, "__order__")), raiseInternal("TypeError", getattr(Type, "__name__") +String "takes a " +String Int2String(lengthList getl(getattr(Type, "__order__"))) +String "-sequence (" +String Int2String(lengthList L) +String "-sequence given)"), mutable(list(Refify(Idify(L))), Type))
+  rule invokeBuiltin("structseq.__new__","cls" |-> Cls:Object _) =>
+    String2Id("structseq"), .Expressions := mutable(list(.), Cls) ~>
+    String2Id("i"), .Expressions := 0 ~>
+    (for String2Id("elem") in String2Id("sequence") :
+      addElemToStructSeq(String2Id("elem"), String2Id("structseq")) newline
+      String2Id("i") += 1
+    else: pass) ~>
+    (if String2Id("i") != lengthList getl(getattr(Cls, "__order__")) :
+      raiseInternal("TypeError", getattr(Cls, "__name__") +String " takes a " +String Int2String(lengthList getl(getattr(Cls, "__order__"))) +String "-sequence")
+    else: pass) ~>
+    return String2Id("structseq")
+      
+  syntax K ::= addElemToStructSeq(Expression, Expression) [strict]
+  rule addElemToStructSeq(Elem:Object, StructSeq:Object) => setattr(id(StructSeq), "__value__", list(getl(getattr(StructSeq, "__value__")) ListItem(ref(id(Elem)))))
 
 endmodule

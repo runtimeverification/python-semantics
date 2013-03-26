@@ -5,13 +5,30 @@ module PYTHON-SEMANTICS-TUPLES
   imports PYTHON-SEMANTICS-LISTS
   imports MACHINE-INTEGERS
 
-  //rule invokeBuiltin(obj("add_tuple",_), ListItem(O:Object) ListItem(O2:Object), .) => test(and(istype(O, ref("tuple")), istype(O2, ref("tuple"))), immutable(list(listvalue(O) listvalue(O2)),ref("tuple")), raiseInternal("TypeError", "can only concatenate tuple to tuple"))
+  rule invokeBuiltin("tuple.__add__","self" |-> Self:Object "other" |-> Other:Object) =>
+    if istype(Self, ref("tuple")) and istype(Other, ref("tuple")) :
+      return immutable(list(listvalue(Self) listvalue(Other)), ref("tuple"))
+    else:
+      raiseInternal("TypeError", "cano only concatenate tuple to tuple")
 
   //rule invokeBuiltin(obj("contains_tuple",_), ListItem(O) ListItem(O2), .) => contains(list(listvalue(O)), O2)
 
-  //rule invokeBuiltin(obj("getitem_tuple",_), ListItem(O) ListItem(O2), .) => test(istype(O2, ref("int")), test(intvalue(O2) >=Int 0 -Int lengthList listvalue(O) andBool intvalue(O2) <Int lengthList listvalue(O), test(intvalue(O2) >=Int 0, get(listvalue(O), intvalue(O2)), get(listvalue(O), lengthList listvalue(O) +Int intvalue(O2))), raiseInternal("IndexError", "tuple index out of range")), test(istype(O2, ref("slice")), ref("tuple")(slice(O, O2)), raiseInternal("TypeError", "tuple indices must be integers or slices")))
+  rule invokeBuiltin("tuple.__getitem__","self" |-> Self:Object "key" |-> Key:Object) =>
+    if istype(Key, ref("int")) :
+      (if intvalue(Key) >=Int 0 -Int lengthList listvalue(Self) andBool intvalue(Key) <Int lengthList listvalue(Self) :
+        (if intvalue(Key) >=Int 0 :
+          return get(listvalue(Self), intvalue(Key))
+        else:
+          return get(listvalue(Self), lengthList listvalue(Self) +Int intvalue(Key)))
+      else:
+         raiseInternal("IndexError", "tuple index out of range"))
+    else:
+      if istype(Key, ref("slice")) :
+        return ref("tuple")(slice(Self, Key))
+      else:
+        raiseInternal("TypeError", "tuple indices must be integers or slices")
 
-  //rule invokeBuiltin(obj("len_tuple",_), ListItem(O), .) => lengthList listvalue(O)
+  rule invokeBuiltin("tuple.__len__", "self" |-> O:Object) => return lengthList listvalue(O)
 
   //rule invokeBuiltin(obj("new_tuple",_), ListItem(O), .) => newHelper(O, ref("tuple"), .) ~> immutable(list(.), O)
   //rule invokeBuiltin(obj("new_tuple",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("tuple"), .) ~> iterate(O2, .) ~> immutable(list(.), O)
