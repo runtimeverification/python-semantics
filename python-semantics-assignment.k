@@ -6,11 +6,11 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   syntax K ::= "bindList" "(" List "," Object "," Bool ")"
              | "unbindList" "(" List ")"
 
-  rule (. => bind(X:Id, ref(B:ObjId))) ~> (X = Ts => Ts) = obj(B,_)
-  rule (. => bindList(Listify(Ts2), O, false)) ~> (tuple(Ts2:Targets) = Ts => Ts) = O:Object
-  rule (. => bindList(Listify(Ts2), O, false)) ~> ([ Ts2 ] = Ts => Ts) = O
-  rule (. => ref("setattr")(O, Id2String(X), O2) ;) ~> (O:Object . X:Id = Ts => Ts) = O2:Object
-  rule (. => (getmember(O, "__setitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item assignment")) (Key:Object, Value:Object) ;) ~> (O:Object [ Key:Object ] = Ts => Ts) = Value
+  rule (. => bind(X:Id, ref(B:ObjId))) ~> ((X)::Target = Ts:AssignTargets => Ts) = obj(B,_)
+  rule (. => bindList(Listify(Ts2), O, false)) ~> (tuple(Ts2:Targets) = Ts:AssignTargets => Ts) = O:Object
+  rule (. => bindList(Listify(Ts2), O, false)) ~> ([ Ts2 ] = Ts:AssignTargets => Ts) = O
+  rule (. => ref("setattr")(O, Id2String(X), O2) ;) ~> (O:Object . X:Id = Ts:AssignTargets => Ts) = O2:Object
+  rule (. => (getmember(O, "__setitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item assignment")) (Key:Object, Value:Object) ;) ~> (O:Object [ Key:Object ] = Ts:AssignTargets => Ts) = Value
   rule .AssignTargets = _ => .
 
   context HOLE . _:Id = _ = K when isKResult(K)

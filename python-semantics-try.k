@@ -78,7 +78,7 @@ module PYTHON-SEMANTICS-TRY
          </currentFrame>
        ...</control>
 
-  rule <k> EC ECs => EC ~> ECs ...</k> when notBool(getKLabel EC ==KLabel 'except:_ andBool ECs =/=K .ExceptClauses)
+  rule <k> (EC)::ExceptClause (ECs)::ExceptClauses => EC ~> ECs ...</k> when notBool(getKLabel EC ==KLabel 'except:_ andBool ECs =/=K .ExceptClauses)
   rule <k> .ExceptClauses => . ...</k>
 
   rule <k> raise O:Object => doRaise(test(istype(O, ref("type")), O(.Arguments), O), ref("None"), true) ...</k>
@@ -122,7 +122,7 @@ module PYTHON-SEMANTICS-TRY
   rule <k> doExcepts(., Except, X) => . ...</k>
   rule <k> doExcepts(ListItem(B) L:List, Except, X) => doExcept(B, Except, X) ~> doExcepts(L, Except, X) ...</k>
 
-  rule <k> doExcept(Type:Object, Except, X) => test(istype(B, Type), test(Id2String(X) ==String "", except: Except, (X:Id = B ~> except: (try: Except finally: unbind(X)))), .) ...</k>
+  rule <k> doExcept(Type:Object, Except, X) => test(istype(B, Type), test(Id2String(X) ==String "", except: Except, ((X:Id)::AssignTargets = B ~> except: (try: Except finally: unbind(X)))), .) ...</k>
        <xcontext> B:Exp </xcontext>
 
   syntax Exp ::= "#if" Bool "#then" Exp "#else" Exp "#fi" [function]
