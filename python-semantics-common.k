@@ -84,12 +84,19 @@ module PYTHON-SEMANTICS-COMMON
                   | "class" "(" Arguments "," Expression ")" [strict]
                   | describe(Expression, Expression, Expression, String) [strict(1, 2, 3)]
                   | doDescribe(Expression, Expression, Expression, String) [strict(1, 2, 3)]
+                  | reduce(Expression, KLabel) [strict(1)]
+                  | reduce(List, KLabel)
 
   syntax K ::= "iterate" "(" Expression "," K ")" [strict(1)]
 
   rule name(E) => getmember(E, "__name__", true, false, true) [macro, anywhere]
 
   context doCall(HOLE, _, _) when HOLE =/=K .
+
+  rule (. => iterate(O, .)) ~> reduce(O:Object, _)
+  rule list(L:List) ~> reduce(_, K:KLabel) => reduce(L, K)
+  rule reduce(ListItem(I), _) => I
+  rule reduce(ListItem(I) L:List, K) => K(I,,reduce(L, K)) when L =/=List .
 
   syntax String ::= "docString" "(" K ")" [function]
   rule docString(S:String ;) => S [function, anywhere]

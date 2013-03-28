@@ -66,7 +66,7 @@ module PYTHON-SEMANTICS-STATEMENTS
   rule Stmt:K newline Ss => Stmt ~> Ss
 
   rule with O:Object : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), ., Ss)
-  rule with O:Object as T:Target : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), T, Ss)
+  rule with O:Object as T:Expression : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), T, Ss)
   
   syntax K ::= doWith(Expression, Expression, K, K) [seqstrict(1, 2)]
 

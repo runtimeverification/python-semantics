@@ -1,9 +1,11 @@
 require "python-semantics-boolean-ops.k"
+require "python-semantics-slicing.k"
 require "machine-integers.k"
 require "unicode.k"
 
 module PYTHON-SEMANTICS-STRINGS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
+  imports PYTHON-SEMANTICS-SLICING
   imports MACHINE-INTEGERS
   imports UNICODE
 
@@ -25,7 +27,7 @@ module PYTHON-SEMANTICS-STRINGS
   rule <k> accumulate((S:String => substrString(S, 1, lengthString(S) -Int 1)), (I:Int => (mult(Imag, I, Width) xorInt asciiString(substrString(S, 0, 1)))), _) ...</k>
        <constants>... "sys.hash_info.width" |-> Width "sys.hash_info.imag" |-> Imag ...</constants> when lengthString(S) =/=Int 0
 
-  rule <k> accumulate("", I, Len:Nat) => test((I xorInt Len xorInt hashSuffix(Seed, Width)) ==Int -1, -2, (I xorInt Len xorInt hashSuffix(Seed, Width))) ...</k>
+  rule <k> accumulate("", I, Len:Int) => test((I xorInt Len xorInt hashSuffix(Seed, Width)) ==Int -1, -2, (I xorInt Len xorInt hashSuffix(Seed, Width))) ...</k>
        <constants>... "PYTHONHASHSEED" |-> Seed "sys.hash_info.width" |-> Width ...</constants>
 
   rule invokeBuiltin(obj("rpartition_str",_), ListItem(O) ListItem(Sep), .) => test(istype(Sep, ref("str")), #if rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) ==Int -1 #then tuple("", "", strvalue(O), .Expressions) #else tuple(substrString(strvalue(O), 0, rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O)))), strvalue(Sep), substrString(strvalue(O), rfindString(strvalue(O), strvalue(Sep), lengthString(strvalue(O))) +Int lengthString(strvalue(Sep)), lengthString(strvalue(O))), .Expressions) #fi, raiseInternal("TypeError", "Cannot convert object to str implicitly"))
@@ -161,7 +163,13 @@ module PYTHON-SEMANTICS-STRINGS
 
   rule startswith(S:String, Prefix:Object) => test(istype(Prefix, ref("str")), #if findString(S, strvalue(Prefix), 0) ==Int 0 #then ref("True") #else ref("False") #fi, raiseInternal("TypeError", "Cannot convert object to str implicitly"))
   rule startswith(S:String, ListItem(ref(N)) L:List) => startswith(S, ref(N)) or startswith(S, L)
-  rule startswith(S:String, .List) => ref("True")
+  rule startswith(S:String, .List) => ref("False")
 
-  rule invokeBuiltin(obj("getitem_str",_), ListItem(S:Object) ListItem(Item:Object), .) => test(istype(Item, ref("
+  //TODO: fix ref(id()). We need this right now because if I pass an object then strictness will refuse to heat because it's already a KResult. Need to wait for improved heating/cooling
+  rule invokeBuiltin(obj("getitem_str",_), ListItem(S:Object) ListItem(Item:Object), .) => test(istype(Item, ref("slice")), reduce(slice(S, Item), '_+_), getitemString(strvalue(S), ref(id(Item))))
+
+  syntax Expression ::= getitemString(String, Expression)
+  rule getitemString(S, E:Expression) => ref("index")(E) ~> getitemString(S, HOLE) when isInt(E) =/=K true [heat]
+  rule O:Object ~> getitemString(S, HOLE) => getitemString(S, intvalue(O)) [cool]
+  rule getitemString(S:String, I:Int) => test(I >=Int 0 -Int length(S, UTF-8) andBool I <Int length(S, UTF-8), test(I >=Int 0, bytes(S, UTF-8, I), bytes(S, UTF-8, I +Int length(S, UTF-8))), raiseInternal("IndexError", "string index out of range"))
 endmodule

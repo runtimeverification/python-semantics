@@ -29,7 +29,7 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   context del ((K [ HOLE ]) , _) when isKResult(K)
 
   rule (. => iterate(O, .)) ~> bindList(_, O, _)
-  rule (. => T, .Expressions := O) ~> list((ListItem(O) => .) _) ~> bindList((ListItem(T:Target) => .) _, _, _) when getKLabel T =/=KLabel '*_
+  rule (. => T, .Expressions := O) ~> list((ListItem(O) => .) _) ~> bindList((ListItem(T:Expression) => .) _, _, _) when getKLabel T =/=KLabel '*_
   rule (. => T, .Expressions := mutable(list(Refify(Idify(L))), ref("list"))) ~> list((L:List => .) L2:List) ~> bindList((ListItem(* T) => .) L3:List, _, (false => true)) when lengthList L2 ==Int lengthList L3
   rule list(.) ~> bindList(., _, _) => .
   rule list(ListItem(_) _) ~> bindList(., _, _) => raiseInternal("ValueError", "too many values to unpack")

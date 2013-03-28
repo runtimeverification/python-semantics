@@ -1,7 +1,7 @@
 module MACHINE-INTEGERS
 
   syntax Int ::= mult(Int, Int, Int) [function]
-  rule mult(I:Int, I2:Int, N:Nat) => wrap(I *Int I2, N) [function, anywhere]
+  rule mult(I:Int, I2:Int, N:Int) => wrap(I *Int I2, N) [function, anywhere]
 
   syntax Int ::= add(Int, Int, Int) [function]
   rule add(I, I2, N) => wrap(I +Int I2, N)
