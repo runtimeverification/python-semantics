@@ -31,4 +31,10 @@ module PYTHON-SEMANTICS-LISTS
   rule equalList(., ListItem(_) _) => ref("False")
   rule equalList(.,.) => ref("True")
 
+  rule invokeBuiltin(obj("extend_list",_), ListItem(O:Object) ListItem(O2:Object), .) => iterate(O2, .) ~> extendList(O)
+  syntax ObjRef ::= extendList(Object)
+  rule list(L:List) ~> extendList(O:Object) => setattr(id(O), "__value__", list(getl(getattr(O, "__value__")) Refify(Idify(L)))) ~> ref("None")
+
+  rule invokeBuiltin(obj("append_list",_), ListItem(O:Object) ListItem(O2:Object), .) => setattr(id(O), "__value__", list(getl(getattr(O, "__value__")) ListItem(ref(id(O2))))) ~> ref("None")
+
 endmodule
