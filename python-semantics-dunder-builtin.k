@@ -436,6 +436,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "weakref.__new__"(2, 3, false)
            ,.) ~>
 
+         //module "gc"
+         (def "gc.collect"(0, 0, false) ;) ~>
+
          //module "marshal"
          (def "marshal.dumps"(1, 2, false) ;) ~>
          (def "marshal.loads"(1, 1, false) ;) ~>
@@ -549,6 +552,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "super" : ref("super")
          , "tuple" : ref("tuple")
          , "type" : ref("type")
+         }) ~>
+         module "gc"({
+           "collect" : ref("gc.collect")
          }) ~>
          module "marshal"({
            "dumps" : ref("marshal.dumps")
