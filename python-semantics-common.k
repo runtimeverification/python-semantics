@@ -216,6 +216,9 @@ module PYTHON-SEMANTICS-COMMON
   syntax K ::= "getattr2" "(" Expression "," String ")" [strict(1)]
   rule getattr2(O:Object, S:String) => getattr(O, S)
 
+  syntax Bool ::= hasattr(Object, String) [function]
+  rule hasattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => S in keys Attrs
+
   syntax ObjRef ::= "getref" "(" Expression "," String ")" [function]
   rule getref(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs:Map(S) [function, anywhere]
 
