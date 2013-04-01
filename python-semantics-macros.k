@@ -32,7 +32,7 @@ module PYTHON-SEMANTICS-MACROS
 
   rule try: Try ExceptClauses else: Else finally: Finally => try: try: Try ExceptClauses else: Else finally: Finally [macro, anywhere]
 
-  rule with W, W2, W3 : Body => with W, .Aliases : with W2, W3: Body [macro, anywhere]
+  rule with W, W2, W3 : Body => with W, .Aliases : with W2, W3 : Body [macro, anywhere]
 
   rule [ E Comp ] => ref("list")(generator(E Comp)) [macro, anywhere]
   rule { E Comp } => ref("set")(generator(E Comp)) [macro, anywhere]
