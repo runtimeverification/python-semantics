@@ -23,7 +23,6 @@ module PYTHON-SEMANTICS-COMMON
                       <oattrs> .Map </oattrs>
                     </object>
                   </store>
-                  <garbage> .Set </garbage>
                   <gc> 1 </gc>
                   <gcThreshold> $GCTHRESHOLD:Int </gcThreshold>
                   <literals> .Map </literals>
