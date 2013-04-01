@@ -5,13 +5,15 @@ module PYTHON-SEMANTICS-LOGIC
 
   syntax K ::= K "->" K [strict(1), right]
 
+  //TODO: fix syntax
   syntax K ::= "test" "(" Test "," K "," K ")" [strict(1)]
-
   syntax Test ::= "and" "(" Test "," Test ")" [strict(1)]
   syntax Test ::= "or" "(" Test "," Test ")" [strict(1)]
   syntax Test ::= "negate" "(" Test ")" [strict]
   syntax Test ::= Exp "==Obj" Exp [strict]
   syntax Test ::= Exp "=/=Obj" Exp [strict]
+
+  //TODO: is None / is not None
 
   rule and(false, _) => false
   rule and(_, false) => false

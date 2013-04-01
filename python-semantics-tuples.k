@@ -9,7 +9,10 @@ module PYTHON-SEMANTICS-TUPLES
 
   rule invokeBuiltin(obj("contains_tuple",_), ListItem(O) ListItem(O2), .) => contains(list(listvalue(O)), O2)
 
-  rule invokeBuiltin(obj("getitem_tuple",_), ListItem(O) ListItem(O2), .) => test(istype(O2, ref("int")), test(intvalue(O2) >=Int 0 -Int lengthList listvalue(O) andBool intvalue(O2) <Int lengthList listvalue(O), test(intvalue(O2) >=Int 0, get(listvalue(O), intvalue(O2)), get(listvalue(O), lengthList listvalue(O) +Int intvalue(O2))), raiseInternal("IndexError", "tuple index out of range")), test(istype(O2, ref("slice")), ref("tuple")(slice(O, O2)), raiseInternal("TypeError", "tuple indices must be integers or slices")))
+  rule invokeBuiltin(obj("getitem_tuple",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("slice")), ref("tuple")(slice(O, O2)), getitemTuple(O, ref("index")(O2, .Arguments)))
+
+  syntax ObjRef ::= getitemTuple(Exp, Exp) [strict]
+  rule getitemTuple(O:Object, O2:Object) => test(intvalue(O2) >=Int 0 -Int lengthList listvalue(O) andBool intvalue(O2) <Int lengthList listvalue(O), test(intvalue(O2) >=Int 0, get(listvalue(O), intvalue(O2)), get(listvalue(O), lengthList listvalue(O) +Int intvalue(O2))), raiseInternal("IndexError", "tuple index out of range"))
 
   rule invokeBuiltin(obj("len_tuple",_), ListItem(O), .) => lengthList listvalue(O)
 

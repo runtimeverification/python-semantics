@@ -115,7 +115,7 @@ module PYTHON-SEMANTICS-TRY
          <xstack> try(_, K, _:Bag, Ex, false) => . ...</xstack>
        ...</currentFrame>
 
-  rule except O: Except => except O as String2Id(""): Except
+  rule except O : Except => except O as String2Id(""): Except
 
   rule <k> except O:Object as X:NAME : Except:K => test(hasbase(O, ref("BaseException")), doExcept(O, Except, X), test(istype(O, ref("tuple")), doExcepts(listvalue(O), Except, X), raiseInternal("TypeError", "catching classes that do not inherit from BaseException is not allowed"))) ...</k>
 

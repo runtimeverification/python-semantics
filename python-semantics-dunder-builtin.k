@@ -256,6 +256,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__add__" |-> def "add_str" (1, 1, true)
            "__eq__" |-> def "eq_str" (1, 1, true)
            "__format__" |-> def "__format___str"(1, 1, true)
+           "__getitem__" |-> def "getitem_str"(1, 1, true)
            "__hash__" |-> def "hash_str" (0, 0, true)
            "__len__" |-> def "len_str"(0, 0, true)
            "__mod__" |-> def "mod_str"(1, 1, true)
@@ -435,6 +436,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "weakref.__new__"(2, 3, false)
            ,.) ~>
 
+         //module "gc"
+         (def "gc.collect"(0, 0, false) ;) ~>
+
          //module "marshal"
          (def "marshal.dumps"(1, 2, false) ;) ~>
          (def "marshal.loads"(1, 1, false) ;) ~>
@@ -548,6 +552,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "super" : ref("super")
          , "tuple" : ref("tuple")
          , "type" : ref("type")
+         }) ~>
+         module "gc"({
+           "collect" : ref("gc.collect")
          }) ~>
          module "marshal"({
            "dumps" : ref("marshal.dumps")

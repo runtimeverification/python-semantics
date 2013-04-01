@@ -25,13 +25,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                            | "yield" "from" Exp [strict]
 
   syntax KeyData ::= List{KeyDatum,","} [seqstrict]
-  //this conflicts with Argument ":" Exp below. Since I can tag all the rules
-  //in python-semantics-functions.k to have Argument as their first sort (no
-  //literal values are needed) I will go ahead and tag its inverse number with
-  //prefer in order to force all '_:_ instances whose first argument is an Exp
-  //to be KeyDatum. Ideally we would tag the KeyDatum as KeyDatum but the tool
-  //doesn't support that yet.
-  syntax KeyDatum ::= Exp ":" Exp [seqstrict, hybrid, prefer]
+  syntax KeyDatum ::= Exp ":" Exp [seqstrict, hybrid]
 
   syntax Arguments ::= List{Argument,","}
   syntax Argument ::= Exp
@@ -136,7 +130,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax Exps ::= NeExps
   syntax NeExps ::= NeList{Exp,","}
 
-  syntax AssignTargets ::= NeList{Target,"="} [klabel('targets), avoid]
+  syntax AssignTargets ::= NeList{Target,"="} [klabel('targets)]
   
   syntax Aliases ::= NeList{Alias,","}
   //TODO: separate with from import
@@ -149,11 +143,6 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax ExceptClauses ::= NeList{ExceptClause,""}
 
   syntax Stmt ::= Exp ";" [strict, klabel('Expr)] //TODO: subsort
-                     //since many instances of Exp are also intsances of Target,
-                     //this conflicts with AssignmentTargets itself. But we
-                     //never use raw AssignmentTargets outside an assignment
-                     //statement. So to fix this ambiguity (which never occurs
-                     //in complete programs), we prefer the assignemnt statement
                      | AssignTargets "=" Exp [strict(2)] 
                      | Target "+=" Exp       [strict(2)]
                      | Target "-=" Exp       [strict(2)]

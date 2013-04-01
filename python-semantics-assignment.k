@@ -13,11 +13,11 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   rule (. => (getmember(O, "__setitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item assignment")) (Key:Object, Value:Object) ;) ~> (O:Object [ Key:Object ] = Ts:AssignTargets => Ts) = Value
   rule .AssignTargets = _ => .
 
-  context HOLE . _:Id = _ = K when isKResult(K)
-  context HOLE [ _ ] = _ = K when isKResult(K)
-  context K [ HOLE ] = _ = K2 when isKResult(K) andBool isKResult(K2)
+  context HOLE . _:Id = _ = K:Exp when isKResult(K)
+  context HOLE [ _ ] = _ = K:Exp when isKResult(K)
+  context K [ HOLE ] = _ = K2:Exp when isKResult(K) andBool isKResult(K2)
 
-  rule (. => unbind(X:Id)) ~> del (X , Ts:Targets => Ts)
+  rule (. => unbind(X:Id)) ~> del (X , Ts:NeTargets => Ts)
   rule (. => unbindList(Listify(Ts2))) ~> del (tuple(Ts2) , Ts => Ts)
   rule (. => unbindList(Listify(Ts2))) ~> del ([ Ts2 ] , Ts => Ts)
   rule (. => (getmember(O, "__delattr__", true, false, true) (Id2String(X)) ;)) ~> del (O:Object . X:Id , Ts => Ts)

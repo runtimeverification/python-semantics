@@ -23,7 +23,7 @@ module PYTHON-SEMANTICS-CALLS
   rule isKResult(_:NAME = K) => true when isKResult(K) 
 
   rule sortArgs((ListItem(O:Object) => .) _) ~> processArgs(_ (. => ListItem(O)),.,_,_)
-  rule sortArgs((ListItem(X:Id = O:Object) => .) _) ~> processArgs(_,M (. => Id2String(X) |-> O),_,_) when notBool(Id2String(X) in keys(M))
+  rule sortArgs((ListItem((X:Id = O:Object)::Argument) => .) _) ~> processArgs(_,M (. => Id2String(X) |-> O),_,_) when notBool(Id2String(X) in keys(M))
   rule sortArgs((ListItem(* O:Object) => .) _) ~> processArgs(_,_,(_ => O),_)
   rule sortArgs((ListItem(** O:Object) => .) _) ~> processArgs(_,_,_,(_ => O))
   rule sortArgs(.) => .
@@ -105,7 +105,7 @@ module PYTHON-SEMANTICS-CALLS
   rule makeLocals(.List, .List, O:Object) => ref(id(O))
 
   rule makeCells(Free:Object, Cells:Object, O:Object, N) => makeCells(listvalue(Free), listvalue(Cells), listvalue(O), {.KeyData}, N)
-  rule (. => O[N:K] = N2) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
+  rule (. => O[N:K] = N2:Int) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
   rule <k> (. => O[N:K] = ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O:Object, Frame:Int) ...</k>
        <nextLoc> N2 => N2 +Int 1 </nextLoc>
        (. => <object>...

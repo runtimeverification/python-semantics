@@ -49,7 +49,7 @@ module PYTHON-SEMANTICS-LITERALS
 
   rule [checkHash]: <k> checkHash(O:Object) => test(istype(O, ref("int")), O, raiseInternal("TypeError", "__hash__ method should return an integer")) ...</k>
 
-  rule <k> processDictElement(obj(B:ObjId,_), Key:Object, Hash:Object, Value:K) => tableInsert(B, intvalue(Hash), Key, ref(id(Key)) : ref(id(Value))) ...</k>
+  rule <k> processDictElement(obj(B:ObjId,_), Key:Object, Hash:Object, Value:K) => tableInsert(B, intvalue(Hash), Key, (ref(id(Key)) : ref(id(Value)))::KeyDatum) ...</k>
 
   rule <k> processSetElement(obj(B,_), Element:Object, Hash:Object) => tableInsert(B, intvalue(Hash), Element, ref(id(Element))) ...</k>
 
@@ -65,7 +65,7 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(_ (H |-> list(Values))) ...</oattrs>
        ...</object>
 
-  rule bucketInsert(B, H, Key, K, ListItem(Key2 : Value2) Suffix:List, Prefix:List) => test(plbool(Key == Key2), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem(Key2 : Value2)))
+  rule bucketInsert(B, H, Key, K, ListItem((Key2 : Value2)::KeyDatum) Suffix:List, Prefix:List) => test(plbool(Key == Key2), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem((Key2 : Value2)::KeyDatum)))
 
   rule <k> bucketInsert(B, H, Key, K, ., Prefix) => . ...</k>
        <object>...
@@ -97,7 +97,7 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
-  rule bucketLookup(Key, ListItem(Key2 : Value2) Suffix) => test(plbool(Key == Key2), Value2, bucketLookup(Key, Suffix))
+  rule bucketLookup(Key, ListItem((Key2 : Value2)::KeyDatum) Suffix) => test(plbool(Key == Key2), Value2, bucketLookup(Key, Suffix))
   rule bucketLookup(Key:Object, .) => raise ref("KeyError") (Key)
 
   rule <k> tableDelete(B, H, Key) => bucketDelete(B, H, Key, Values, .) ...</k>
@@ -112,7 +112,7 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
-  rule bucketDelete(B, H, Key, ListItem(Key2 : Value2) Suffix, Prefix) => test(plbool(Key == Key2), setBucket(B, H, Prefix Suffix), bucketDelete(B, H, Key, Suffix, Prefix ListItem(Key2 : Value2)))
+  rule bucketDelete(B, H, Key, ListItem((Key2 : Value2)::KeyDatum) Suffix, Prefix) => test(plbool(Key == Key2), setBucket(B, H, Prefix Suffix), bucketDelete(B, H, Key, Suffix, Prefix ListItem((Key2 : Value2)::KeyDatum)))
   rule bucketDelete(_, _, Key:Object, ., _) => raise ref("KeyError") (Key)
 
   rule <k> mutable(V:Value,O) => mutable("__value__" |-> V "__revision__" |-> 0, O) ...</k>

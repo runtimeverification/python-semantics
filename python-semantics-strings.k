@@ -1,9 +1,11 @@
 require "python-semantics-boolean-ops.k"
+require "python-semantics-slicing.k"
 require "machine-integers.k"
 require "unicode.k"
 
 module PYTHON-SEMANTICS-STRINGS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
+  imports PYTHON-SEMANTICS-SLICING
   imports MACHINE-INTEGERS
   imports UNICODE
 
@@ -152,4 +154,22 @@ module PYTHON-SEMANTICS-STRINGS
   rule alignString(S, Fill, ">", Width) => #if lengthString(S) >=Int Width #then S #else (Fill *String (Width -Int lengthString(S))) +String S #fi
   rule alignString(S, Fill, "^", Width) => #if lengthString(S) >=Int Width #then S #else (Fill *String ((Width -Int lengthString(S)) /Int 2)) +String S +String (Fill *String ((Width -Int lengthString(S)) /Int 2 +Int (Width -Int lengthString(S)) %Int 2)) #fi
 
+  rule invokeBuiltin(obj("startswith_str",_), ListItem(S:Object) ListItem(Prefix:Object), .) => test(istype(Prefix, ref("str")), startswith(strvalue(S), Prefix), test(istype(Prefix, ref("tuple")), startswith(strvalue(S), listvalue(Prefix)), raiseInternal("TypeError", "startswith first arg must be str or tuple of str")))
+  rule invokeBuiltin(obj("startswith_str",_), ListItem(S:Object) ListItem(Prefix:Object) ListItem(Start:Object), .) => ref("startswith_str")(S, Prefix, Start, lengthString(strvalue(S)))
+  rule invokeBuiltin(obj("startswith_str",_), ListItem(S:Object) ListItem(Prefix:Object) ListItem(Start:Object) ListItem(End:Object), .) => ref("startswith_str")(S[Start : End : ], Prefix)
+
+  syntax Exp ::= startswith(String, Exp) [strict(2)]
+  syntax Exp ::= startswith(String, List)
+
+  rule startswith(S:String, Prefix:Object) => test(istype(Prefix, ref("str")), #if findString(S, strvalue(Prefix), 0) ==Int 0 #then ref("True") #else ref("False") #fi, raiseInternal("TypeError", "Cannot convert object to str implicitly"))
+  rule startswith(S:String, ListItem(ref(N)) L:List) => startswith(S, ref(N)) or startswith(S, L)
+  rule startswith(S:String, .List) => ref("False")
+
+  //TODO: fix ref(id()). We need this right now because if I pass an object then strictness will refuse to heat because it's already a KResult. Need to wait for improved heating/cooling
+  rule invokeBuiltin(obj("getitem_str",_), ListItem(S:Object) ListItem(Item:Object), .) => test(istype(Item, ref("slice")), reduce(slice(S, Item), '_+_), getitemString(strvalue(S), ref(id(Item))))
+
+  syntax Exp ::= getitemString(String, Exp)
+  rule getitemString(S, E:Exp) => ref("index")(E) ~> getitemString(S, HOLE) when isInt(E) =/=K true [heat]
+  rule O:Object ~> getitemString(S, HOLE) => getitemString(S, intvalue(O)) [cool]
+  rule getitemString(S:String, I:Int) => test(I >=Int 0 -Int length(S, UTF-8) andBool I <Int length(S, UTF-8), test(I >=Int 0, bytes(S, UTF-8, I), bytes(S, UTF-8, I +Int length(S, UTF-8))), raiseInternal("IndexError", "string index out of range"))
 endmodule

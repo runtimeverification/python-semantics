@@ -23,7 +23,6 @@ module PYTHON-SEMANTICS-COMMON
                       <oattrs> .Map </oattrs>
                     </object>
                   </store>
-                  <garbage> .Set </garbage>
                   <gc> 1 </gc>
                   <gcThreshold> $GCTHRESHOLD:Int </gcThreshold>
                   <literals> .Map </literals>
@@ -84,6 +83,8 @@ module PYTHON-SEMANTICS-COMMON
                   | "class" "(" Arguments "," Exp ")" [strict]
                   | describe(Exp, Exp, Exp, String) [strict(1, 2, 3)]
                   | doDescribe(Exp, Exp, Exp, String) [strict(1, 2, 3)]
+                  | reduce(Exp, KLabel) [strict(1)]
+                  | reduce(List, KLabel)
 
   syntax K ::= "iterate" "(" Exp "," K ")" [strict(1)]
 
@@ -91,13 +92,18 @@ module PYTHON-SEMANTICS-COMMON
 
   context doCall(HOLE, _, _) when HOLE =/=K .
 
+  rule (. => iterate(O, .)) ~> reduce(O:Object, _)
+  rule list(L:List) ~> reduce(_, K:KLabel) => reduce(L, K)
+  rule reduce(ListItem(I), _) => I
+  rule reduce(ListItem(I) L:List, K) => K(I,,reduce(L, K)) when L =/=List .
+
   syntax String ::= "docString" "(" K ")" [function]
   rule docString(S:String ;) => S 
   rule docString(S:String ; newline _) => S 
-  rule docString(Lbl:KLabel(_)) => ref("None") when Lbl =/=KLabel '_newline_ andBool Lbl =/=KLabel '_; 
-  rule docString(Lbl:KLabel(Lbl2:KLabel(_),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 =/=KLabel '_; 
-  rule docString(Lbl:KLabel(Lbl2:KLabel(K),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 ==KLabel '_; andBool isString(K) =/=K true 
-  rule docString(Lbl:KLabel(K,,_)) => ref("None") when Lbl ==KLabel '_; andBool isString(K) =/=K true 
+  rule docString(Lbl:KLabel(_)) => ref("None") when Lbl =/=KLabel '_newline_ andBool Lbl =/=KLabel 'Expr 
+  rule docString(Lbl:KLabel(Lbl2:KLabel(_),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 =/=KLabel 'Expr
+  rule docString(Lbl:KLabel(Lbl2:KLabel(K),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 ==KLabel 'Expr andBool isString(K) =/=K true 
+  rule docString(Lbl:KLabel(K,,_)) => ref("None") when Lbl ==KLabel 'Expr andBool isString(K) =/=K true 
   rule docString(.) => ref("None") 
 
   syntax Map ::= "Env2Dict" "(" Map ")" [function]
@@ -186,7 +192,7 @@ module PYTHON-SEMANTICS-COMMON
   rule listvalue(obj(_,<oattrs>... "__value__" |-> list(L:List) ...</oattrs>)) => L 
 
   syntax Map ::= "mapvalue" "(" Object ")" [function]
-  rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ (_ |-> list(_ (ListItem(K : K2) => .)) _)) ...</oattrs>)) (. => K |-> K2)  [anywhere]
+  rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ (_ |-> list(_ (ListItem((K : K2)::KeyDatum) => .)) _)) ...</oattrs>)) (. => K |-> K2)  [anywhere]
   rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(_ (_ |-> list(.) => .)) ...</oattrs>)) 
   rule mapvalue(obj(_,<oattrs>... "__value__" |-> map(.) ...</oattrs>)) => . 
 
@@ -211,6 +217,9 @@ module PYTHON-SEMANTICS-COMMON
 
   syntax ObjRef ::= "getref" "(" Exp "," String ")" [function]
   rule getref(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs:Map(S) 
+
+  syntax Bool ::= hasattr(Object, String) [function]
+  rule hasattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => S in keys Attrs
 
   syntax ObjRef ::= "getref2" "(" Exp "," String ")" [strict(1)]
   rule getref2(O:Object, S:String) => getref(O, S)

@@ -27,6 +27,6 @@ module PYTHON-SEMANTICS-AUGMENTED-ASSIGNMENT
   rule augAssign(T, O, Lbl:KLabel, IX) => augAssign2(T, T, O, Lbl, IX)
   rule augAssign2(T, O, O2:Object, Lbl, IX) => augAssign3(T, O, O2, Lbl, getmember(O, IX, true, false, false)) 
   rule augAssign3(T, O, O2:Object, Lbl, IO:Object) => IO(O2) ;
-  rule augAssign3(T:Target, O, O2, Lbl, .Obj) => (T) = Lbl(O,,O2)
+  rule augAssign3(T:Target, O, O2, Lbl, .Obj) => T = (Lbl(O,,O2))::Exp
 
 endmodule

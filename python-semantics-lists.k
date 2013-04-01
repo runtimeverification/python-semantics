@@ -7,7 +7,10 @@ module PYTHON-SEMANTICS-LISTS
 
   rule invokeBuiltin(obj("add_list",_), ListItem(O:Object) ListItem(O2:Object), .) => test(and(istype(O, ref("list")), istype(O2, ref("list"))), mutable(list(listvalue(O) listvalue(O2)),ref("list")), raiseInternal("TypeError", "can only concatenate list to list"))
 
-  rule invokeBuiltin(obj("getitem_list",_), ListItem(O) ListItem(O2), .) => test(istype(O2, ref("int")), test(intvalue(O2) >=Int 0 -Int lengthList listvalue(O) andBool intvalue(O2) <Int lengthList listvalue(O), test(intvalue(O2) >=Int 0, get(listvalue(O), intvalue(O2)), get(listvalue(O), lengthList listvalue(O) +Int intvalue(O2))), raiseInternal("IndexError", "list index out of range")), test(istype(O2, ref("slice")), ref("list")(slice(O, O2)), raiseInternal("TypeError", "list indices must be integers or slices")))
+  rule invokeBuiltin(obj("getitem_list",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("slice")), ref("list")(slice(O, O2)), getitemList(O, ref("index")(O2, .Arguments)))
+
+  syntax ObjRef ::= getitemList(Exp, Exp) [strict]
+  rule getitemList(O:Object, O2:Object) => test(intvalue(O2) >=Int 0 -Int lengthList listvalue(O) andBool intvalue(O2) <Int lengthList listvalue(O), test(intvalue(O2) >=Int 0, get(listvalue(O), intvalue(O2)), get(listvalue(O), lengthList listvalue(O) +Int intvalue(O2))), raiseInternal("IndexError", "list index out of range"))
 
   rule invokeBuiltin(obj("len_list",_), ListItem(O), .) => lengthList listvalue(O)
 
@@ -30,5 +33,11 @@ module PYTHON-SEMANTICS-LISTS
   rule equalList(ListItem(_) _, .) => ref("False")
   rule equalList(., ListItem(_) _) => ref("False")
   rule equalList(.,.) => ref("True")
+
+  rule invokeBuiltin(obj("extend_list",_), ListItem(O:Object) ListItem(O2:Object), .) => iterate(O2, .) ~> extendList(O)
+  syntax ObjRef ::= extendList(Object)
+  rule list(L:List) ~> extendList(O:Object) => setattr(id(O), "__value__", list(getl(getattr(O, "__value__")) Refify(Idify(L)))) ~> ref("None")
+
+  rule invokeBuiltin(obj("append_list",_), ListItem(O:Object) ListItem(O2:Object), .) => setattr(id(O), "__value__", list(getl(getattr(O, "__value__")) ListItem(ref(id(O2))))) ~> ref("None")
 
 endmodule
