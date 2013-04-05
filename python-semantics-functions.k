@@ -170,6 +170,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
              | parameterVisitor(KLabel, Int, K)
              | bindVisitor(KLabel, Int, K)
              | importVisitor(KLabel, Int, K)
+             | withVisitor(KLabel, Int, K)
 
   syntax K ::= addDef(Id)
              | addUse(Id)
@@ -250,7 +251,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule compileVisitor('_|=_,0,K) => visit(K, 'bindVisitor)
 
   rule compileVisitor('for_in_:_else:_,0,K) => visit(K, 'bindVisitor)
-  rule compileVisitor('with_:_,0,K) => visit(K, 'bindVisitor)
+  rule compileVisitor('with_:_,0,K) => visit(K, 'withVisitor)
   rule compileVisitor('except_as_:_,1,K) => visit(K, 'bindVisitor)
   rule compileVisitor('del_,0,K) => visit(K, 'bindVisitor)
 
@@ -259,6 +260,11 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule compileVisitor(returner, -1, X:Id) => addUse(X) ~> visited(X)
   rule compileVisitor('_=_, 0, K) => visited(K)
+
+  rule withVisitor('_as_, 0, K) => visit(K, 'compileVisitor)
+  rule withVisitor('_as_, 1, K) => visit(K, 'bindVisitor)
+  rule withVisitor(Lbl, N, K) => visit(K, 'compileVisitor) when notBool(Lbl ==KLabel '_as_) andBool N =/=Int -1
+  rule withVisitor(returner, -1, K) => visited(K)
 
   rule bindVisitor('_._, 0, K) => visit(K, 'compileVisitor)
   rule bindVisitor('_._, 1, K) => visited(K)
