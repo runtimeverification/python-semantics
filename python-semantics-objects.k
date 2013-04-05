@@ -60,7 +60,7 @@ module PYTHON-SEMANTICS-OBJECTS
   rule invokeBuiltin(obj("instancecheck_type",_), ListItem(Self) ListItem(Instance), .) => bool(istype(Instance, Self))
   rule invokeBuiltin(obj("subclasscheck_type",_), ListItem(Self) ListItem(Subclass), .) => bool(hasbase(Subclass, Self))
 
-  rule invokeBuiltin(obj("isinstance",_), ListItem(Instance) ListItem(Class), .) => getmember(Class, "__instancecheck__", true, false, true)(Instance)
-  rule invokeBuiltin(obj("issubclass",_), ListItem(Subclass) ListItem(Class), .) => getmember(Class, "__subclasscheck__", true, false, true)(Subclass) 
+  rule invokeBuiltin(obj("isinstance",_), ListItem(Instance:Object) ListItem(Class:Object), .) => getmember(Class, "__instancecheck__", true, false, true)(Instance)
+  rule invokeBuiltin(obj("issubclass",_), ListItem(Subclass:Object) ListItem(Class:Object), .) => getmember(Class, "__subclasscheck__", true, false, true)(Subclass) 
 
 endmodule

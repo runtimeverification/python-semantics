@@ -35,7 +35,7 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   rule list(ListItem(_) _) ~> bindList(., _, _) => raiseInternal("ValueError", "too many values to unpack")
   rule list(.) ~> bindList(ListItem(T) _, _, _) => raiseInternal("ValueError", "need more values to unpack") when getKLabel T =/=KLabel 'Starred
 
-  rule (. => del (T)) ~> unbindList((ListItem(T) => .) _)
+  rule (. => del (T ::Target)) ~> unbindList((ListItem(T) => .) _)
   rule unbindList(.) => .
 
 endmodule

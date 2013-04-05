@@ -36,14 +36,14 @@ module PYTHON-SEMANTICS-STRINGS
 
   rule invokeBuiltin(obj("len_str",_), ListItem(O), .) => length(strvalue(O), UTF-8)
 
-  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O), .) => ref("rsplit_str")(O, ref("None"), -1)
-  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep), .) => ref("rsplit_str")(O, Sep, -1)
-  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O) ListItem(Sep) ListItem(MaxSplit), .) => if Sep is ref("None") : rsplit(strvalue(O), ref("index")(MaxSplit)) else: test(istype(Sep, ref("str")), rsplit(strvalue(O), ref("index")(MaxSplit), strvalue(Sep)), raiseInternal("TypeError", "Cannot convert object to str implicitly"))
+  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O:Object), .) => ref("rsplit_str")(O, ref("None"), -1)
+  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O:Object) ListItem(Sep:Object), .) => ref("rsplit_str")(O, Sep, -1)
+  rule invokeBuiltin(obj("rsplit_str",_), ListItem(O:Object) ListItem(Sep:Object) ListItem(MaxSplit:Object), .) => if Sep is ref("None") : rsplit(strvalue(O), ref("index")(MaxSplit)) else: test(istype(Sep, ref("str")), rsplit(strvalue(O), ref("index")(MaxSplit), strvalue(Sep)), raiseInternal("TypeError", "Cannot convert object to str implicitly"))
 
   syntax ObjRef ::= rsplit(Exp, Exp) [strict]
                   | rsplit(Exp, Exp, String) [strict(1, 2)]
 
-  rule rsplit(S:Object, MaxSplit:Object, Sep) => test(intvalue(MaxSplit) ==Int 0, [S], test(rfindString(strvalue(S), Sep, lengthString(strvalue(S))) ==Int -1, [strvalue(S)], rsplit(ref("rpartition_str")(strvalue(S), Sep)[0], intvalue(MaxSplit) -Int 1, Sep) + [ref("rpartition_str")(strvalue(S), Sep)[2]]))
+  rule rsplit(S:Object, MaxSplit:Object, Sep:String) => test(intvalue(MaxSplit) ==Int 0, [S], test(rfindString(strvalue(S), Sep, lengthString(strvalue(S))) ==Int -1, [strvalue(S)], rsplit(ref("rpartition_str")(strvalue(S), Sep)[0], intvalue(MaxSplit) -Int 1, Sep) + [ref("rpartition_str")(strvalue(S), Sep)[2]]))
   //TODO: rsplit(None, ...)
 
   rule invokeBuiltin(obj("format_str",_), ListItem(Format) L:List, M:Map) => format(strvalue(Format), tuple(DeListify(L)), {DeMapify(M)}, .K)
@@ -51,7 +51,7 @@ module PYTHON-SEMANTICS-STRINGS
   syntax ObjRef ::= format(String, Exp, Exp, K) [strict(2, 3)]
                   | formatField(String, String, Object, Object, K)
                   | lookupField(String, String, String, Object, Object, K)
-                  | lookupField(String, K, String, String, Object, Object, K)
+                  | lookupField(String, K, String, String, Object, Object, K) [strict(2)]
                   | convertField(Object, String)
                   | checkFormat(Exp) [strict]
   syntax K ::= lookupArgName(String)

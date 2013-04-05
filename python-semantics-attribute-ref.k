@@ -15,7 +15,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
 
   rule invokeBuiltin(obj("getattr",_), ListItem(O) ListItem(S:Object), .) => try: (getmember(O, "__getattribute__", true, false, true) (S)) except ref("AttributeError") : (getmember(O, "__getattr__", true, false, false) (S) -> raise) else: pass
   rule invokeBuiltin(obj("getattr",_), ListItem(O:Object) ListItem(S:Object) ListItem(Default), .) => try: ref("getattr")(O, S) except ref("AttributeError") : Default else: pass
-  rule invokeBuiltin(obj("hasattr",_), ListItem(O) ListItem(S), .) => try: (ref("getattr")(O, S) ; ~> ref("True")) except ref("AttributeError") : ref("False") else: pass
+  rule invokeBuiltin(obj("hasattr",_), ListItem(O:Object) ListItem(S:Object), .) => try: (ref("getattr")(O, S) ; ~> ref("True")) except ref("AttributeError") : ref("False") else: pass
 
   rule invokeBuiltin(obj("getattribute_object",_), ListItem(O) ListItem(O2:Object), .) => checkData(getmember(O, O2, false, false, false), O) -> mapLookup(O, O2) -> getmember(O, O2, true, false, true)
   rule invokeBuiltin(obj("getattribute_type",_), ListItem(O) ListItem(O2), .) => checkData(getmember(O, O2, false, false, false), O) -> getmember(O, O2, true, true, true)
@@ -68,7 +68,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
  
   rule setmember(O:Object, Name:Object, Value:Object) => checkDataSet(getmember(O, Name, false, false, false), O, Value) -> mapInsert(O, Name, Value) -> raiseInternal("AttributeError", "object has no attribute '" +String strvalue(Name) +String "'")
 
-  rule checkDataSet(O:Object, Instance, Value) => getmember(O, "__set__", false, false, false) (O, Instance, Value) -> .Obj
+  rule checkDataSet(O:Object, Instance:Object, Value:Object) => getmember(O, "__set__", false, false, false) (O, Instance, Value) -> .Obj
   rule checkDataSet(.Obj, _, _) => .Obj
 
   rule <k> mapInsert(obj(B,_), Name, Value) => Dict [Name]  = Value:Exp ~> ref("None") ...</k>

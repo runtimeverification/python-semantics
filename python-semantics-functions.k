@@ -47,7 +47,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
        ...</object>) [allocation]
        
 
-  context makeFunction(_, (ListItem(X:NAME = HOLE) _:List), _, _)
+  context makeFunction(_, (ListItem((X:NAME = HOLE)::Argument) _:List), _, _)
   context makeFunction(_, (_:List ListItem(_:Argument : HOLE) _:List), _, _)
   context makeFunction(_, (ListItem((X = HOLE)::Argument : _) _:List), _, _)
   context makeFunction(_, (_:List ListItem((X = _)::Argument : HOLE) _:List), _, _)
@@ -55,30 +55,30 @@ module PYTHON-SEMANTICS-FUNCTIONS
   context makeFunction(_, (_:List ListItem((** _) : HOLE) _:List), _, _) 
   context makeFunction(_, _, HOLE, _)
 
-  rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X) L:List => L), _, false) ...</k>
+  rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X:NAME) L:List => L), _, false) ...</k>
        <object>...
          <id>N</id>
          <oattrs>... "co_argcount" |-> (N2:Int => N2 +Int 1) "co_nlocals" |-> (N3:Int => N3 +Int 1) ...</oattrs>
        ...</object>
 
-  rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X) L:List => L), _, true) ...</k>
+  rule <k> (. => addParam(X)) ~> makeCodeObject(N, (ListItem(X:NAME) L:List => L), _, true) ...</k>
        <object>...
          <id>N</id>
          <oattrs>... "co_nlocals" |-> (N2 => N2 +Int 1) "co_kwonlyargcount" |-> (N3 => N3 +Int 1) ...</oattrs>
        ...</object>
 
-  rule makeCodeObject(_, ((ListItem(X:NAME = _:Exp) => ListItem(X)) _), _, _)
+  rule makeCodeObject(_, ((ListItem(X:NAME = _ ::Exp) => ListItem(X)) _), _, _)
 
   rule [makeFunction-defaults]: (. => setref(N, "__defaults__", test(plbool(getref2(ref(N), "__defaults__") is ref("None")), tuple(O), (getref2(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(X:NAME = O:Object) => ListItem(X)) _), _, false)
   rule [makeFunction-kwdefaults]: (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), setref(N, "__kwdefaults__", {Id2String(X) : O}), (getref2(ref(N), "__kwdefaults__")[Id2String(X)] = O))) ~> makeFunction(N, ((ListItem((X:Id = O:Object)::Argument) => ListItem(X)) _), _, true)
   rule [makeFunction-parameter]: makeFunction(_, ((ListItem(X:Id) => .) _), _, _)
 
-  rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 4)) ~> addParam(* X:Exp)) ~> makeCodeObject(N, ((ListItem(* X:Exp) => ListItem(*)) L), _, false) 
+  rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 4)) ~> addParam(* X:NAME ::Exp)) ~> makeCodeObject(N, ((ListItem(* X ::Exp) => ListItem(*)) L), _, false) 
   context setattr(_, _, (getattr(HOLE, _) |Int _:Int))
-  rule [makeFunction-vararg]: makeFunction(N, ((ListItem(* X:Exp) => ListItem(*)) L), _, _)
+  rule [makeFunction-vararg]: makeFunction(N, ((ListItem(* X:NAME ::Exp) => ListItem(*)) L), _, _)
   rule makeFunction(_, ((ListItem(*) => .) L), _, (false => true))
   rule makeCodeObject(_, ((ListItem(*) => .) L), _, (false => true))
-  rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 8)) ~> addParam(** X)) ~> makeCodeObject(N, ((ListItem(** X:Id) => .) L), _, _)
+  rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 8)) ~> addParam(** X)) ~> makeCodeObject(N, ((ListItem(** X:NAME) => .) L), _, _)
   rule makeFunction(N, ((ListItem(** X) => .) L), _, _)
   rule (. => getref2(ref(N), "__annotations__")[paramName(Arg)] = O) ~> makeFunction(N, ((ListItem(Arg:Argument : O:Object) => ListItem(Arg)) _), _, _) 
   rule (. => getref2(ref(N), "__annotations__")["return"] = O) ~> makeFunction(N, _, (O:Object => .Obj), _) 
@@ -160,8 +160,8 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule createClass(X:Id, As, O:Object) => visited((X)::Target = class(As, O))
   rule createGenerator(O:Object) => visited(function(.Parameters, O, .Obj)(.Arguments))
 
-  rule comprehension(E, for T in E2 Comps:Comps) => for T in E2 : comprehension(E, Comps) else: pass
-  rule comprehension(E, if E2 Comps:Comps) => if E2 : comprehension(E, Comps) else: pass
+  rule comprehension(E, for T in E2 Comps ::Comps) => for T in E2 : comprehension(E, Comps) else: pass
+  rule comprehension(E, if E2 Comps ::Comps) => if E2 : comprehension(E, Comps) else: pass
   rule comprehension(E, .Comps) => yield E ;
 
   rule makeCodeObject(N, ., Ss, _) => visit(Ss, 'compileVisitor) ~> storescope ~> propscope ~> delscope

@@ -20,7 +20,7 @@ module PYTHON-SEMANTICS-CALLS
   rule <k> invokeBuiltin(obj("call_function",_), ListItem(O:Object) L:List, M:Map) => invokeFunction(O, L, M) ...</k>
   rule <k> invokeFunction(O, L, M) => matchArgs(O, O . String2Id("__code__"), L, M, ., 0, false, false) ...</k>
 
-  rule isKResult(_:NAME = K) => true when isKResult(K) 
+  rule isKResult((_:NAME = K)::Argument) => true when isKResult(K) 
 
   rule sortArgs((ListItem(O:Object) => .) _) ~> processArgs(_ (. => ListItem(O)),.,_,_)
   rule sortArgs((ListItem((X:Id = O:Object)::Argument) => .) _) ~> processArgs(_,M (. => Id2String(X) |-> O),_,_) when notBool(Id2String(X) in keys(M))
@@ -101,12 +101,12 @@ module PYTHON-SEMANTICS-CALLS
   rule newFrame => <xstack> .List </xstack> <lstack> .List </lstack>
 
   rule makeLocals(Free:Object, O:Object) => makeLocals(listvalue(Free), listvalue(O), {.KeyData})
-  rule (. => test(getattr2(N2, "cell_contents") ==Obj .Obj, ., (O[N:K] = getref2(N2, "cell_contents")))) ~> makeLocals((ListItem(N) => .) _, (ListItem(N2) => .) _, O:Object)
+  rule (. => test(getattr2(E2, "cell_contents") ==Obj .Obj, ., (O[E:K] = getref2(E2, "cell_contents")))) ~> makeLocals((ListItem(E) => .) _, (ListItem(E2) => .) _, O:Object)
   rule makeLocals(.List, .List, O:Object) => ref(id(O))
 
   rule makeCells(Free:Object, Cells:Object, O:Object, N) => makeCells(listvalue(Free), listvalue(Cells), listvalue(O), {.KeyData}, N)
-  rule (. => O[N:K] = N2:Int) ~> makeCells((ListItem(N) => .) _, _, (ListItem(N2) => .) _, O:Object, _)
-  rule <k> (. => O[N:K] = ref(N2)) ~> makeCells(_, (ListItem(N) => .) _, _, O:Object, Frame:Int) ...</k>
+  rule (. => O[E:K] = E2 ::Exp) ~> makeCells((ListItem(E) => .) _, _, (ListItem(E2) => .) _, O:Object, _)
+  rule <k> (. => O[E] = ref(N2)) ~> makeCells(_, (ListItem(E) => .) _, _, O:Object, Frame:Int) ...</k>
        <nextLoc> N2 => N2 +Int 1 </nextLoc>
        (. => <object>...
          <id>N2</id>

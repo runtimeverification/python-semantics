@@ -57,7 +57,8 @@ module PYTHON-SEMANTICS-GENERATOR
          <cstack> . => generator(Frame, C, FL, XC, K, id(O)) ...</cstack>
        ...</control>
 
-  rule <k> return O ~> _ => setattr(N, "gi_state", (#freezer (HOLE ;)(.KList), SavedC, .List, SavedXC)) ~> raise ref("StopIteration")(#if id(O) ==K None #then .Arguments #else (O) #fi) ~> K </k>
+  syntax Arguments ::= "#if" Bool "#then" Arguments "#else" Arguments "#fi" [function]
+  rule <k> return O:Object ~> _ => setattr(N, "gi_state", (#freezer (HOLE ;)(.KList), SavedC, .List, SavedXC)) ~> raise ref("StopIteration")(#if id(O) ==K None #then .Arguments #else O #fi) ~> K </k>
        <control>...
          <cstack> generator(Frame, C, FL, XC, K, N) => . ...</cstack>
          <currentFrame>

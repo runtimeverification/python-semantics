@@ -11,7 +11,7 @@ module PYTHON-SEMANTICS-BYTES
   rule invokeBuiltin(obj("new_bytes",_), ListItem(Cls) ListItem(Source) ListItem(Encoding) ListItem(Errors), .) => test(istype(Source, ref("str")), Source . String2Id("encode") (Encoding, Errors), invokeBuiltin(ref("new_bytes"), ListItem(Cls) ListItem(Source), .))
 
   syntax K ::= makebytes(List, String, Object)
-  rule list((ListItem(O) => .) _) ~> makebytes(_ (. => ListItem(ref("index")(O))), _, _)
+  rule list((ListItem(O:Object) => .) _) ~> makebytes(_ (. => ListItem(ref("index")(O))), _, _)
   context makebytes(L ListItem(HOLE) _, _, _) when all(L, isKResult)
   rule (list(.) => .) ~> makebytes(_, _, _)
   rule makebytes((ListItem(O:Object) => .) L, (S => S +String charString(intvalue(O))), _) when all(L, isKResult)

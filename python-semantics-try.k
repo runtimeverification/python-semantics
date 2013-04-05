@@ -122,12 +122,11 @@ module PYTHON-SEMANTICS-TRY
   rule <k> doExcepts(., Except, X) => . ...</k>
   rule <k> doExcepts(ListItem(B) L:List, Except, X) => doExcept(B, Except, X) ~> doExcepts(L, Except, X) ...</k>
 
-  rule <k> doExcept(Type:Object, Except, X) => test(istype(B, Type), test(Id2String(X) ==String "", except: Except, ((X:Id)::AssignTargets = B ~> except: (try: Except finally: unbind(X)))), .) ...</k>
+  rule <k> doExcept(Type:Object, Except, X) => test(istype(B, Type), test(Id2String(X) ==String "", except: Except, ((X:Id)::Target = B ~> except: (try: Except finally: unbind(X)))), .) ...</k>
        <xcontext> B:Exp </xcontext>
 
-  syntax Exp ::= "#if" Bool "#then" Exp "#else" Exp "#fi" [function]
   rule <k> invokeBuiltin(obj("sys_exc_info",_), ., .) => tuple(#if Ex ==K ref("None") #then ref("None") #else Ex . String2Id("__class__") #fi, Ex, #if Ex ==K ref("None") 
 #then ref("None") #else Ex . String2Id("__traceback__") #fi) ...</k>
-       <xcontext> Ex </xcontext>
+       <xcontext> Ex:Exp </xcontext>
 
 endmodule

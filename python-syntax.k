@@ -30,7 +30,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
   syntax Arguments ::= List{Argument,","}
   syntax Argument ::= Exp
                     | NAME "=" Exp [strict(2), klabel('keyword)]
-                    | "*" Exp
+                    | "*" Exp [strict, hybrid]
                     | "**" Exp [strict, hybrid]
 
   //TODO: 2-part slices
@@ -44,44 +44,42 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                  | ":" Exp ":" Exp
                  | Exp ":" Exp ":" Exp
 
-  //since sometimes NAME "=" Exp is an assignment statement and sometimes a
-  //keyword argument, we make Target directly subsort Id to disambiguate.
-  //Ideally we would tag terms with sorts though.
-  syntax TargetAndExp ::= Id
-                        | "tuple" "(" TargetAndExps ")" [strict, klabel('Tuple)]
-                        | "[" TargetAndExps "]" [strict]
-                        > Exp "." NAME [strict(1), left]
-                        | Exp "[" Slice "]" [seqstrict, left]
+  syntax TargetAndExp ::= NAME
+                        | "tuple" "(" TargetAndExps ")" [strict, klabel('Tuple), atom]
+                        | "[" TargetAndExps "]" [strict, atom]
+                        | Exp "." NAME [strict(1), left, primary]
+                        | Exp "[" Slice "]" [seqstrict, left, primary]
 
   syntax Target ::= TargetAndExp
-                  | "*" Target [strict, klabel('Starred)]
-                  | "tuple" "(" Targets ")" [strict, klabel('Tuple)]
-                  | "[" Targets "]" [strict]
+                  | "*" Target [klabel('Starred)]
+                  | "tuple" "(" Targets ")" [klabel('Tuple), primary]
+                  | "[" Targets "]" [primary]
   syntax TargetAndExps ::= NeList{TargetAndExp,","}
   syntax Targets ::= List{Target,","}
   syntax NeTargets ::= NeList{Target,","}
   syntax Targets ::= NeTargets
   syntax Exp ::= TargetAndExp
 
-  syntax Exp ::= "(" Exp ")" [bracket]
-                | NUMBER
-                | STRING
-                | "tuple" "(" Exps ")" [strict, klabel('Tuple)] //TODO: use List{Exp,","}
-                | "[" Exp Comps "]"
-                | "generator" "(" Exp Comps ")" [klabel('GeneratorExp)] //TODO: Use (__)
-                | "{" Exp Comps "}"
-                | "{" Exp ":" Exp Comps "}"
-                | "[" Exps "]" [strict]
-                | "{" KeyData "}" [strict]
-                | "{" NeExps "}" [strict, klabel('Set)]
-                | YieldExp
-                | "..."
+  syntax priorities atom > primary > power
 
-                   > Exp "." NAME           [strict(1), left]
-                   | Exp "[" Slice "]" [seqstrict, left]
-                   | Exp "(" Arguments ")"  [seqstrict, left]
 
-                 > Exp "**" Exp [seqstrict, right]
+  syntax Exp ::= "(" Exp ")" [bracket, atom]
+                | NUMBER [atom]
+                | STRING [atom]
+                | "tuple" "(" Exps ")" [strict, klabel('Tuple), atom] //TODO: use List{Exp,","}
+                | "[" Exp Comps "]" [atom]
+                | "generator" "(" Exp Comps ")" [klabel('GeneratorExp), atom] //TODO: Use (__)
+                | "{" Exp Comps "}" [atom]
+                | "{" Exp ":" Exp Comps "}" [atom]
+                | "[" Exps "]" [strict, atom]
+                | "{" KeyData "}" [strict, atom]
+                | "{" NeExps "}" [strict, klabel('Set), atom]
+                | YieldExp [atom]
+                | "..." [atom]
+
+                  |  Exp "(" Arguments ")"  [seqstrict, left, primary]
+
+                 > Exp "**" Exp [seqstrict, right, power]
 
                  > "-" Exp [strict]
                  | "+" Exp [strict]
