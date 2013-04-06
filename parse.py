@@ -176,7 +176,7 @@ class KPythonVisitor(ast.NodeVisitor):
     return "'lambda_:_(" + self.getparams(node.args) + ",," + self.visit(node.body) + ")"
 
   def visit_IfExp(self, node):
-    return "'_if_else_(" + self.visit(node.test) + ",," + self.visit(node.body) + ",," + self.visit(node.orelse) + ")"
+    return "'_if_else_(" + self.visit(node.body) + ",," + self.visit(node.test) + ",," + self.visit(node.orelse) + ")"
 
   def visit_Dict(self, node):
     result = "'`{_`}("
