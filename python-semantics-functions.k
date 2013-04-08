@@ -67,9 +67,9 @@ module PYTHON-SEMANTICS-FUNCTIONS
          <oattrs>... "co_nlocals" |-> (N2 => N2 +Int 1) "co_kwonlyargcount" |-> (N3 => N3 +Int 1) ...</oattrs>
        ...</object>
 
-  rule makeCodeObject(_, ((ListItem(X:NAME = _ ::Exp) => ListItem(X)) _), _, _)
+  rule makeCodeObject(_, ((ListItem((X:NAME = _)::Argument) => ListItem(X)) _), _, _)
 
-  rule [makeFunction-defaults]: (. => setref(N, "__defaults__", test(plbool(getref2(ref(N), "__defaults__") is ref("None")), tuple(O), (getref2(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem(X:NAME = O:Object) => ListItem(X)) _), _, false)
+  rule [makeFunction-defaults]: (. => setref(N, "__defaults__", test(plbool(getref2(ref(N), "__defaults__") is ref("None")), tuple(O), (getref2(ref(N), "__defaults__") + tuple(O))))) ~> makeFunction(N, ((ListItem((X:NAME = O:Object)::Argument) => ListItem(X)) _), _, false)
   rule [makeFunction-kwdefaults]: (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), setref(N, "__kwdefaults__", {Id2String(X) : O}), (getref2(ref(N), "__kwdefaults__")[Id2String(X)] = O))) ~> makeFunction(N, ((ListItem((X:Id = O:Object)::Argument) => ListItem(X)) _), _, true)
   rule [makeFunction-parameter]: makeFunction(_, ((ListItem(X:Id) => .) _), _, _)
 
