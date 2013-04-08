@@ -16,3 +16,5 @@ IN.maude
 junit-results.xml
 programs/__pycache__
 nohup.out
+bootstrapped.bin
+programs/*.bin
