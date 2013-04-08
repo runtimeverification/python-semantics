@@ -444,13 +444,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          (def "marshal.loads"(1, 1, false) ;) ~>
 
          //module "posix"
-         (def "getcwd"(0, 0, false) ;) ~>
-         (def "listdir"(0, 1, false) ;) ~>
-         (def "mkdir"(1, 2, false) ;) ~>
-         (def "open"(2, 3, false) ;) ~>
-         (def "replace"(2, 2, false) ;) ~>
-         (def "stat"(1, 1, false) ;) ~>
-         (def "unlink"(1, 1, false) ;) ~>
+         (def "posix.getcwd"(0, 0, false) ;) ~>
+         (def "posix.listdir"(0, 1, false) ;) ~>
+         (def "posix.mkdir"(1, 2, false) ;) ~>
+         (def "posix.open"(2, 3, false) ;) ~>
+         (def "posix.replace"(2, 2, false) ;) ~>
+         (def "posix.stat"(1, 1, false) ;) ~>
+         (def "posix.unlink"(1, 1, false) ;) ~>
          .K
        )
        ...</k>
@@ -562,13 +562,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          }) ~>
          module "posix"({
            "environ" : {DeMapify(M)}
-         , "getcwd" : ref("getcwd")
-         , "listdir" : ref("listdir")
-         , "mkdir" : ref("mkdir")
-         , "open" : ref("open")
-         , "replace" : ref("replace")
-         , "stat" : ref("stat")
-         , "unlink" : ref("unlink")
+         , "getcwd" : ref("posix.getcwd")
+         , "listdir" : ref("posix.listdir")
+         , "mkdir" : ref("posix.mkdir")
+         , "open" : ref("posix.open")
+         , "replace" : ref("posix.replace")
+         , "stat" : ref("posix.stat")
+         , "unlink" : ref("posix.unlink")
          , "O_WRONLY" : Constants("posix.O_WRONLY")
          , "O_CREAT": Constants("posix.O_CREAT")
          , "O_EXCL": Constants("posix.O_EXCL")
