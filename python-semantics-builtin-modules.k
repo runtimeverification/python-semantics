@@ -23,7 +23,21 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
   rule refs(ListItem(S) L) => ListItem(ref(S)) refs(L)
   rule refs(.List) => .List
 
-  rule <k> initialize(Program:K) => builtins ~> resolve ~> modules ~> importlib ~> executeModule(codeObject(String2Id("__main__"), .Parameters, Program, true), ref("builtins"), {.KeyData}) ...</k>
+  syntax K ::= "bootstrap" | saveConfiguration(Int, String) | loadConfiguration(Int, String) | loadConfigurationByte(K)
+  rule <k> initialize(bootstrap) => builtins ~> resolve ~> modules ~> importlib ~> saveConfiguration(#open("file:bootstrapped.bin"), .K) ...</k>
+  rule <k> initialize(Program:K) => loadConfiguration(#open("file:bootstrapped.bin\001r"), "") ~> executeModule(codeObject(String2Id("__main__"), .Parameters, Program, true), ref("builtins"), {.KeyData}) ...</k> when Program =/=K bootstrap
+  rule <T>
+         <k> saveConfiguration(Fd:Int, (.K => Bag2String(B))) ...</k>
+         B:Bag
+       </T>
+  rule (. => #fPutBytes(Fd, substrString(S, 0, 1000))) ~> saveConfiguration(Fd:Int, (S:String => substrString(S, 1000, lengthString(S)))) when S =/=String ""
+  rule saveConfiguration(Fd:Int, "") => #close(Fd)
+  rule (. => loadConfigurationByte(#fReadBytes(Fd, 1000))) ~> loadConfiguration(Fd:Int, _)
+  rule (loadConfigurationByte(S2:String) => .) ~> loadConfiguration(Fd:Int, (S:String => S +String S2))
+  rule <T>
+         <k> loadConfigurationByte(#EOF) ~> loadConfiguration(Fd:Int, S:String) => #close(Fd) ...</k>
+         (_:Bag => String2Bag(S))
+       </T>
 
   rule <k> (. => setref(B, "__dict__", { DeMapify(Env:Map) })) ~> resolve ...</k>
        <object>...
