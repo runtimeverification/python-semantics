@@ -142,8 +142,8 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   rule clearWeakrefs(list(ListItem(ref(N)) L:List)) => setattr(N, "referent", .Obj) ~> try: test(getref2(ref(N), "callback") ==Obj .Obj, pass, getref2(ref(N), "callback") (ref(N)) ;) except ref("BaseException") : ref("print")("Exception " + ref("sys_exc_info")(.Arguments)[1] + " ignored") ; else: pass ~> clearWeakrefs(list(L))
   rule clearWeakrefs(list(.)) => . 
 
-  // since garbage collection is implementation specific, we treat the number of objects collected by any given call to the garbage collector as undefined
-  rule <k> invokeBuiltin(obj("gc.collect",_), ., .) => undefined("number of objects collected") ...</k>
+  // since garbage collection is implementation specific, we treat the number of objects collected by any given call to the garbage collector as a symbolic int
+  rule <k> invokeBuiltin(obj("gc.collect",_), ., .) => ?Num:Int ...</k>
        <gcThreshold> N </gcThreshold>
        <gc> _ => 0 -Int N </gc>
 

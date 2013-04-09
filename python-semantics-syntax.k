@@ -13,17 +13,13 @@ module PYTHON-SEMANTICS-SYNTAX
 
   syntax Exp ::= ObjRef
                 | Null
-                | Undefined
 
   syntax Null ::= ".Obj"
-
-  syntax Undefined ::= "undefined" "(" String ")"
 
   rule isKResult(obj(_,_)) => true
   rule isKResult(true) => true
   rule isKResult(false) => true
   rule isKResult(.Obj) => true
-  rule isKResult(undefined(_)) => true
   rule isKResult(list(_)) => true
   rule isKResult(map(_)) => true
 

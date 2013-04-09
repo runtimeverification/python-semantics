@@ -176,7 +176,6 @@ module PYTHON-SEMANTICS-COMMON
 
   syntax ObjId ::= "id" "(" Exp ")" [function]
   rule id(obj(B,_)) => B
-  rule id(undefined(S)) => undefined(S)
   rule id(ref(B)) => B
 
   syntax Int ::= "intvalue" "(" Exp ")" [function]
@@ -325,7 +324,9 @@ module PYTHON-SEMANTICS-COMMON
   syntax K ::= keywordHelper(String, Map, Set)
   rule keywordHelper(Name, M, S) => #if keys(M) -Set S =/=Set . #then raiseInternal("TypeError", Name +String "does not take keyword arguments") #else . #fi
 
-  rule raiseInternal(S, O) => raise mutable("args" |-> undefined(strvalue(O)),ref(S))
+  syntax K ::= raiseInternal(String, String, Exp) [strict(3)]
+  rule raiseInternal(S, O:Object) => raiseInternal(S, strvalue(O), tuple(?Msg:String))
+  rule raiseInternal(S, O, Msg:Object) => raise mutable("args" |-> Msg "msg" |-> O,ref(S))
 
   rule <k> executeModule(CO:Object, Builtins:Object, Dict:Object) => (Dict [ "__name__"] = (CO . String2Id("co_name"))::Exp) ~> (Dict [ "__doc__" ] = (CO . String2Id("co_consts") [0])::Exp) ~> (Dict [ "__builtins__" ] = Builtins) ~> setref(id(CO), "co_names", (getref(CO, "co_varnames") + getref(CO, "co_cellvars") + getref(CO, "co_names"))) ~> setref(id(CO), "co_varnames", tuple(.Exps)) ~> setref(id(CO), "co_cellvars", tuple(.Exps)) ~> ref("sys") . String2Id("modules")[CO . String2Id("co_name")] = ref(N) ~> executeFrame(N:Int +Int 1, ref(id(CO)), ref("None"), Dict, Dict, Builtins, {.KeyData}, .) ...</k>
        <nextLoc> N => N +Int 2 </nextLoc>

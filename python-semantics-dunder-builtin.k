@@ -297,13 +297,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "attribute"("type",ListItem("object"),
            "__get__" |-> def "get_attr" (1, 2, true)
            "__set__" |-> def "set_attr" (2, 2, true)
-           , "__name__" |-> undefined("internal type name")) ~>
+           , "__name__" |-> ?Name:String) ~>
          object "builtin-function" ("type",ListItem("object"),
              "__call__" |-> def "call_builtin_function" (0, -1, true)
-           , "__name__" |-> undefined("internal type name")) ~>
+           , "__name__" |-> ?Name2:String) ~>
          object "builtin-method" ("type",ListItem("object"),
            "__get__" |-> def "get_builtin_method" (1, 2, true)
-           , "__name__" |-> undefined("internal type name")) ~>
+           , "__name__" |-> ?Name3:String) ~>
          object "code"("type",ListItem("object"),
            "co_name" |-> ref("co_name")
            "co_argcount" |-> ref("co_argcount")

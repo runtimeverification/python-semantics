@@ -62,7 +62,6 @@ module PYTHON-SEMANTICS-STATEMENTS
   rule [unroll-for]: lmark ~> for Target:Target in O : Ss else: Ss2 => try: (((Target) = getmember(O, "__next__", true, false, true) (.Arguments)) ~> Ss ~> lmark ~> for Target in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
 
   rule O:Object ; => .
-  rule undefined(_) ; => .
 
   rule Stmt:K newline Ss => Stmt ~> Ss when Ss =/=K .Stmts
   rule Stmt:K newline .Stmts => Stmt [macro]
