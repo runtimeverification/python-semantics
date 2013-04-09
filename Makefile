@@ -29,6 +29,9 @@ bootstrapped.bin: python-kompiled/base.maude kpython
 	rm -f bootstrapped.bin
 	./kpython -cPGM="bootstrap"
 
+semantics: python-kompiled/base.maude
+	test -e bootstrapped.bin && touch bootstrapped.bin
+
 python-kompiled/base.maude: ?*.k
 	kompile python.k -v --transition "allocation"
 
