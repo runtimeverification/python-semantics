@@ -451,6 +451,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          (def "posix.replace"(2, 2, false) ;) ~>
          (def "posix.stat"(1, 1, false) ;) ~>
          (def "posix.unlink"(1, 1, false) ;) ~>
+         struct "posix.stat_result" ("st_mode", "st_ino", "st_dev", "st_nlink", "st_uid", "st_gid", "st_size", "st_atime", "st_mtime", "st_ctime") ~>
          .K
        )
        ...</k>

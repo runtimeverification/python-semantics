@@ -15,6 +15,7 @@ require "python-semantics-garbage-collection.k"
 require "python-semantics-generator.k"
 require "python-semantics-import.k"
 require "python-semantics-integers.k"
+require "python-semantics-io.k"
 require "python-semantics-iterators.k"
 require "python-semantics-lists.k"
 require "python-semantics-macros.k"
@@ -43,6 +44,7 @@ module PYTHON
   imports PYTHON-SEMANTICS-GENERATOR
   imports PYTHON-SEMANTICS-IMPORT
   imports PYTHON-SEMANTICS-INTEGERS
+  imports PYTHON-SEMANTICS-IO
   imports PYTHON-SEMANTICS-ITERATORS
   imports PYTHON-SEMANTICS-LISTS
   imports PYTHON-SEMANTICS-MACROS
