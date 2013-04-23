@@ -3,17 +3,38 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-IO
   imports PYTHON-SEMANTICS-COMMON
 
-  rule invokeBuiltin(obj("posix.stat",_), ListItem(O:Object), .) => test(istype(O, ref("str")), ref("posix.stat_result")(tuple((?Mode:Int &Int 4095) |Int mode(strvalue(O)), ?Ino:Int, ?Dev:Int, ?NLink:Int, ?Uid:Int, ?Gid:Int, ?Size:Int, ?ATime:Float, mtime(strvalue(O)), ?CTime:Float)), test(istype(O, ref("int")), ref("posix.stat_result")(tuple(?Mode:Int, ?Ino:Int, ?Dev:Int, ?NLink:Int, ?Uid:Int, ?Gid:Int, ?Size:Int, ?ATime:Float, ?MTime:Float, ?CTime:Float)), raiseInternal("TypeError", "integer or string is required")))
+  syntax #Id ::= "follow_symlinks"
+  rule invokeBuiltin(obj("posix.stat",_), ListItem(O:Object), .) => ref("posix.stat")(O, follow_symlinks=ref("True"))
+  rule invokeBuiltin(obj("posix.stat",_), ListItem(O:Object), "follow_symlinks" |-> Follow:Object) => test(istype(O, ref("str")), if Follow : makeStat(#stat(strvalue(O)), strvalue(O)) else: makeStat(#lstat(strvalue(O)), strvalue(O)), test(istype(O, ref("int")), notImplementedYet, raiseInternal("TypeError", "integer or string is required")))
 
-  syntax Int ::= mode(String) [function]
-  syntax Float ::= mtime(String) [function]
+  syntax K ::= makeStat(KList, String) [function]
+  syntax K ::= raiseOSError(K, String) [function]
 
-  rule mode(S) => #if #isDir(S) #then 16384 #else #if #isFile(S) #then 32768 #else ?Mode:Int #fi #fi
-  rule mtime(S) => Int2Float(#mtimeMillis(S)) /Float 1000.0
+  rule makeStat(Error:TCPAnswer,File) => raiseOSError(K, File)
+  rule makeStat(MTime:Int,,ATime:Int,,_:K,,IsReg:Bool,,IsDir:Bool,,IsLnk:Bool,,Size:Int,,Dev:Int,,Ino:Int,,Group:Int,,Owner:Int,,Permissions:Int,_) => ref("posix.stat_result")(tuple(?Mode:Int &Int 3584 /* 0o7000 */ |Int fileType(IsReg, IsDir, IsLnk) |Int Permissions, Ino, Dev, ?NLink:Int, Owner, Group, Size, Int2Float(ATime) /Float 1000.0, Int2Float(MTime) /Float 1000.0, ?CTime:Int))
+
+  rule <k> raiseOSError(#ENOENT,File) => raiseInternal("FileNotFoundError", "No such file or directory: '" +String File +String "'", tuple(Errno, ?Msg:String)) ...</k>
+       <constants>... "errno.ENOENT" |-> Errno ...</constants>
+  rule <k> raiseOSError(#ENOTDIR,File) => raiseInternal("NotADirectoryError", "Not a directory: '" +String File +String "'", tuple(Errno, ?Msg:String)) ...</k>
+       <constants>... "errno.ENOTDIR" |-> Errno ...</constants>
+  rule <k> raiseOSError(#EACCES,File) => raiseInternal("PermissionError", "Permission denied: '" +String File +String "'", tuple(Errno, ?Msg:String)) ...</k>
+       <constants>... "errno.EACCES" |-> Errno ...</constants>
+  rule <k> raiseOSError(#ELOOP,File) => raiseInternal("OSError", "Too many levels of symbolic links: '" +String File +String "'", tuple(Errno, ?Msg:String)) ...</k>
+       <constants>... "errno.ELOOP" |-> Errno ...</constants>
+  rule <k> raiseOSError(#ENAMETOOLONG,File) => raiseInternal("OSError", "File name too long: '" +String File +String "'", tuple(Errno, ?Msg:String)) ...</k>
+       <constants>... "errno.ENAMETOOLONG" |-> Errno ...</constants>
+
+  syntax Int ::= fileType(Bool, Bool, Bool) [function]
+  rule fileType(true, false, false) => 32768 //S_IFREG
+  rule fileType(false, true, false) => 16384 //S_IFDIR
+  rule fileType(false, false, true) => 40960 //S_IFLNK
+  rule fileType(false, false, false) => ?FileType:Int &Int 61440 // 0o170000
+
 
   //simplification rule for bitwise math in this file
   rule (A:Int |Int B:Int) &Int C:Int => C when C &Int ~Int B ==Int 0
   rule (A:Int |Int B:Int) &Int C:Int => B when B &Int ~Int C ==Int 0 andBool A &Int C ==Int 0
   rule (A:Int &Int B:#Int) &Int C:#Int => A &Int (B &Int C)
   rule A:Int &Int 0 => 0
+
 endmodule
