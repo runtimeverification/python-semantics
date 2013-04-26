@@ -266,7 +266,7 @@ class KPythonVisitor(ast.NodeVisitor):
 
   def visit_Bytes(self, node):
     if type(node.s) is bytes:
-      return "'b_(# \"" + self.getstr(node.s.decode("ascii"), self.convert) + '"(.KList))'
+      return "'b_(# \"" + self.getstr(node.s.decode("utf-8"), self.convert) + '"(.KList))'
 
   def visit_Attribute(self, node):
     return "'_._(" + self.visit(node.value) + ",," + self.getid(node.attr) + ")"
