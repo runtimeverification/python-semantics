@@ -13,10 +13,12 @@ module PYTHON-SEMANTICS-ENVIRONMENT
   rule <k> X:Id => envLookup(Id2String(X),ref(N),ref(N) . String2Id("f_code")) ...</k>
        <frameObject> N:Int </frameObject>
 
+  syntax #Id ::= "f_locals" | "f_globals"
+
   rule envLookup(S:String, Frame:Object, Code:Object) =>
-                (Frame . String2Id("f_locals") [S]
+                (Frame . f_locals [S]
            if
-                S in Frame . String2Id("f_locals")
+                S in Frame . f_locals
            else 
                 raiseInternal("UnboundLocalError", "local variable '" +String S +String "' referenced before assignment"))
        if
@@ -29,9 +31,9 @@ module PYTHON-SEMANTICS-ENVIRONMENT
            if 
                S in Code . String2Id("co_freevars")
            else
-                   Frame . String2Id("f_globals") [S]
+                   Frame . f_globals [S]
                if
-                   S in Frame . String2Id("f_globals")
+                   S in Frame . f_globals
                else
                        Frame . String2Id("f_builtins") [S]
                    if
@@ -44,8 +46,8 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                             S in Code . String2Id("co_cellvars") or
                                             S in Code . String2Id("co_freevars") :
                                               test(B ==K 0,
-                                                   (del Frame . String2Id("f_locals") [S]),
-                                                   Frame . String2Id("f_locals") [S] = ref(B))
+                                                   (if S in Frame . f_locals : del Frame . f_locals [S] else: raiseInternal("UnboundLocalError", "local variable '" +String S +String "' referenced before assignment")),
+                                                   Frame . f_locals [S] = ref(B))
                                          else: pass ~>
                                          if S in Code . String2Id("co_cellvars") or 
                                             S in Code . String2Id("co_freevars") :
@@ -58,14 +60,14 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                          else: pass ~>
                                          if S in Code . String2Id("co_names") :
                                               test(B ==K 0,
-                                                   (del ((Frame . String2Id("f_globals") [S]))),
-                                                   (Frame . String2Id("f_globals") [S] = ref(B)))
+                                                   (if S in Frame . f_globals : del ((Frame . f_globals [S])) else: raiseInternal("NameError", "name '" +String S +String "' is not defined")),
+                                                   (Frame . f_globals [S] = ref(B)))
                                          else: pass
 
-  rule [globals]: <k> invokeBuiltin(obj("globals",_), ., .) => ref(N) . String2Id("f_globals") ...</k>
+  rule [globals]: <k> invokeBuiltin(obj("globals",_), ., .) => ref(N) . f_globals ...</k>
        <frameObject> N </frameObject>
  
-  rule <k> invokeBuiltin(obj("locals",_), ., .) => ref(N) . String2Id("f_locals") ...</k>
+  rule <k> invokeBuiltin(obj("locals",_), ., .) => ref(N) . f_locals ...</k>
        <frameObject> N </frameObject>
    
 endmodule

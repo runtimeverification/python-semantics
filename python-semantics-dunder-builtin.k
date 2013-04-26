@@ -27,6 +27,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "False"("bool",.,.,
            "__value__" |-> 0) ~>
          object "FileExistsError"("type",ListItem("OSError"),.,.) ~>
+         object "FileNotFoundError"("type",ListItem("OSError"),.,.) ~>
          object "GeneratorExit"("type",ListItem("BaseException"),.,.) ~>
          object "ImportError"("type",ListItem("Exception"),
            "name" |-> ref("name")
@@ -42,10 +43,14 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "NameError"("type",ListItem("Exception"),.,.) ~>
          object "None"("NoneType",.,.,.) ~>
          object "NoneType"("type",ListItem("object"),.,.) ~>
+         object "NotADirectoryError"("type",ListItem("OSError"),.,.) ~>
          object "NotImplemented"("NotImplementedType",.,.,.) ~>
          object "NotImplementedType"("type",ListItem("object"),.,.) ~>
          object "NotImplementedError"("type",ListItem("RuntimeError"),.,.) ~>
-         object "OSError"("type",ListItem("Exception"),.,.) ~>
+         object "OSError"("type",ListItem("Exception"),
+           "errno" |-> ref("OSError.errno")
+           ,.) ~>
+         object "OSError.errno"("attribute",.,.,"__get__" |-> ref("args")[0]) ~>
          object "PermissionError"("type",ListItem("OSError"),.,.) ~>
          object "RuntimeError"("type",ListItem("Exception"),.,.) ~>
          object "StopIteration"("type",ListItem("Exception"),.,.) ~>
@@ -102,12 +107,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__iter__" |-> def "iter_dict_keys" (0, 0, true)
            ,.) ~>
          object "float"("type",ListItem("object"),
-           "__eq__" |-> def "eq_float"(1, 1, true)
-           "__ge__" |-> def "ge_float" (1, 1, true)
-           "__gt__" |-> def "gt_float" (1, 1, true)
-           "__le__" |-> def "le_float" (1, 1, true)
-           "__lt__" |-> def "lt_float" (1, 1, true)
-           "__ne__" |-> def "ne_float" (1, 1, true)
+           "__eq__" |-> def "float.__eq__"(1, 1, true)
+           "__ge__" |-> def "float.__ge__" (1, 1, true)
+           "__gt__" |-> def "float.__gt__" (1, 1, true)
+           "__int__" |-> def "float.__int__" (0, 0, true)
+           "__le__" |-> def "float.__le__" (1, 1, true)
+           "__lt__" |-> def "float.__lt__" (1, 1, true)
+           "__ne__" |-> def "float.__ne__" (1, 1, true)
            ,.) ~>
          (def "format" (1, 2, false) ;) ~>
          (def "getattr" (2, 3, false) ;) ~>
@@ -260,6 +266,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__hash__" |-> def "hash_str" (0, 0, true)
            "__len__" |-> def "len_str"(0, 0, true)
            "__mod__" |-> def "mod_str"(1, 1, true)
+           "__mul__" |-> def "mul_str"(1, 1, true)
            "__ne__" |-> def "ne_str" (1, 1, true)
            ,.) ~>
          object "super"("type",ListItem("object"),
@@ -492,6 +499,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "Exception" : ref("Exception")
          , "False" : ref("False") 
          , "FileExistsError" : ref("FileExistsError")
+         , "FileNotFoundError" : ref("FileNotFoundError")
          , "GeneratorExit" : ref("GeneratorExit")
          , "IOError" : ref("OSError")
          , "ImportError" : ref("ImportError")
@@ -501,6 +509,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "LookupError" : ref("LookupError")
          , "NameError" : ref("NameError")
          , "None" : ref("None")
+         , "NotADirectoryError" : ref("NotADirectoryError")
          , "NotImplemented" : ref("NotImplemented")
          , "NotImplementedError" : ref("NotImplementedError")
          , "OSError" : ref("OSError")
@@ -553,6 +562,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "super" : ref("super")
          , "tuple" : ref("tuple")
          , "type" : ref("type")
+         }) ~>
+         module "errno"({
+           "EACCES" : Constants("errno.EACCES")
+         , "ELOOP" : Constants("errno.ELOOP")
+         , "ENAMETOOLONG" : Constants("errno.ENAMETOOLONG")
+         , "ENOENT" : Constants("errno.ENOENT")
+         , "ENOTDIR" : Constants("errno.ENOTDIR")
          }) ~>
          module "gc"({
            "collect" : ref("gc.collect")

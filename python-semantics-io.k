@@ -5,13 +5,13 @@ module PYTHON-SEMANTICS-IO
 
   syntax #Id ::= "follow_symlinks"
   rule invokeBuiltin(obj("posix.stat",_), ListItem(O:Object), .) => ref("posix.stat")(O, follow_symlinks=ref("True"))
-  rule invokeBuiltin(obj("posix.stat",_), ListItem(O:Object), "follow_symlinks" |-> Follow:Object) => test(istype(O, ref("str")), if Follow : makeStat(#stat(strvalue(O)), strvalue(O)) else: makeStat(#lstat(strvalue(O)), strvalue(O)), test(istype(O, ref("int")), notImplementedYet, raiseInternal("TypeError", "integer or string is required")))
+  rule invokeBuiltin(obj("posix.stat",_), ListItem(O:Object), "follow_symlinks" |-> Follow:Object) => test(istype(O, ref("str")), if Follow : makeStat(#stat(strvalue(O)), strvalue(O)) else: makeStat(#lstat(strvalue(O)), strvalue(O)), test(istype(O, ref("int")), stuck, raiseInternal("TypeError", "integer or string is required")))
 
   syntax K ::= makeStat(KList, String) [function]
   syntax K ::= raiseOSError(K, String) [function]
 
-  rule makeStat(Error:TCPAnswer,File) => raiseOSError(K, File)
-  rule makeStat(MTime:Int,,ATime:Int,,_:K,,IsReg:Bool,,IsDir:Bool,,IsLnk:Bool,,Size:Int,,Dev:Int,,Ino:Int,,Group:Int,,Owner:Int,,Permissions:Int,_) => ref("posix.stat_result")(tuple(?Mode:Int &Int 3584 /* 0o7000 */ |Int fileType(IsReg, IsDir, IsLnk) |Int Permissions, Ino, Dev, ?NLink:Int, Owner, Group, Size, Int2Float(ATime) /Float 1000.0, Int2Float(MTime) /Float 1000.0, ?CTime:Int))
+  rule makeStat(Error:TCPAnswer,File) => raiseOSError(Error, File)
+  rule makeStat(MTime:Int,,ATime:Int,,_:K,,IsReg:Bool,,IsDir:Bool,,IsLnk:Bool,,Size:Int,,Dev:Int,,Ino:Int,,Group:Int,,Owner:Int,,Permissions:Int,_) => ref("posix.stat_result")(tuple(?Mode:Int &Int 3584 /* 0o7000 */ |Int fileType(IsReg, IsDir, IsLnk) |Int Permissions, Ino, Dev, ?NLink:Int, Owner, Group, Size, Int2Float(ATime) /Float 1000.0, Int2Float(MTime) /Float 1000.0, ?CTime:Float))
 
   rule <k> raiseOSError(#ENOENT,File) => raiseInternal("FileNotFoundError", "No such file or directory: '" +String File +String "'", tuple(Errno, ?Msg:String)) ...</k>
        <constants>... "errno.ENOENT" |-> Errno ...</constants>
@@ -31,10 +31,12 @@ module PYTHON-SEMANTICS-IO
   rule fileType(false, false, false) => ?FileType:Int &Int 61440 // 0o170000
 
 
-  //simplification rule for bitwise math in this file
-  rule (A:Int |Int B:Int) &Int C:Int => C when C &Int ~Int B ==Int 0
-  rule (A:Int |Int B:Int) &Int C:Int => B when B &Int ~Int C ==Int 0 andBool A &Int C ==Int 0
+  //simplification rules for bitwise math in this file. needed to avoid using smt for mode arithmetic
+  rule (A:Int |Int B:Int) &Int C:Int => A &Int C when B &Int C ==Int 0
+  rule (A:Int |Int B:Int) &Int C:Int => B &Int C when A &Int C ==Int 0
   rule (A:Int &Int B:#Int) &Int C:#Int => A &Int (B &Int C)
   rule A:Int &Int 0 => 0
+  rule (A:Int |Int B:#Int) |Int C:#Int => A |Int (B |Int C)
+  rule A:Int |Int 0 => A
 
 endmodule

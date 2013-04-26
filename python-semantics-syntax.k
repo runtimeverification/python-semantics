@@ -35,6 +35,6 @@ module PYTHON-SEMANTICS-SYNTAX
   rule isValue(map(_)) => true
   rule isExp(map(_)) => true
 
-  syntax K ::= "notImplementedYet"
+  syntax K ::= "stuck"
 
 endmodule

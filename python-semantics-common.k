@@ -209,7 +209,6 @@ module PYTHON-SEMANTICS-COMMON
 
   syntax K ::= "getattr" "(" Exp "," K ")" [function]
   rule getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String) => Attrs:Map(S) 
-  rule getattr(obj(_,<oattrs> Attrs:Map </oattrs>), S:String[I:Int]) => get(getl(Attrs(S)), I)
 
   syntax K ::= "getattr2" "(" Exp "," String ")" [strict(1)]
   rule getattr2(O:Object, S:String) => getattr(O, S)
@@ -279,7 +278,9 @@ module PYTHON-SEMANTICS-COMMON
   rule invokeBuiltin(obj("set_ref_default",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => setref(id(Instance), getattr(Self, "__get__"), Value) ~> ref("None")
   rule invokeBuiltin(obj("set_attr_string",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => test(istype(Value, ref("str")), setattr(id(Instance), getattr(Self, "__get__"), getattr(Value, "__value__")), raiseInternal("TypeError", getattr(Self, "__get__") +String " must be set to a string object")) ~> ref("None")
   rule doDescribe(Self, .Obj, _, "get_attr") => Self
-  rule doDescribe(Self, O:Object, _, "get_attr") => getattr(O, getattr(Self, "__get__"))
+  rule doDescribe(obj(_,<oattrs>... "__get__" |-> S:String ...</oattrs>), O:Object, _, "get_attr") => getattr(O, S)
+  rule doDescribe(obj(_,<oattrs>... "__get__" |-> S:String[I:Int] ...</oattrs>), O:Object, _, "get_attr") => get(getl(getattr(O, S)), I)
+  rule doDescribe(obj(_,<oattrs>... "__get__" |-> ref(S:String)[I:Int] ...</oattrs>), O:Object, _, "get_attr") => getattr(O, S)[I]
 
   rule <k> ref(S:String) => ref(N:Int) ...</k>
        <symbols>... S |-> N ...</symbols>

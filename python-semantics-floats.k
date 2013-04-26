@@ -3,11 +3,13 @@ require "python-semantics-boolean-ops.k"
 module PYTHON-SEMANTICS-FLOATS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
-  rule <k> invokeBuiltin(obj("lt_float",_), ListItem(O:Object) ListItem(O2:Object), .) => binaryOp(O, O2, "float", "float", bool(floatvalue(O) <Float floatvalue(O2))) ...</k>
-  rule <k> invokeBuiltin(obj("gt_float",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "float", "float", bool(floatvalue(O) >Float floatvalue(O2))) ...</k>
-  rule <k> invokeBuiltin(obj("le_float",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "float", "float", bool(floatvalue(O) <=Float floatvalue(O2))) ...</k>
-  rule <k> invokeBuiltin(obj("ge_float",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "float", "float", bool(floatvalue(O) >=Float floatvalue(O2))) ...</k>
-  rule <k> invokeBuiltin(obj("eq_float",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "float", "float", bool(floatvalue(O) ==Float floatvalue(O2))) ...</k>
-  rule <k> invokeBuiltin(obj("ne_float",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "float", "float", bool(floatvalue(O) =/=Float floatvalue(O2))) ...</k>
+  rule invokeBuiltin(obj("float.__lt__",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("int")), binaryOp(O, O2, "float", "int", bool(floatvalue(O) <Float Int2Float(intvalue(O2)))), binaryOp(O, O2, "float", "float", bool(floatvalue(O) <Float floatvalue(O2))))
+  rule invokeBuiltin(obj("float.__gt__",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("int")), binaryOp(O, O2, "float", "int", bool(floatvalue(O) >Float Int2Float(intvalue(O2)))), binaryOp(O, O2, "float", "float", bool(floatvalue(O) >Float floatvalue(O2))))
+  rule invokeBuiltin(obj("float.__le__",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("int")), binaryOp(O, O2, "float", "int", bool(floatvalue(O) <=Float Int2Float(intvalue(O2)))), binaryOp(O, O2, "float", "float", bool(floatvalue(O) <=Float floatvalue(O2))))
+  rule invokeBuiltin(obj("float.__ge__",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("int")), binaryOp(O, O2, "float", "int", bool(floatvalue(O) >=Float Int2Float(intvalue(O2)))), binaryOp(O, O2, "float", "float", bool(floatvalue(O) >=Float floatvalue(O2))))
+  rule invokeBuiltin(obj("float.__eq__",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("int")), binaryOp(O, O2, "float", "int", bool(floatvalue(O) ==Float Int2Float(intvalue(O2)))), binaryOp(O, O2, "float", "float", bool(floatvalue(O) ==Float floatvalue(O2))))
+  rule invokeBuiltin(obj("float.__ne__",_), ListItem(O:Object) ListItem(O2:Object), .) => test(istype(O2, ref("int")), binaryOp(O, O2, "float", "int", bool(floatvalue(O) =/=Float Int2Float(intvalue(O2)))), binaryOp(O, O2, "float", "float", bool(floatvalue(O) =/=Float floatvalue(O2))))
+
+  rule invokeBuiltin(obj("float.__int__",_), ListItem(O), .) => unaryOp(O, "float", Float2Int(floatvalue(O)))
 
 endmodule

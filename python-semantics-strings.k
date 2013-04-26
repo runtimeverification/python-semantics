@@ -172,4 +172,11 @@ module PYTHON-SEMANTICS-STRINGS
   rule getitemString(S, E:Exp) => ref("index")(E) ~> getitemString(S, HOLE) when isInt(E) =/=K true [heat]
   rule O:Object ~> getitemString(S, HOLE) => getitemString(S, intvalue(O)) [cool]
   rule getitemString(S:String, I:Int) => test(I >=Int 0 -Int length(S, UTF-8) andBool I <Int length(S, UTF-8), test(I >=Int 0, bytes(S, UTF-8, I), bytes(S, UTF-8, I +Int length(S, UTF-8))), raiseInternal("IndexError", "string index out of range"))
+
+  rule invokeBuiltin(obj("mul_str",_), ListItem(S) ListItem(I), .) => multiplyString(strvalue(S), ref(id(I)))
+  syntax Exp ::= multiplyString(String, Exp)
+  rule multiplyString(S, E:Exp) => ref("index")(E) ~> multiplyString(S, HOLE) when isInt(E) =/=K true [heat]
+  rule O:Object ~> multiplyString(S, HOLE) => multiplyString(S, intvalue(O)) [cool]
+  rule multiplyString(S:String, I:Int) => S *String I
+
 endmodule
