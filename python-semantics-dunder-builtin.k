@@ -194,6 +194,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__len__" |-> def "len_list" (0, 0, true)
            "__ne__" |-> def "ne_list" (1, 1, true)
            "__new__" |-> def "new_list" (1, -1, false)
+           "__setitem__" |-> def "setitem_list" (2, 2, true)
            ,.) ~>
          (def "locals" (0, 0, false) ;) ~>
          object "map"("type",ListItem("object"),
