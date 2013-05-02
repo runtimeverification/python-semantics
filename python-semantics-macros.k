@@ -8,8 +8,8 @@ module PYTHON-SEMANTICS-MACROS
 
   rule pass => .K [macro]
 
-  rule assert E ::Exp => if __debug__ : if not E : raise AssertionError [macro]
-  rule assert E ::Exp , E2 ::Exp => if __debug__ : if not E : raise AssertionError(E2) [macro]
+  rule assert E => if __debug__ : if not E : raise AssertionError [macro]
+  rule assert E , E2 => if __debug__ : if not E : raise AssertionError(E2 ::Exp) [macro]
 
   rule if E ::Exp : S => if E : S else : pass [macro]
 
