@@ -10,7 +10,16 @@ DEBUG='"__debug__" |-> true'
 VERBOSE='"PYTHONVERBOSE" |-> false'
 HASHINFO=$SIXTYFOUR_BIT
 GC_THRESHOLD=100
-SYS_PATH="ListItem(\"\") ListItem(\"$PYTHON_LIB\")"
+PROGRAM_DIR="\"\""
+# if we pass a program to kpython, sys.path[0] should be the absolute path to the directory the program is in
+for var in "$@"
+do
+  if [ -f $var ]; then
+    PROGRAM_DIR=`dirname $var | xargs readlink -f`
+    PROGRAM_DIR=`printf "\"%q\"" $PROGRAM_DIR`
+  fi
+done
+SYS_PATH="ListItem($PROGRAM_DIR) ListItem(\"$PYTHON_LIB\")"
 HASHSEED='"PYTHONHASHSEED" |-> 1'
 ERRNO=`python3.3 errno.py`
 OS='"sys.platform" |-> "linux" "posix.O_WRONLY" |-> 1 "posix.O_CREAT" |-> 64 "posix.O_EXCL" |-> 128'

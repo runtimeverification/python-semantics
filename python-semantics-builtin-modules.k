@@ -25,7 +25,10 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
 
   syntax K ::= "bootstrap" | saveConfiguration(Int, String) | loadConfiguration(Int, String) | loadConfigurationByte(K)
   rule <k> initialize(bootstrap) => builtins ~> resolve ~> modules ~> importlib ~> saveConfiguration(#open("file:bootstrapped.bin"), .K) ...</k>
-  rule <k> initialize(Program:K) => loadConfiguration(#open("file:bootstrapped.bin\001r"), "") ~> executeModule(codeObject(String2Id("__main__"), .Parameters, Program, true), ref("builtins"), {.KeyData}) ...</k> when Program =/=K bootstrap
+  //the semantics of sys.path is that the first element is "" for the interpreter and the directory containing the file being executed if a file is being executed
+  rule <k> initialize(Program:K) => loadConfiguration(#open("file:bootstrapped.bin\001r"), "") ~> ref("sys") . String2Id("path") [ 0 ] = SysPath:String ~> executeModule(codeObject(String2Id("__main__"), .Parameters, Program, true), ref("builtins"), {.KeyData}) ...</k>
+       <sysPath> ListItem(SysPath) ...</sysPath> when Program =/=K bootstrap
+
   rule <T>
          <k> saveConfiguration(Fd:Int, (.K => Bag2String(B))) ...</k>
          B:Bag
