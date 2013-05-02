@@ -166,7 +166,7 @@ module PYTHON-SEMANTICS-STRINGS
   rule startswith(S:String, .List) => ref("False")
 
   //TODO: fix ref(id()). We need this right now because if I pass an object then strictness will refuse to heat because it's already a KResult. Need to wait for improved heating/cooling
-  rule invokeBuiltin(obj("getitem_str",_), ListItem(S:Object) ListItem(Item:Object), .) => test(istype(Item, ref("slice")), reduce(slice(S, Item), '_+_), getitemString(strvalue(S), ref(id(Item))))
+  rule invokeBuiltin(obj("getitem_str",_), ListItem(S:Object) ListItem(Item:Object), .) => test(istype(Item, ref("slice")), reduce(slice(S, Item), "", '_+_), getitemString(strvalue(S), ref(id(Item))))
 
   syntax Exp ::= getitemString(String, Exp)
   rule getitemString(S, E:Exp) => ref("index")(E) ~> getitemString(S, HOLE) when isInt(E) =/=K true [heat]

@@ -83,8 +83,8 @@ module PYTHON-SEMANTICS-COMMON
                   | "class" "(" Arguments "," Exp ")" [strict]
                   | describe(Exp, Exp, Exp, String) [strict(1, 2, 3)]
                   | doDescribe(Exp, Exp, Exp, String) [strict(1, 2, 3)]
-                  | reduce(Exp, KLabel) [strict(1)]
-                  | reduce(List, KLabel)
+                  | reduce(Exp, K, KLabel) [strict(1)]
+                  | reduce(List, K, KLabel)
 
   syntax K ::= "iterate" "(" Exp "," K ")" [strict(1)]
 
@@ -92,10 +92,10 @@ module PYTHON-SEMANTICS-COMMON
 
   context doCall(HOLE, _, _) when HOLE =/=K .
 
-  rule (. => iterate(O, .)) ~> reduce(O:Object, _)
-  rule list(L:List) ~> reduce(_, K:KLabel) => reduce(L, K)
-  rule reduce(ListItem(I), _) => I
-  rule reduce(ListItem(I) L:List, K) => K(I,,reduce(L, K)) when L =/=List .
+  rule (. => iterate(O, .)) ~> reduce(O:Object, _, _)
+  rule list(L:List) ~> reduce(_, K, Lbl:KLabel) => reduce(L, K, Lbl)
+  rule reduce(.List, K, _) => K
+  rule reduce(ListItem(I) L:List, K, Lbl) => Lbl(I,,reduce(L, K, Lbl))
 
   syntax String ::= "docString" "(" K ")" [function]
   rule docString(S:String ;) => S 
@@ -203,6 +203,11 @@ module PYTHON-SEMANTICS-COMMON
   syntax K ::= "get" "(" List "," Int ")" [function]
   rule get(ListItem(K) _, 0) => K 
   rule get(ListItem(_) L, N) => get(L, N -Int 1) when N >Int 0 
+
+  syntax List ::= "get" "(" List "," Int "," Int ")" [function]
+  rule get(ListItem(_) L, Start:Int, End:Int) => get(L, Start -Int 1, End -Int 1) when Start >Int 0
+  rule get(ListItem(K) L, 0, End) => ListItem(K) get(L, 0, End -Int 1) when End >Int 0
+  rule get(_, 0, 0) => .List
 
   syntax List ::= "getl" "(" K ")" [function]
   rule getl(list(L)) => L 
