@@ -179,4 +179,13 @@ module PYTHON-SEMANTICS-STRINGS
   rule O:Object ~> multiplyString(S, HOLE) => multiplyString(S, intvalue(O)) [cool]
   rule multiplyString(S:String, I:Int) => S *String I
 
+  rule invokeBuiltin(obj("join_str",_), ListItem(S) ListItem(L), .) => joinString(strvalue(S), iterate(L, .))
+  //this is a bit dumb of a structure, but oh well
+  syntax String ::= joinString(String, Exp) [strict(2)]
+  syntax String ::= joinString2(String, Exp, String) [function]
+  rule joinString(S, list(L:List)) => joinString2(S, list(L:List), "")
+  rule joinString2(S, list(ListItem(O) ListItem(O2) L:List), S2) => test(istype(O, ref("str")), joinString2(S, list(ListItem(O2) L), S2 +String strvalue(O) +String S), raiseInternal("TypeError", "expected str instance as sequence item"))
+  rule joinString2(_, list(ListItem(O)), S) => test(istype(O, ref("str")), S +String strvalue(O), raiseInternal("TypeError", "expected str instance as sequence item"))
+  rule joinString2(_, list(.), S) => S
+
 endmodule
