@@ -40,7 +40,7 @@ module PYTHON-SEMANTICS-LISTS
 
   rule invokeBuiltin(obj("append_list",_), ListItem(O:Object) ListItem(O2:Object), .) => setattr(id(O), "__value__", list(getl(getattr(O, "__value__")) ListItem(ref(id(O2))))) ~> ref("None")
 
-  rule invokeBuiltin(obj("setitem_list",_), ListItem(O) ListItem(Key) ListItem(Value), .) => test(istype(Key, ref("slice")), stuck, setitemList(O, ref("index")(Key:Object), Value))
+  rule invokeBuiltin(obj("setitem_list",_), ListItem(O) ListItem(Key) ListItem(Value), .) => test(istype(Key, ref("slice")), ?Slice:Exp, setitemList(O, ref("index")(Key:Object), Value))
   syntax Exp ::= setitemList(Exp, Exp, Exp) [strict]
   rule setitemList(O:Object, Key:Object, Value:Object) => test(intvalue(Key) >=Int 0 -Int lengthList listvalue(O) andBool intvalue(Key) <Int lengthList listvalue(O), test(intvalue(Key) >=Int 0, setattr(id(O), "__value__", list(get(listvalue(O), 0, intvalue(Key)) ListItem(Value) get(listvalue(O), intvalue(Key) +Int 1, lengthList(listvalue(O))))), setattr(id(O), "__value__", list(get(listvalue(O), 0, lengthList listvalue(O) +Int intvalue(Key)) ListItem(Value) get(listvalue(O), lengthList listvalue(O) +Int intvalue(Key) +Int 1, lengthList(listvalue(O)))))), raiseInternal("IndexError", "list assignment index out of range")) ~> ref("None")
 

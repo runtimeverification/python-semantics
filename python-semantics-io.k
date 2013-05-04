@@ -5,7 +5,7 @@ module PYTHON-SEMANTICS-IO
 
   syntax #Id ::= "follow_symlinks"
   rule invokeBuiltin(obj("posix.stat",_), ListItem(O:Object), .) => ref("posix.stat")(O, follow_symlinks=ref("True"))
-  rule invokeBuiltin(obj("posix.stat",_), ListItem(O:Object), "follow_symlinks" |-> Follow:Object) => test(istype(O, ref("str")), if Follow : makeStat(#stat(strvalue(O)), strvalue(O)) else: makeStat(#lstat(strvalue(O)), strvalue(O)), test(istype(O, ref("int")), stuck, raiseInternal("TypeError", "integer or string is required")))
+  rule invokeBuiltin(obj("posix.stat",_), ListItem(O:Object), "follow_symlinks" |-> Follow:Object) => test(istype(O, ref("str")), if Follow : makeStat(#stat(strvalue(O)), strvalue(O)) else: makeStat(#lstat(strvalue(O)), strvalue(O)), test(istype(O, ref("int")), ?FileDescriptor:Exp, raiseInternal("TypeError", "integer or string is required")))
 
   syntax K ::= makeStat(KList, String) [function]
   syntax K ::= raiseOSError(K, String) [function]
@@ -42,7 +42,7 @@ module PYTHON-SEMANTICS-IO
   rule invokeBuiltin(obj("posix.listdir",_), ., .) => ref("posix.listdir")(".")
   //this rule abuses K a little bit because I am putting a function which can rewrite into a raise statement into a list display, which should rightly only contain expressions. but it works correctly, and that's what I care about
   //we also, strangely, are concatenating a string with the empty string, seemingly doing nothing. The reason we do this is to make the two #opendir calls be distinct terms in Maude's internal representation, because of a bug that causes it to try to use the same open socket for both connections
-  rule invokeBuiltin(obj("posix.listdir",_), ListItem(Path), .) => test(istype(Path, ref("str")), [ makeListdir(#opendir(strvalue(Path)), ref("str"), strvalue(Path)) ], test(istype(Path, ref("bytes")), [ makeListdir(#opendir(strvalue(Path) +String ""), ref("bytes"), strvalue(Path)) ], test(istype(Path, ref("int")), stuck, raiseInternal("TypeError", "int, str, or bytes expected"))))
+  rule invokeBuiltin(obj("posix.listdir",_), ListItem(Path), .) => test(istype(Path, ref("str")), [ makeListdir(#opendir(strvalue(Path)), ref("str"), strvalue(Path)) ], test(istype(Path, ref("bytes")), [ makeListdir(#opendir(strvalue(Path) +String ""), ref("bytes"), strvalue(Path)) ], test(istype(Path, ref("int")), ?FileDescriptor:Exp, raiseInternal("TypeError", "int, str, or bytes expected"))))
 
   syntax K ::= makeListdir(KList, Exp, String) [function]
 
