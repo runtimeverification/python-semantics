@@ -4,8 +4,8 @@ module PYTHON-SEMANTICS-OBJECTS
   imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
   syntax ObjRef ::= "init" "(" Exp "," Exp "," List "," Map ")" [strict(1, 2)] 
-                  | "getMros" "(" List ")"
                   | "mroMerge" "(" KList ")"
+  syntax KList ::= "getMros" "(" List ")" [function]
   syntax Bool ::= "notInTail" "(" Object "," List ")" [function]
   syntax List ::= "trimHead" "(" List "," Object ")" [function] 
 
