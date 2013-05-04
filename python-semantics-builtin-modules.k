@@ -29,17 +29,23 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
   rule <k> initialize(Program:K) => loadConfiguration(#open("file:bootstrapped.bin\001r"), "") ~> ref("sys") . String2Id("path") [ 0 ] = SysPath:String ~> executeModule(codeObject(String2Id("__main__"), .Parameters, Program, true), ref("builtins"), {.KeyData}) ...</k>
        <sysPath> ListItem(SysPath) ...</sysPath> when Program =/=K bootstrap
 
+  syntax String ::= TCellFragment2String(TCellFragment) [function, hook(#K-PRINTER:bag2string)]
+  syntax TCellFragment ::= String2TCellFragment(String) [function, hook(#K-PARSER:string2bag)]
+
   rule <T>
-         <k> saveConfiguration(Fd:Int, (.K => Bag2String(B))) ...</k>
+         <k> saveConfiguration(Fd:Int, (.K => TCellFragment2String(B))) ...</k>
          B:Bag
        </T>
   rule (. => #fPutBytes(Fd, substrString(S, 0, 1000))) ~> saveConfiguration(Fd:Int, (S:String => substrString(S, 1000, lengthString(S)))) when S =/=String ""
   rule saveConfiguration(Fd:Int, "") => #close(Fd)
   rule (. => loadConfigurationByte(#fReadBytes(Fd, 1000))) ~> loadConfiguration(Fd:Int, _)
   rule (loadConfigurationByte(S2:String) => .) ~> loadConfiguration(Fd:Int, (S:String => S +String S2))
+  rule loadConfigurationByte(#EOF) ~> loadConfiguration(Fd:Int, S:String) => doLoadConfiguration(String2TCellFragment(S))
+
+  syntax K ::= doLoadConfiguration(TCellFragment)
   rule <T>
-         <k> loadConfigurationByte(#EOF) ~> loadConfiguration(Fd:Int, S:String) => #close(Fd) ...</k>
-         (_:Bag => String2Bag(S))
+         <k> doLoadConfiguration(C) ...</k>
+         (_:Bag => C)
        </T>
 
   rule <k> (. => setref(B, "__dict__", { DeMapify(Env:Map) })) ~> resolve ...</k>
@@ -162,7 +168,7 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <references>Ref:Map (. => (B |-> N2)) </references> when notBool(B in keys(Ref))
   rule incref(.List,_) => .
 
-  rule <k> module S(O) => ref(N) . String2Id("__dict__") ["__name__"] = S:String ...</k>
+  rule <k> module S(O:Object) => ref(N) . String2Id("__dict__") ["__name__"] = S:String ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
        (. => <object>...
          <id>N</id>
