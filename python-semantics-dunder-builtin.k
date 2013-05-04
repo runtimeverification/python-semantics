@@ -223,6 +223,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__iter__" |-> def "iter_range" (0, 0, true)
            "__new__" |-> def "new_range" (1, 4, false)
            ,.) ~>
+         (def "repr" (1, 1, false) ;) ~>
          object "reversed" ("type", ListItem("object"),
            "__new__" |-> def "reversed.__init__"(1, 1, true)
            ,.) ~>
