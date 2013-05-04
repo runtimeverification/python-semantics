@@ -41,7 +41,7 @@ module PYTHON-SEMANTICS-GENERATOR
            <xcontext> XC </xcontext>
            (C:Bag => newFrame)
          </currentFrame>
-         <cstack> . => generator(Frame, C, FL, XC, K, id(O)) ...</cstack>
+         <cstack> . => ListItem(generator(Frame, C, FL, XC, K, ref(id(O)))) ...</cstack>
        ...</control>
 
   syntax K ::= (K, Bag, List, K)
@@ -54,13 +54,13 @@ module PYTHON-SEMANTICS-GENERATOR
            <xcontext> XC => RestoredXC </xcontext>
            (C:Bag => RestoredC)
          </currentFrame>
-         <cstack> . => generator(Frame, C, FL, XC, K, id(O)) ...</cstack>
+         <cstack> . => ListItem(generator(Frame, C, FL, XC, K, ref(id(O)))) ...</cstack>
        ...</control>
 
   syntax Arguments ::= "#if" Bool "#then" Arguments "#else" Arguments "#fi" [function]
   rule <k> return O:Object ~> _ => setattr(N, "gi_state", (#freezer (HOLE ;)(.KList), SavedC, .List, SavedXC)) ~> raise ref("StopIteration")(#if id(O) ==K None #then .Arguments #else O #fi) ~> K </k>
        <control>...
-         <cstack> generator(Frame, C, FL, XC, K, N) => . ...</cstack>
+         <cstack> ListItem(generator(Frame, C, FL, XC, K, ref(N))) => . ...</cstack>
          <currentFrame>
            <frameObject> _ => Frame </frameObject>
            <fstack> . => FL </fstack>
@@ -72,7 +72,7 @@ module PYTHON-SEMANTICS-GENERATOR
 
   rule [yield]: <k> yield O ~> SavedK => setattr(N, "gi_state", (SavedK, SavedC, SavedFL, SavedXC)) ~> O ~> K </k>
        <control>...
-         <cstack> generator(Frame, C, FL, XC, K, N) => . ...</cstack>
+         <cstack> ListItem(generator(Frame, C, FL, XC, K, ref(N))) => . ...</cstack>
          <currentFrame>
            <frameObject> _ => Frame </frameObject>
            <fstack> SavedFL => FL </fstack>
@@ -83,7 +83,7 @@ module PYTHON-SEMANTICS-GENERATOR
 
   rule [raise-out-of-generator]: <k> (. => setattr(N, "gi_state", (#freezer (HOLE ;)(.KList), <xstack> . </xstack> SavedC, .List, ref("None")))) ~> raise ...</k>
        <control>...
-         <cstack> generator(Frame, C, FL, _, _, N) => . ...</cstack>
+         <cstack> ListItem(generator(Frame, C, FL, _, _, ref(N))) => . ...</cstack>
          <currentFrame>
            (<xstack> . </xstack>
            SavedC => C)

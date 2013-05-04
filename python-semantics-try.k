@@ -3,7 +3,7 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-TRY
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax ListItem ::= try(K, K, Bag, K, Bool)
+  syntax K ::= try(K, K, Bag, K, Bool)
 
   syntax K ::= savex(Exp) [strict]
              | setcause(Exp, Exp) [strict]
@@ -14,16 +14,16 @@ module PYTHON-SEMANTICS-TRY
  
   rule <k> (try: Try:K ECs:K else: Else:K => Try ~> popx ~> Else) ~> K:K </k>
        <currentFrame>
-         <xstack> . => try(ECs, K, C, Ex, true) ...</xstack>
+         <xstack> . => ListItem(try(ECs, K, C, Ex, true)) ...</xstack>
          <xcontext> Ex </xcontext>
          C:Bag
        </currentFrame>
 
   rule <k> (try: Try finally: Finally:K => Try ~> popfinally ~> Finally) ~> K </k>
        <currentFrame>
-         <xstack> (. => finally(Finally ~> raise, C, XL, LL, FL, Ex)) XL:List </xstack>
-         <lstack> (. => finally(Finally, C, XL, LL, FL, Ex)) LL:List </lstack>
-         <fstack> (. => finally(Finally, C, XL, LL, FL, Ex)) FL:List </fstack>
+         <xstack> (. => ListItem(finally(Finally ~> raise, C, XL, LL, FL, Ex))) XL:List </xstack>
+         <lstack> (. => ListItem(finally(Finally, C, XL, LL, FL, Ex))) LL:List </lstack>
+         <fstack> (. => ListItem(finally(Finally, C, XL, LL, FL, Ex))) FL:List </fstack>
          <xcontext> Ex </xcontext>
          C:Bag
        </currentFrame>
@@ -42,14 +42,14 @@ module PYTHON-SEMANTICS-TRY
   rule <k> (. => ECs) ~> raise ...</k>
        <currentFrame>
          <xcontext> B </xcontext>
-         <xstack> try(ECs, _, C, _, (true => false)) ...</xstack>
+         <xstack> ListItem(try(ECs, _, C, _, (true => false))) ...</xstack>
          (_ => C)
        </currentFrame> when B =/=K ref("None")
 
   rule <k> raise ~> _ => Finally </k>
        <currentFrame>
          <xcontext> B </xcontext>
-         <xstack> finally(Finally, C, _, LL, FL, _) => . ...</xstack>
+         <xstack> ListItem(finally(Finally, C, _, LL, FL, _)) => . ...</xstack>
          <lstack> _ => LL </lstack>
          <fstack> _ => FL </fstack>
          (_ => C:Bag)
@@ -59,7 +59,7 @@ module PYTHON-SEMANTICS-TRY
        <currentFrame>...
          <xcontext> ref(B) </xcontext>
          <frameObject> Frame </frameObject>
-         <xstack> try(_, _, _:Bag, _, false) => . ...</xstack>
+         <xstack> ListItem(try(_, _, _:Bag, _, false)) => . ...</xstack>
        ...</currentFrame>
        <object>...
          <id>B</id>
@@ -68,7 +68,7 @@ module PYTHON-SEMANTICS-TRY
 
   rule <k> raise ...</k>
        <control>...
-         <cstack> call(Frame, C, FL, _, _) => . ...</cstack>
+         <cstack> ListItem(call(Frame, C, FL, _, _)) => . ...</cstack>
          <currentFrame>
            (<xstack> . </xstack>
            _ => C)
@@ -112,7 +112,7 @@ module PYTHON-SEMANTICS-TRY
 
   rule <k> except: Except:K ~> _ => Except ~> setx(Ex) ~> K </k>
        <currentFrame>...
-         <xstack> try(_, K, _:Bag, Ex, false) => . ...</xstack>
+         <xstack> ListItem(try(_, K, _:Bag, Ex, false)) => . ...</xstack>
        ...</currentFrame>
 
   rule except O : Except => except O as String2Id(""): Except

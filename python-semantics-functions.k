@@ -103,13 +103,13 @@ module PYTHON-SEMANTICS-FUNCTIONS
              | "propscope"
              | "delscope"
 
-  syntax ListItem ::= scope(K , Set, Set, Set, Set, Set, List, Bool, Bool)
+  syntax K ::= scope(K , Set, Set, Set, Set, Set, List, Bool, Bool)
 
   rule <k> makescope (K, T:Bool) => . ...</k>
-       <scope> . => scope(K, .Set, .Set, .Set, .Set, .Set, .List, T, false) ...</scope>
+       <scope> . => ListItem(scope(ref(K), .Set, .Set, .Set, .Set, .Set, .List, T, false)) ...</scope>
 
   rule <k> visited(_) ~> storescope => . ...</k>
-       <scope> scope(.K, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, _, _) ...</scope>
+       <scope> ListItem(scope(.K, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, _, _)) ...</scope>
 
   rule [storescope]: <k> visited(K) ~> storescope => 
            setattr(N, "co_code", K) ~>
@@ -128,12 +128,12 @@ module PYTHON-SEMANTICS-FUNCTIONS
              FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L)) -Set
              LOCAL(Defs, Globals, Nonlocals, Params))))) ~>
            #if T #then setattr(N, "co_flags", getattr(ref(N), "co_flags") |Int 32) #else . #fi ...</k>
-       <scope> scope(N, Defs:Set, Uses:Set, Nonlocals:Set, Globals:Set, ChildFree:Set, Params:List, _, T:Bool) L</scope>
+       <scope> ListItem(scope(ref(N), Defs:Set, Uses:Set, Nonlocals:Set, Globals:Set, ChildFree:Set, Params:List, _, T:Bool)) L</scope>
 
   rule <k> propscope => . ...</k>
        <scope> LI:ListItem </scope>
   rule <k> propscope => . ...</k>
-       <scope> scope(_, Defs, Uses, Nonlocals, Globals, ChildFree, Params, _, _) scope(N, Defs2:Set, Uses2:Set, Nonlocals2:Set, Globals2:Set, ChildFree2:Set (. => (FREE(Defs, Uses, Globals, Nonlocals, ChildFree, scope(N, Defs2, Uses2, Nonlocals2, Globals2, ChildFree2, Params2, T, T2) L)) -Set LOCAL(Defs, Globals, Nonlocals, Params)), Params2:List, T, T2) L </scope>
+       <scope> ListItem(scope(_, Defs, Uses, Nonlocals, Globals, ChildFree, Params, _, _)) ListItem(scope(ref(N), Defs2:Set, Uses2:Set, Nonlocals2:Set, Globals2:Set, ChildFree2:Set (. => (FREE(Defs, Uses, Globals, Nonlocals, ChildFree, ListItem(scope(N, Defs2, Uses2, Nonlocals2, Globals2, ChildFree2, Params2, T, T2)) L)) -Set LOCAL(Defs, Globals, Nonlocals, Params)), Params2:List, T, T2)) L </scope>
 
   rule <k> delscope => . ...</k>
        <scope> LI:ListItem => . ...</scope>
@@ -144,8 +144,8 @@ module PYTHON-SEMANTICS-FUNCTIONS
   syntax List ::= "PARAMS" "(" List ")" [function]
   rule LOCAL(Defs, Globals, Nonlocals, Params) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set . 
   rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses Defs) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals 
-  rule BOUND(Bound:Set, L scope(_, Defs, _, Nonlocals, Globals2, _, Params, false, _)) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals2, L) 
-  rule BOUND(Bound:Set, L scope(_, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, true, _)) => BOUND(Bound, L)
+  rule BOUND(Bound:Set, L ListItem(scope(_, Defs, _, Nonlocals, Globals2, _, Params, false, _))) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals2, L) 
+  rule BOUND(Bound:Set, L ListItem(scope(_, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, true, _))) => BOUND(Bound, L)
   rule BOUND(Bound, .) => Bound 
   rule PARAMS(ListItem(X:Id) Params) => ListItem(Id2String(X)) PARAMS(Params) 
   rule PARAMS(ListItem(* X:Exp) Params) => PARAMS(Params ListItem(* X)) when Params =/=List . 
@@ -180,22 +180,22 @@ module PYTHON-SEMANTICS-FUNCTIONS
              | "setGenerator"
 
   rule <k> addDef(X) => . ...</k>
-       <scope> scope(_, _ (. => SetItem(Id2String(X))), _, _, _, _, _, _, _) ...</scope>
+       <scope> ListItem(scope(_, _ (. => SetItem(Id2String(X))), _, _, _, _, _, _, _)) ...</scope>
 
   rule <k> addUse(X) => . ...</k>
-       <scope> scope(_, _, _ (. => SetItem(Id2String(X))), _, _, _, _, _, _) ...</scope>
+       <scope> ListItem(scope(_, _, _ (. => SetItem(Id2String(X))), _, _, _, _, _, _)) ...</scope>
 
   rule <k> addNonlocals(X , Xs => Xs) ...</k>
-       <scope> scope(_, _, _, _ (. => SetItem(Id2String(X))), _, _, _, _, _) ...</scope>
+       <scope> ListItem(scope(_, _, _, _ (. => SetItem(Id2String(X))), _, _, _, _, _)) ...</scope>
 
   rule <k> addGlobals(X, Xs => Xs) ...</k>
-       <scope> scope(_, _, _, _, _ (. => SetItem(Id2String(X))), _, _, _, _) ...</scope>
+       <scope> ListItem(scope(_, _, _, _, _ (. => SetItem(Id2String(X))), _, _, _, _)) ...</scope>
 
   rule <k> addParam(K) => . ...</k>
-       <scope> scope(_, _:Set, _:Set, _:Set, _:Set, _:Set, _ (. => ListItem(K)), _, _) ...</scope>
+       <scope> ListItem(scope(_, _:Set, _:Set, _:Set, _:Set, _:Set, _ (. => ListItem(K)), _, _)) ...</scope>
 
   rule <k> setGenerator => . ...</k>
-       <scope> scope(_, _:Set, _:Set, _:Set, _:Set, _:Set, _, _, (_ => true)) ...</scope>
+       <scope> ListItem(scope(_, _:Set, _:Set, _:Set, _:Set, _:Set, _, _, (_ => true))) ...</scope>
 
   rule addGlobals(.NAMES) => .
   rule addNonlocals(.NAMES) => .

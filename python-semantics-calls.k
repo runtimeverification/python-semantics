@@ -75,7 +75,6 @@ module PYTHON-SEMANTICS-CALLS
 
   rule <k> matchArgs(obj(B:ObjId,_),Code:Object,.,.,M,_, HasVararg, HasKwarg) => invoke(ref(B), M) ...</k> when lengthMap M ==Int numArgs(Code) andBool (HasVararg orBool getattr(Code, "co_flags") &Int 4 ==Int 0) andBool (HasKwarg orBool getattr(Code, "co_flags") &Int 8 ==Int 0)
 
-  syntax ListItem ::= (K, Bag, Int, List)
   syntax ObjRef ::= makeLocals(Exp, Exp) [strict(1, 2)]
                   | makeLocals(List, List, Exp) [strict(3)]
                   | makeCells(Exp, Exp, Exp, Int) [strict(1, 2, 3)]
@@ -90,7 +89,7 @@ module PYTHON-SEMANTICS-CALLS
            <xcontext> XC </xcontext>
            (C:Bag => newFrame)
          </currentFrame>
-         <cstack> . => call(Frame, C, FL, XC, K) ...</cstack>
+         <cstack> . => ListItem(call(Frame, C, FL, XC, K)) ...</cstack>
        ...</control>
        <object>...
          <id>Code</id>
@@ -117,7 +116,7 @@ module PYTHON-SEMANTICS-CALLS
 
   rule <k> return O ~> _ => O ~> K </k>
        <control>...
-         <cstack> call(Frame, C, FL, XC, K) => . ...</cstack>
+         <cstack> ListItem(call(Frame, C, FL, XC, K)) => . ...</cstack>
          <currentFrame>
            <frameObject> _ => Frame </frameObject>
            <fstack> . => FL </fstack>
@@ -128,7 +127,7 @@ module PYTHON-SEMANTICS-CALLS
 
   rule <k> (. => Finally:K) ~> return O ...</k>
        <currentFrame>
-         <fstack> finally(Finally, C, XL:List, LL:List, _, Ex) => . ...</fstack>
+         <fstack> ListItem(finally(Finally, C, XL:List, LL:List, _, Ex)) => . ...</fstack>
          <xstack> _ => XL </xstack>
          <lstack> _ => LL </lstack>
          <xcontext> _ => Ex </xcontext>
