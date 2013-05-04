@@ -260,9 +260,9 @@ module PYTHON-SEMANTICS-COMMON
          <oenv> Env => Env [ id(O2) / id(O) ] </oenv>
        ...</object>
 
-  syntax K ::= finally(K, Bag, List, List, List, K)
-             | call(K, Bag, List, K, K)
-             | generator(K, Bag, List, K, K, K)
+  syntax K ::= finally(K, CurrentFrameCellFragment, List, List, List, K)
+             | call(K, CurrentFrameCellFragment, List, K, K)
+             | generator(K, CurrentFrameCellFragment, List, K, K, K)
 
   rule binaryOp(O, O2:Object, S, S2, K:K) => test(and(istype(O, ref(S)), istype(O2, ref(S2))), K, ref("NotImplemented"))
   rule unaryOp(O, S, K) => test(istype(O, ref(S)), K, ref("NotImplemented"))

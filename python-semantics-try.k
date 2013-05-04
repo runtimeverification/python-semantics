@@ -3,7 +3,7 @@ require "python-semantics-common.k"
 module PYTHON-SEMANTICS-TRY
   imports PYTHON-SEMANTICS-COMMON
 
-  syntax K ::= try(K, K, Bag, K, Bool)
+  syntax K ::= try(K, K, CurrentFrameCellFragment, K, Bool)
 
   syntax K ::= savex(Exp) [strict]
              | setcause(Exp, Exp) [strict]

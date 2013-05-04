@@ -7,7 +7,7 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   syntax K ::= "lmark"
 
-  syntax K ::= loop(K, K, Bag)
+  syntax K ::= loop(K, K, CurrentFrameCellFragment)
 
   rule global _ => .
   rule nonlocal _ => .

@@ -87,7 +87,7 @@ module PYTHON-SEMANTICS-CALLS
            <frameObject> Frame:Int => N </frameObject> 
            <fstack> FL => . </fstack>
            <xcontext> XC </xcontext>
-           (C:Bag => newFrame)
+           (C:Bag => <xstack> .List </xstack> <lstack> .List </lstack>)
          </currentFrame>
          <cstack> . => ListItem(call(Frame, C, FL, XC, K)) ...</cstack>
        ...</control>
@@ -95,9 +95,6 @@ module PYTHON-SEMANTICS-CALLS
          <id>Code</id>
          <oattrs>... "co_flags" |-> Flags ...</oattrs>
        ...</object> when Flags &Int 32 ==Int 0 [allocation]
-
-  syntax Bag ::= "newFrame"
-  rule newFrame => <xstack> .List </xstack> <lstack> .List </lstack>
 
   rule makeLocals(Free:Object, O:Object) => makeLocals(listvalue(Free), listvalue(O), {.KeyData})
   rule (. => test(getattr2(E2, "cell_contents") ==Obj .Obj, ., (O[E:K] = getref2(E2, "cell_contents")))) ~> makeLocals((ListItem(E) => .) _, (ListItem(E2) => .) _, O:Object)

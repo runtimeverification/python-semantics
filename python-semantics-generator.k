@@ -39,12 +39,12 @@ module PYTHON-SEMANTICS-GENERATOR
            <frameObject> Frame => id(getattr(O, "gi_frame")) </frameObject>
            <fstack> FL => . </fstack>
            <xcontext> XC </xcontext>
-           (C:Bag => newFrame)
+           (C:Bag => <xstack> .List </xstack> <lstack> .List </lstack>)
          </currentFrame>
          <cstack> . => ListItem(generator(Frame, C, FL, XC, K, ref(id(O)))) ...</cstack>
        ...</control>
 
-  syntax K ::= (K, Bag, List, K)
+  syntax K ::= (K, CurrentFrameCellFragment, List, K)
 
   rule [continue-generator]: <k> enterGenerator(O, Val, (RestoredK, RestoredC, RestoredFL, RestoredXC)) ~> K => Val ~> RestoredK ~> return </k>
        <control>...
