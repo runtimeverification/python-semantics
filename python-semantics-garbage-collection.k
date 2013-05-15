@@ -80,8 +80,8 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   rule refcountbag(<xcontext> K </xcontext>) => refcountk(K)
   rule refcountbag(<frameObject> Frame </frameObject>) => BagItem(Frame)
 
-  rule refcountstore(<object>... <oenv> Env:Map </oenv> <oattrs> Attrs:Map </oattrs> ...</object>) => refcountset(values Env) refcountset(values Attrs)
-  rule refcountstore(<object>... <oattrs> Attrs:Map </oattrs> ...</object>) => refcountset(values Attrs)
+  rule refcountstore(<object>... <oenv> Env:Map </oenv> <oattrs> Attrs:Map </oattrs> ...</object> C) => refcountset(values Env) refcountset(values Attrs) refcountstore(C)
+  rule refcountstore(<object>... <oattrs> Attrs:Map </oattrs> ...</object> C) => refcountset(values Attrs) refcountstore(C)
   rule refcountstore(.) => .
 
   rule refcountk(Lbl:KLabel(Kl:KList) ~> Lbl2:KLabel(Kl2:KList) ~> K2) => refcountk(Lbl(Kl)) refcountk(Lbl2(Kl2)) refcountk(K2)

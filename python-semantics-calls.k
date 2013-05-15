@@ -87,7 +87,7 @@ module PYTHON-SEMANTICS-CALLS
            <frameObject> Frame:Int => N </frameObject> 
            <fstack> FL => . </fstack>
            <xcontext> XC </xcontext>
-           (C:Bag => <xstack> .List </xstack> <lstack> .List </lstack>)
+           (C => <xstack> .List </xstack> <lstack> .List </lstack>)
          </currentFrame>
          <cstack> . => ListItem(call(Frame, C, FL, XC, K)) ...</cstack>
        ...</control>

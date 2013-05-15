@@ -33,7 +33,7 @@ semantics: python-kompiled/base.maude
 	test -e bootstrapped.bin && touch bootstrapped.bin
 
 python-kompiled/base.maude: ?*.k
-	kompile python.k -v --transition "computational" -sortCells
+	kompile python.k -v --transition "allocation"
 
 clean: test-clean
 	rm -rf .k
