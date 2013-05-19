@@ -35,7 +35,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
          <oattrs> "__code__" |-> ref(id(O)) "__class__" |-> ref("function") </oattrs>
        </object>) [allocation]
 
-  rule <k> codeObject(X, Ps, Ss:K, T:Bool) =>
+  rule <k> codeObject(X, Ps, Ss:K, T:CodeObjectType) =>
            setref(N, "co_varnames", tuple(.Exps)) ~>
            setref(N, "co_consts", tuple(docString(Ss))) ~>
            makescope(N, T) ~>
@@ -98,14 +98,14 @@ module PYTHON-SEMANTICS-FUNCTIONS
              | createClass(Id, K, Exp) [strict(3)]
              | createGenerator(Exp) [strict]
              | comprehension(Exp, Comps) [function]
-             | makescope(K, Bool)
+             | makescope(K, CodeObjectType)
              | "storescope"
              | "propscope"
              | "delscope"
 
-  syntax K ::= scope(K , Set, Set, Set, Set, Set, List, Bool, Bool)
+  syntax K ::= scope(K , Set, Set, Set, Set, Set, List, CodeObjectType, Bool)
 
-  rule <k> makescope (K, T:Bool) => . ...</k>
+  rule <k> makescope (K, T:CodeObjectType) => . ...</k>
        <scope> . => ListItem(scope(ref(K), .Set, .Set, .Set, .Set, .Set, .List, T, false)) ...</scope>
 
   rule <k> visited(_) ~> storescope => . ...</k>
@@ -115,37 +115,41 @@ module PYTHON-SEMANTICS-FUNCTIONS
            setattr(N, "co_code", K) ~>
            setref(N, "co_freevars", tuple(DeListify(DeSetify(
              FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) -Set 
-             LOCAL(Defs, Globals, Nonlocals, Params))))) ~>
+             LOCAL(Defs, Globals, Nonlocals, Params, Type))))) ~>
            setref(N, "co_cellvars", tuple(DeListify(DeSetify(
              FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) &Set
-             LOCAL(Defs, Globals, Nonlocals, Params))))) ~>
+             LOCAL(Defs, Globals, Nonlocals, Params, Type))))) ~>
            setref(N, "co_varnames", tuple(DeListify(PARAMS(Params) DeSetify(
-             (LOCAL(Defs, Globals, Nonlocals, Params) -Set
+             (LOCAL(Defs, Globals, Nonlocals, Params, Type) -Set
              FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L)) -Set
              Setify(PARAMS(Params)))))) ~>
            setref(N, "co_names", tuple(DeListify(DeSetify(
              ((Uses Globals) -Set
              FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L)) -Set
-             LOCAL(Defs, Globals, Nonlocals, Params))))) ~>
+             LOCAL(Defs, Globals, Nonlocals, Params, Type))))) ~>
            #if T #then setattr(N, "co_flags", getattr(ref(N), "co_flags") |Int 32) #else . #fi ...</k>
-       <scope> ListItem(scope(ref(N), Defs:Set, Uses:Set, Nonlocals:Set, Globals:Set, ChildFree:Set, Params:List, _, T:Bool)) L</scope>
+       <scope> ListItem(scope(ref(N), Defs:Set, Uses:Set, Nonlocals:Set, Globals:Set, ChildFree:Set, Params:List, Type, T:Bool)) L</scope>
 
   rule <k> propscope => . ...</k>
        <scope> LI:ListItem </scope>
   rule <k> propscope => . ...</k>
-       <scope> ListItem(scope(_, Defs, Uses, Nonlocals, Globals, ChildFree, Params, _, _)) ListItem(scope(ref(N), Defs2:Set, Uses2:Set, Nonlocals2:Set, Globals2:Set, ChildFree2:Set (. => (FREE(Defs, Uses, Globals, Nonlocals, ChildFree, ListItem(scope(N, Defs2, Uses2, Nonlocals2, Globals2, ChildFree2, Params2, T, T2)) L)) -Set LOCAL(Defs, Globals, Nonlocals, Params)), Params2:List, T, T2)) L </scope>
+       <scope> ListItem(scope(_, Defs, Uses, Nonlocals, Globals, ChildFree, Params, Type, _)) ListItem(scope(ref(N), Defs2:Set, Uses2:Set, Nonlocals2:Set, Globals2:Set, ChildFree2:Set (. => (FREE(Defs, Uses, Globals, Nonlocals, ChildFree, ListItem(scope(N, Defs2, Uses2, Nonlocals2, Globals2, ChildFree2, Params2, T, T2)) L)) -Set LOCAL(Defs, Globals, Nonlocals, Params, Type)), Params2:List, T, T2)) L </scope>
 
   rule <k> delscope => . ...</k>
        <scope> LI:ListItem => . ...</scope>
 
-  syntax Set ::= "FREE" "(" Set "," Set "," Set "," Set "," Set "," List ")" [function]
-  syntax Set ::= "LOCAL" "(" Set "," Set "," Set "," List ")" [function]
-  syntax Set ::= "BOUND" "(" Set "," List ")" [function]
-  syntax List ::= "PARAMS" "(" List ")" [function]
-  rule LOCAL(Defs, Globals, Nonlocals, Params) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set . 
-  rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses Defs) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals 
-  rule BOUND(Bound:Set, L ListItem(scope(_, Defs, _, Nonlocals, Globals2, _, Params, false, _))) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params)) -Set Globals2, L) 
-  rule BOUND(Bound:Set, L ListItem(scope(_, _:Set, _:Set, _:Set, _:Set, _:Set, _:List, true, _))) => BOUND(Bound, L)
+  syntax Set ::= FREE(Set, Set, Set, Set, Set, List) [function]
+  syntax Set ::= LOCAL(Set, Set, Set, List, CodeObjectType) [function]
+  syntax Set ::= BOUND(Set, List) [function]
+  syntax List ::= PARAMS(List) [function]
+  rule LOCAL(Defs, Globals, Nonlocals, Params, Type) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set . andBool Type =/=K typeobject
+  rule LOCAL(Defs, Globals, Nonlocals, Params, typeobject) => ((Defs SetItem("__class__") Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set .
+  rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses Defs) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals andBool notBool "super" in Uses
+  rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses Defs SetItem("__class__")) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals andBool "super" in Uses
+  rule BOUND(Bound:Set, L ListItem(scope(_, Defs, _, Nonlocals, Globals2, _, Params, funcobject, _))) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params, funcobject)) -Set Globals2, L) 
+  // if we are computing what is bound by a class definition scope, the only thing bound is __class__. Nothing in the local environment is bound.
+  rule BOUND(Bound:Set, L ListItem(scope(_, _:Set, _:Set, _:Set, Globals2:Set, _:Set, _:List, typeobject, _))) => BOUND(Bound SetItem("__class__"), L) when notBool "__class__" in Globals2
+  rule BOUND(Bound:Set, L ListItem(scope(_, _:Set, _:Set, _:Set, Globals2:Set, _:Set, _:List, moduleobject, _))) => BOUND(Bound, L)
   rule BOUND(Bound, .) => Bound 
   rule PARAMS(ListItem(X:Id) Params) => ListItem(Id2String(X)) PARAMS(Params) 
   rule PARAMS(ListItem(* X:Exp) Params) => PARAMS(Params ListItem(* X)) when Params =/=List . 
@@ -164,13 +168,15 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule comprehension(E, if E2 Comps ::Comps) => if E2 : comprehension(E, Comps) else: pass
   rule comprehension(E, .Comps) => yield E ;
 
-  rule makeCodeObject(N, ., Ss, _) => visit(Ss, 'compileVisitor) ~> storescope ~> propscope ~> delscope
-
+  rule makeCodeObject(N, ., Ss, _) => visit(Ss, 'compileVisitor) ~> visit(Ss, 'childScopeVisitor) ~> storescope ~> propscope ~> delscope
+  rule (visited(_) => .) ~> visit(_, 'childScopeVisitor)
+ 
   syntax K ::= compileVisitor(KLabel, Int, K)
              | parameterVisitor(KLabel, Int, K)
              | bindVisitor(KLabel, Int, K)
              | importVisitor(KLabel, Int, K)
              | withVisitor(KLabel, Int, K)
+             | childScopeVisitor(KLabel, Int, K)
 
   syntax K ::= addDef(Id)
              | addUse(Id)
@@ -212,18 +218,22 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule compileVisitor('def_`(_`):_, 0, X) => visit(X, 'bindVisitor)
   rule compileVisitor('def_`(_`):_, 1, Ps) => visit(Ps, 'parameterVisitor)
   rule compileVisitor('def_`(_`):_, 2, Ss) => visited(Ss)
-  rule compileVisitor(returner, -1, (def X (Ps): Ss)) => createFunction(X, Ps, .Obj, codeObject(X, Ps, Ss, false))
+  rule childScopeVisitor('def_`(_`):_, N, K) => visited(K)
+  rule childScopeVisitor(returner, -1, (def X (Ps): Ss)) => createFunction(X, Ps, .Obj, codeObject(X, Ps, Ss, funcobject))
   rule compileVisitor('def_`(_`)->_:_, 0, X) => visit(X, 'bindVisitor)
   rule compileVisitor('def_`(_`)->_:_, 1, Ps) => visit(Ps, 'parameterVisitor)
   rule compileVisitor('def_`(_`)->_:_, 3, Ss) => visited(Ss)
-  rule compileVisitor(returner, -1, (def X (Ps)-> K : Ss)) => createFunction(X, Ps, K, codeObject(X, Ps, Ss, false))
+  rule childScopeVisitor('def_`(_`)->_:_, N, K) => visited(K)
+  rule childScopeVisitor(returner, -1, (def X (Ps)-> K : Ss)) => createFunction(X, Ps, K, codeObject(X, Ps, Ss, funcobject))
 
   rule compileVisitor('lambda_:_, 0, Ps) => visit(Ps, 'parameterVisitor)
   rule compileVisitor('lambda_:_, 1, K) => visited(K)
-  rule compileVisitor(returner, -1, (lambda Ps : K)) => createLambda(Ps, codeObject(String2Id("<lambda>"), Ps, return K, false))
+  rule childScopeVisitor('lambda_:_, N, K) => visited(K)
+  rule childScopeVisitor(returner, -1, (lambda Ps : K)) => createLambda(Ps, codeObject(String2Id("<lambda>"), Ps, return K, funcobject))
 
   rule compileVisitor('GeneratorExp, N, K) => visited(K)
-  rule compileVisitor(returner, -1, generator(E Comp)) => createGenerator(codeObject(String2Id("<genexpr>"), .Parameters, comprehension(E, Comp), false))
+  rule childScopeVisitor('GeneratorExp, N, K) => visited(K)
+  rule childScopeVisitor(returner, -1, generator(E Comp)) => createGenerator(codeObject(String2Id("<genexpr>"), .Parameters, comprehension(E, Comp), funcobject))
 
   rule parameterVisitor('_=_,1,K) => visit(K, 'compileVisitor)
   rule parameterVisitor('_:_,1,K) => visit(K, 'compileVisitor)
@@ -232,7 +242,8 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   rule compileVisitor('class_`(_`):_, 0, X) => visit(X, 'bindVisitor)
   rule compileVisitor('class_`(_`):_, 2, Ss) => visited(Ss)
-  rule compileVisitor(returner, -1, (class X (As:K): Ss)) => createClass(X, As, codeObject(X, .Parameters, Ss, true))
+  rule childScopeVisitor('class_`(_`):_, N, K) => visited(K)
+  rule childScopeVisitor(returner, -1, (class X (As:K): Ss)) => createClass(X, As, codeObject(X, .Parameters, Ss, typeobject))
 
   rule compileVisitor(returner, -1, (yield E)) => setGenerator ~> visited(yield E)
 
@@ -276,9 +287,12 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule bindVisitor(returner, -1, X:Id) => addDef(X) ~> visited(X)
   rule bindVisitor(returner, -1, K) => visited(K) when isId(K) =/=K true
 
+  rule childScopeVisitor(Lbl, N, K) => visit(K, 'childScopeVisitor) when notBool (Lbl ==KLabel 'def_`(_`)->_:_ orElseBool Lbl ==KLabel 'class_`(_`):_ orElseBool Lbl ==KLabel 'def_`(_`):_) andBool N =/=Int -1
   rule compileVisitor(Lbl, N, K) => visit(K, 'compileVisitor) when notBool ((Lbl ==KLabel 'def_`(_`)->_:_ andBool N =/=Int 2) orElseBool (Lbl ==KLabel 'class_`(_`):_ andBool N =/=Int 1) orElseBool (N ==Int 0 andBool (Lbl ==KLabel '_=_ orElseBool Lbl ==KLabel '_+=_ orElseBool Lbl ==KLabel '_-=_ orElseBool Lbl ==KLabel '_*=_ orElseBool Lbl ==KLabel '_/=_ orElseBool Lbl ==KLabel '_FloorDiv=_ orElseBool Lbl ==KLabel '_%=_ orElseBool Lbl ==KLabel '_**=_ orElseBool Lbl ==KLabel '_>>=_ orElseBool Lbl ==KLabel '_<<=_ orElseBool Lbl ==KLabel '_&=_ orElseBool Lbl ==KLabel '_^=_ orElseBool Lbl ==KLabel '_|=_)) orElseBool (Lbl ==KLabel 'for_in_:_else:_ andBool N ==Int 0) orElseBool (Lbl ==KLabel 'with_:_ andBool N ==Int 0) orElseBool (Lbl ==KLabel 'except_as_:_ andBool N ==Int 1) orElseBool Lbl ==KLabel 'del_ orElseBool Lbl ==KLabel 'global_ orElseBool Lbl ==KLabel 'nonlocal_ orElseBool (Lbl ==KLabel '_=_ andBool N ==Int 0) orElseBool Lbl ==KLabel 'import_ orElseBool Lbl ==KLabel 'from_import_ orElseBool Lbl ==KLabel 'def_`(_`):_ orElseBool Lbl ==KLabel 'lambda_:_ orElseBool Lbl ==KLabel 'GeneratorExp) andBool N =/=Int -1
 
-  rule compileVisitor(returner, -1, K) => visited(K) when getKLabel K =/=KLabel 'def_`(_`)->_:_ andBool getKLabel K =/=KLabel 'def_`(_`):_ andBool getKLabel K =/=KLabel 'class_`(_`):_ andBool isId(K) =/=K true andBool getKLabel K =/=KLabel 'yield_
+  rule compileVisitor(returner, -1, K) => visited(K) when isId(K) =/=K true andBool getKLabel K =/=KLabel 'yield_
+  rule childScopeVisitor(returner, -1, K) => visited(K) when getKLabel K =/=KLabel 'def_`(_`)->_:_ andBool getKLabel K =/=KLabel 'def_`(_`):_ andBool getKLabel K =/=KLabel 'class_`(_`):_
   rule compileVisitor(returner, -1, .) => visited(.)
+  rule childScopeVisitor(returner, -1, .) => visited(.)
 
 endmodule

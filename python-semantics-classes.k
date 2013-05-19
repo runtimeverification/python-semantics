@@ -9,6 +9,7 @@ module PYTHON-SEMANTICS-CLASSES
                   | invokeClass(Exp, Exp, Exp, Map) [strict(1, 2, 3)]
                   | executeClass(Exp, Exp, Exp, Exp, Exp, Exp, Map) [strict(1, 2, 3, 4, 5, 6)] 
                   | calculateMetaclass(Exp, Exp, Exp, Exp, Exp) [strict]
+                  | setClass(Exp, Exp, Exp) [strict]
 
   syntax K ::= restoreContext(List, List, Int)
              | setWinner(Exp) [strict]
@@ -16,11 +17,13 @@ module PYTHON-SEMANTICS-CLASSES
 
   rule invokeClass(Metaclass:Object, CO:Object, Bases:Object, M:Map) => executeClass(Metaclass, CO, Bases, ref("builtins"), ref("globals")(.Arguments), doCall(Metaclass . String2Id("__prepare__"), ListItem(CO . String2Id("co_name")) ListItem(Bases), M), M)
 
-  rule <k> executeClass(Metaclass:Object, CO:Object, Bases:Object, Builtins:Object, Globals:Object, Locals:Object, M:Map) => executeFrame(N, CO, ref(Back), Locals, Globals, Builtins, makeCells(CO . String2Id("co_freevars"), CO . String2Id("co_cellvars"), ref("tuple")(ref("map")(getref2(ref(Back), "f_cells") . String2Id("__getitem__"), CO . String2Id("co_freevars"))), N), .) ~> ((Locals["__module__"]) = ref("globals")(.Arguments)["__name__"]::Exp) ~> (if CO . String2Id("co_consts")[0] is not ref("None") : (Locals["__doc__"]) = CO . String2Id("co_consts")[0] else: pass) ~> restoreContext(LL, FL, Back) ~> doCall(Metaclass, ListItem(CO . String2Id("co_name")) ListItem(Bases) ListItem(Locals), M) ...</k>
+  rule <k> executeClass(Metaclass:Object, CO:Object, Bases:Object, Builtins:Object, Globals:Object, Locals:Object, M:Map) => executeFrame(N, CO, ref(Back), Locals, Globals, Builtins, makeCells(CO . String2Id("co_freevars"), CO . String2Id("co_cellvars"), ref("tuple")(ref("map")(getref2(ref(Back), "f_cells") . String2Id("__getitem__"), CO . String2Id("co_freevars"))), N), .) ~> ((Locals["__module__"]) = ref("globals")(.Arguments)["__name__"]::Exp) ~> (if CO . String2Id("co_consts")[0] is not ref("None") : (Locals["__doc__"]) = CO . String2Id("co_consts")[0] else: pass) ~> restoreContext(LL, FL, Back) ~> setClass(doCall(Metaclass, ListItem(CO . String2Id("co_name")) ListItem(Bases) ListItem(Locals), M), CO, ref(N)) ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
        <frameObject> Back:Int </frameObject>
        <fstack> FL => . </fstack>
        <lstack> LL => . </lstack> [allocation]
+
+ rule setClass(Cls:Object, CO:Object, Frame:Object) => doBind("__class__", ref(id(Cls)), Frame) ~> Cls
 
  rule <k> restoreContext(LL, FL, N) => . ...</k>
       <fstack> _ => FL </fstack>

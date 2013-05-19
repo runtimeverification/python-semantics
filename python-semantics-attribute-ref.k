@@ -10,6 +10,8 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
                   | descriptor(Exp, Exp, Exp, Test) [strict]
                   | checkData(Exp, Exp) [strict]
                   | checkDataSet(Exp, Exp, Exp) [strict]
+                  | getSuperclass(Exp) [strict]
+                  | searchSuperclass(Exp, Exp) [strict]
 
   rule [attribute]: O:Object . X:Id => ref("getattr")(O, Id2String(X))
 
@@ -19,9 +21,15 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
 
   rule invokeBuiltin(obj("getattribute_object",_), ListItem(O) ListItem(O2:Object), .) => checkData(getmember(O, O2, false, false, false), O) -> mapLookup(O, O2) -> getmember(O, O2, true, false, true)
   rule invokeBuiltin(obj("getattribute_type",_), ListItem(O) ListItem(O2), .) => checkData(getmember(O, O2, false, false, false), O) -> getmember(O, O2, true, true, true)
+  rule invokeBuiltin(obj("super.__getattribute__",_), ListItem(Super) ListItem(Key), .) => descriptor(basesLookup(getSuperclass(Super), Key), getref(Super, "__self__"), getref(Super, "__self_class__"), false) -> ref("getattribute_object")(Super, Key)
 
   rule checkData(O:Object, O2:Object) => test((getmember(O, "__set__", false, false, false) -> getmember(O, "__delete__", false, false, false)) ==Obj .Obj, .Obj, descriptor(O, O2, gettype(O2), false))
   rule checkData(.Obj, _) => .Obj
+
+  rule getSuperclass(Super) => searchSuperclass(getref(Super, "__thisclass__"), getattr2(getref2(getref(Super, "__self_class__"), "__mro__"), "__value__"))
+  rule searchSuperclass(ThisClass, list(ListItem(ref(N)) ListItem(K) L:List)) => getref(K, "__mro__") when id(ThisClass) ==K N
+  rule searchSuperclass(ThisClass, list((ListItem(ref(N)) => .) ListItem(_) L:List)) when id(ThisClass) =/=K N
+  rule searchSuperclass(ThisClass, list(ListItem(_))) => tuple(.Exps)
 
   rule getmember(O:Object, O2, T:Bool, T2:Bool, true) => getmember(O, O2, T, T2, false) -> raiseInternal("AttributeError", "object has no attribute '" +String strvalue(O2) +String "'")
   rule getmember(O:Object, O2, true, false, false) => descriptor(getmember(O, O2, false, false, false), O, gettype(O), false)
@@ -59,12 +67,11 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
 
   rule descriptor(.Obj,_,_,_) => .Obj
 
-  //TODO: add super
   rule descriptor(O:Object, O2:Object, _, true) => (getmember(O, "__get__", false, false, false) ( O , ref("None") , O2)) -> O
   rule <k> descriptor(O:Object, O2:Object, Type:Object, false) => (getmember(O, "__get__", false, false, false) ( O , O2 , Type )) -> O ...</k>
-       <symbols>... "None" |-> None:Int ...</symbols> when id(O2) =/=K None
+       <symbols>... "None" |-> NoneId:Int ...</symbols> when id(O2) =/=K NoneId
   rule <k> descriptor(O:Object, O2:Object, Type:Object, false) => (getmember(O, "__get__", false, false, false) (O, O2, O2)) -> O ...</k>
-       <symbols>... "None" |-> None:Int ...</symbols> when id(O2) ==K None
+       <symbols>... "None" |-> NoneId:Int ...</symbols> when id(O2) ==K NoneId
  
   rule setmember(O:Object, Name:Object, Value:Object) => checkDataSet(getmember(O, Name, false, false, false), O, Value) -> mapInsert(O, Name, Value) -> raiseInternal("AttributeError", "object has no attribute '" +String strvalue(Name) +String "'")
 

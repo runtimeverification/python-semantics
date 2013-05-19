@@ -274,6 +274,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "super"("type",ListItem("object"),
            "__getattribute__" |-> def "super.__getattribute__"(1, 1, true)
            "__init__" |-> def "super.__init__"(0, 2, true)
+           "__new__" |-> def "super.__new__"(1, -1, false)
            ,.) ~>
          object "tuple"("type",ListItem("object"),
            "__add__" |-> def "add_tuple" (1, 1, true)

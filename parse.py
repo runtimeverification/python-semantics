@@ -282,7 +282,7 @@ class KPythonVisitor(ast.NodeVisitor):
 
   @staticmethod
   def getid(s):
-    return '# #id("' + s + '")(.KList)'
+    return '#token("#Id", "' + s + '")(.KList)'
 
   def visit_List(self, node):
     return "'`[_`](" + self.visit_list(node.elts, "'_`,_", "`,") + ")"

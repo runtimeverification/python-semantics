@@ -80,6 +80,8 @@ module PYTHON-SEMANTICS-CALLS
                   | makeCells(Exp, Exp, Exp, Int) [strict(1, 2, 3)]
                   | makeCells(List, List, List, Exp, Int) [strict(4)]
 
+  syntax #Id ::= "co_cellvars"
+
   rule <k> invoke(obj(_:Int,<oattrs>... "__closure__" |-> Closure "__code__" |-> ref(Code) "__globals__" |-> Globals ...</oattrs>), M) ~> K:K => executeFrame(N, ref(Code), ref(Frame), makeLocals(ref(Code) . String2Id("co_freevars"), Closure), Globals, Globals ["__builtins__"], makeCells(ref(Code) . String2Id("co_freevars"), ref(Code) . String2Id("co_cellvars"), Closure, N), M) ~> return </k>
        <nextLoc> N => N +Int 1 </nextLoc>
        <control>...

@@ -13,6 +13,9 @@ module PYTHON-SEMANTICS-LOGIC
   syntax Test ::= Exp "==Obj" Exp [strict]
   syntax Test ::= Exp "=/=Obj" Exp [strict]
 
+  syntax Test ::= Test "or" Test [strict(1), left]
+  syntax Test ::= Exp "is" "None" [strict]
+
   //TODO: is None / is not None
 
   rule and(false, _) => false
@@ -21,6 +24,9 @@ module PYTHON-SEMANTICS-LOGIC
   rule or(true, _) => true
   rule or(_, true) => true
   rule or(false, K) => K
+  rule true or _ => true
+  rule _ or true => true
+  rule false or K => K
   rule negate(T:Bool) => notBool T
   rule O:KResult ==Obj O2:KResult => O ==K O2
   rule O:KResult =/=Obj O2:KResult => O =/=K O2
@@ -32,5 +38,8 @@ module PYTHON-SEMANTICS-LOGIC
   rule map(M:Map) -> _ => map(M)
   rule .Obj -> Chain:K => Chain
   rule .Obj (_) => .Obj
+
+  rule <k> obj(N,_) is None => N ==K NoneObj ...</k>
+       <symbols>... "None" |-> NoneObj ...</symbols>
 
 endmodule

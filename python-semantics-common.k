@@ -58,6 +58,8 @@ module PYTHON-SEMANTICS-COMMON
              | getMro(Exp, Exp) [strict]
              | doBind(String, Exp, Exp) [strict(3)]
 
+  syntax #Id ::= "__class__"
+
   syntax Test ::= "istype" "(" Exp "," Exp ")" [strict]
                 | "hasbase" "(" K "," Exp ")" [strict]
 
@@ -79,12 +81,14 @@ module PYTHON-SEMANTICS-COMMON
                   | "immutable" "(" Value "," Exp ")" [strict(2)]
                   | "immutable" "(" Map "," Exp ")" [strict(2)]
                   | "name" "(" Exp ")"
-                  | "codeObject" "(" Id "," Parameters "," K "," Bool ")"
+                  | "codeObject" "(" Id "," Parameters "," K "," CodeObjectType ")"
                   | "class" "(" Arguments "," Exp ")" [strict]
                   | describe(Exp, Exp, Exp, String) [strict(1, 2, 3)]
                   | doDescribe(Exp, Exp, Exp, String) [strict(1, 2, 3)]
                   | reduce(Exp, K, KLabel) [strict(1)]
                   | reduce(List, K, KLabel)
+
+  syntax CodeObjectType ::= "funcobject" | "typeobject" | "moduleobject"
 
   syntax K ::= "iterate" "(" Exp "," K ")" [strict(1)]
 
@@ -273,7 +277,8 @@ module PYTHON-SEMANTICS-COMMON
   rule istype(O:Object, Type:Object) => hasbase(gettype(O), Type)
 
   //needs predicates to work without obj()
-  rule hasbase(obj(N:Int,ObjState:Bag), Base:Object) => or(obj(N,ObjState) ==K Base, hasbase(getbases(obj(N,ObjState)), Base))
+  rule hasbase(obj(N:Int,ObjState:Bag), Base:Object) => or(obj(N,ObjState) ==K Base, hasbase(getbases(obj(N,ObjState)), Base)) when hasattr(obj(N,ObjState), "__bases__")
+  rule hasbase(obj(N,ObjState), _) => false when notBool hasattr(obj(N,ObjState),"__bases__")
 
   rule hasbase(list(ListItem(N) L), Base) => or(hasbase(N, Base),hasbase(list(L), Base))
   rule hasbase(list(.List), Base) => false
