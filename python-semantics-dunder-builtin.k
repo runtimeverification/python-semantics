@@ -275,7 +275,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__getattribute__" |-> def "super.__getattribute__"(1, 1, true)
            "__init__" |-> def "super.__init__"(0, 2, true)
            "__new__" |-> def "super.__new__"(1, -1, false)
+           "__self__" |-> ref("super.__self__")
+           "__self_class__" |-> ref("super.__self_class__")
+           "__thisclass__" |-> ref("super.__thisclass__")
            ,.) ~>
+         object "super.__self__" ("attribute",.,., "__get__" |-> "__self__") ~>
+         object "super.__self_class__" ("attribute",.,., "__get__" |-> "__self_class__") ~>
+         object "super.__thisclass__" ("attribute",.,., "__get__" |-> "__thisclass__") ~>
          object "tuple"("type",ListItem("object"),
            "__add__" |-> def "add_tuple" (1, 1, true)
            "__contains__" |-> def "contains_tuple" (1, 1, true)

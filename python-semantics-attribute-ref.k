@@ -12,22 +12,26 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
                   | checkDataSet(Exp, Exp, Exp) [strict]
                   | getSuperclass(Exp) [strict]
                   | searchSuperclass(Exp, Exp) [strict]
+  syntax K ::= checkAttribute(Exp) [strict]
 
   rule [attribute]: O:Object . X:Id => ref("getattr")(O, Id2String(X))
 
-  rule invokeBuiltin(obj("getattr",_), ListItem(O) ListItem(S:Object), .) => try: (getmember(O, "__getattribute__", true, false, true) (S)) except ref("AttributeError") : (getmember(O, "__getattr__", true, false, false) (S) -> raise) else: pass
-  rule invokeBuiltin(obj("getattr",_), ListItem(O:Object) ListItem(S:Object) ListItem(Default), .) => try: ref("getattr")(O, S) except ref("AttributeError") : Default else: pass
-  rule invokeBuiltin(obj("hasattr",_), ListItem(O:Object) ListItem(S:Object), .) => try: (ref("getattr")(O, S) ; ~> ref("True")) except ref("AttributeError") : ref("False") else: pass
+  rule invokeBuiltin(obj("getattr",_), ListItem(O) ListItem(S:Object), .) => checkAttribute(S) ~> try: (getmember(O, "__getattribute__", true, false, true) (S)) except ref("AttributeError") : (getmember(O, "__getattr__", true, false, false) (S) -> raise) else: pass
+  rule invokeBuiltin(obj("getattr",_), ListItem(O:Object) ListItem(S:Object) ListItem(Default), .) => checkAttribute(S) ~> try: ref("getattr")(O, S) except ref("AttributeError") : Default else: pass
+  rule invokeBuiltin(obj("hasattr",_), ListItem(O:Object) ListItem(S:Object), .) => checkAttribute(S) ~> try: (ref("getattr")(O, S) ; ~> ref("True")) except ref("AttributeError") : ref("False") else: pass
 
-  rule invokeBuiltin(obj("getattribute_object",_), ListItem(O) ListItem(O2:Object), .) => checkData(getmember(O, O2, false, false, false), O) -> mapLookup(O, O2) -> getmember(O, O2, true, false, true)
-  rule invokeBuiltin(obj("getattribute_type",_), ListItem(O) ListItem(O2), .) => checkData(getmember(O, O2, false, false, false), O) -> getmember(O, O2, true, true, true)
-  rule invokeBuiltin(obj("super.__getattribute__",_), ListItem(Super) ListItem(Key), .) => descriptor(basesLookup(getSuperclass(Super), Key), getref(Super, "__self__"), getref(Super, "__self_class__"), false) -> ref("getattribute_object")(Super, Key)
+  rule invokeBuiltin(obj("getattribute_object",_), ListItem(O) ListItem(O2:Object), .) => checkAttribute(O2) ~> checkData(getmember(O, O2, false, false, false), O) -> mapLookup(O, O2) -> getmember(O, O2, true, false, true)
+  rule invokeBuiltin(obj("getattribute_type",_), ListItem(O) ListItem(O2), .) => checkAttribute(O2) ~> checkData(getmember(O, O2, false, false, false), O) -> getmember(O, O2, true, true, true)
+  //super.__getattribute__ will fall through to look up attributes on the super object itself if the attribute is not present, if the super object isn't bound correctly, or if we are looking up the "__class__" attribute
+  rule invokeBuiltin(obj("super.__getattribute__",_), ListItem(Super:Object) ListItem(Key:Object), .) => checkAttribute(Key) ~> test(getref(Super, "__thisclass__") is None or getref(Super, "__self__") is None or strvalue(Key) ==String "__class__", .Obj, descriptor(basesLookup(getSuperclass(Super), Key), getref(Super, "__self__"), getref(Super, "__self_class__"), #if getattr(Super, "__self__") ==K getattr(Super, "__self_class__") #then true #else false #fi)) -> ref("getattribute_object")(Super, Key)
 
   rule checkData(O:Object, O2:Object) => test((getmember(O, "__set__", false, false, false) -> getmember(O, "__delete__", false, false, false)) ==Obj .Obj, .Obj, descriptor(O, O2, gettype(O2), false))
   rule checkData(.Obj, _) => .Obj
 
+  rule checkAttribute(S) => test(istype(S, ref("str")), .K, raiseInternal("TypeError", "attribute name must be string"))
+
   rule getSuperclass(Super) => searchSuperclass(getref(Super, "__thisclass__"), getattr2(getref2(getref(Super, "__self_class__"), "__mro__"), "__value__"))
-  rule searchSuperclass(ThisClass, list(ListItem(ref(N)) ListItem(K) L:List)) => getref(K, "__mro__") when id(ThisClass) ==K N
+  rule searchSuperclass(ThisClass, list(ListItem(ref(N)) ListItem(K) L:List)) => getref2(K, "__mro__") when id(ThisClass) ==K N
   rule searchSuperclass(ThisClass, list((ListItem(ref(N)) => .) ListItem(_) L:List)) when id(ThisClass) =/=K N
   rule searchSuperclass(ThisClass, list(ListItem(_))) => tuple(.Exps)
 
