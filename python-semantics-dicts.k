@@ -56,6 +56,8 @@ module PYTHON-SEMANTICS-DICTS
   rule invokeBuiltin(obj("len_dict",_), ListItem(O), .) => lengthMap mapvalue(O)
 
   rule invokeBuiltin(obj("getitem_dict",_), ListItem(obj(B,_)) ListItem(Key:Object), .) => ref("hash")(Key) ~> tableLookup(B, 0, Key)
+  rule invokeBuiltin(obj("get_dict",_), ListItem(O:Object) ListItem(Key:Object), .) => ref("get_dict")(O, Key, ref("None"))
+  rule invokeBuiltin(obj("get_dict",_), ListItem(obj(B,_)) ListItem(Key:Object) ListItem(Default:Object), .) => try: (ref("hash")(Key) ~> tableLookup(B, 0, Key)) except ref("KeyError"): Default
   rule (O:Object => .) ~> tableLookup(_,(_ => intvalue(O)),_)
   rule (O:Object => .) ~> tableLookup(_,(_ => intvalue(O)),_) ;
 
