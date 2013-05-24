@@ -62,6 +62,7 @@ module PYTHON-SEMANTICS-COMMON
 
   syntax Test ::= "istype" "(" Exp "," Exp ")" [strict]
                 | "hasbase" "(" K "," Exp ")" [strict]
+				| hasmember(Exp, Exp) [strict]
 
   // TODO: figure out why the good goddamn fuck it is that if I make ref(K) of sort ObjRef then parsing dicts takes exponential time.
   syntax Exp ::= "ref" "(" K ")"

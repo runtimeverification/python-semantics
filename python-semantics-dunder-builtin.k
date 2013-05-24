@@ -34,7 +34,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "path" |-> ref("path")
            "__init__" |-> def "ImportError.__init__"(0, -1, true)
            ,.) ~>
-	 object "name"("attribute",.,.,"__get__" |-> "name") ~>
+         object "name"("attribute",.,.,"__get__" |-> "name") ~>
          object "path"("attribute",.,.,"__get__" |-> "path") ~>
          object "ImportWarning"("type",ListItem("Warning"),.,.) ~>
          object "IndexError"("type",ListItem("LookupError"),.,.) ~>
@@ -118,7 +118,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          (def "format" (1, 2, false) ;) ~>
          (def "getattr" (2, 3, false) ;) ~>
          (def "globals" (0, 0, false) ;) ~>
-	 (def "hasattr" (2, 2, false) ;) ~>
+         (def "hasattr" (2, 2, false) ;) ~>
          (def "hash" (1, 1, false) ;) ~>
          (def "id"(1, 1, false) ;) ~>
          (def "index" (1, 1, false) ;) ~>
@@ -225,7 +225,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ,.) ~>
          (def "repr" (1, 1, false) ;) ~>
          object "reversed" ("type", ListItem("object"),
-           "__new__" |-> def "reversed.__init__"(1, 1, true)
+           "__new__" |-> def "reversed.__new__"(2, 2, false)
+           "__next__" |-> def "reversed.__next__"(0, 0, true)
+           "__iter__" |-> def "reversed.__iter__"(0, 0, true)
            ,.) ~>
          object "set" ("type", ListItem("object"),
            "__contains__" |-> def "contains_set" (1, 1, true)

@@ -41,6 +41,8 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule getmember(O:Object, O2, true, true, false) => descriptor(basesLookup(getref(O, "__mro__"), O2), O, gettype(O), true) -> getmember(O, O2, true, false, false)
   rule getmember(O:Object, O2, false, false, false) => basesLookup(getref2(gettype(O), "__mro__"), O2)
 
+  rule hasmember(O:Object, O2:Object) => getmember(O, O2, false, false, false) =/=Obj .Obj
+
   rule <k> mapLookup(obj(B,_), O) => try: K[O] except ref("KeyError") : .Obj else: pass ...</k>
        <object>
          <id>B</id>
