@@ -106,6 +106,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "dict_keys" ("type",ListItem("object"),
            "__iter__" |-> def "iter_dict_keys" (0, 0, true)
            ,.) ~>
+         (def "eval" (1, 3, false) ;) ~>
+         (def "exec" (1, 3, false) ;) ~>
          object "float"("type",ListItem("object"),
            "__eq__" |-> def "float.__eq__"(1, 1, true)
            "__ge__" |-> def "float.__ge__" (1, 1, true)
@@ -239,7 +241,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__ne__" |-> def "ne_set"(1, 1, true)
            "__new__" |-> def "new_set" (1, -1, false)
            ,.) ~>
-	 (def "setattr" (3, 3, false) ;) ~>
+     (def "setattr" (3, 3, false) ;) ~>
          object "slice" ("type",ListItem("object"),
            "indices" |-> def "indices_slice" (1, 1, true)
            "start" |-> ref("start")
@@ -429,19 +431,57 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "readline" |-> def "BytesIO.readline"(0, 1, true)
            ,.) ~>
          object "FileIO"("type", ListItem("_RawIOBase"),
+           "__new__" |-> def "FileIO.__new__"(1, -1, false)
            "__init__" |-> def "FileIO.__init__"(1, 4, true)
+           "close" |-> def "FileIO.close"(0, 0, true)
+           "closed" |-> ref("FileIO.closed")
+           "closefd" |-> ref("FileIO.closefd")
+           "fileno" |-> def "FileIO.fileno"(0, 0, true)
+           "isatty" |-> def "FileIO.isatty"(0, 0, true)
+           "mode" |-> ref("FileIO.mode")
            "read" |-> def "FileIO.read"(0, 1, true)
+           "readable" |-> def "FileIO.readable"(0, 0, true)
+           "readall" |-> def "FileIO.readall"(0, 0, true)
+           "readinto" |-> def "FileIO.readinto"(1, 1, true)
+           "seek" |-> def "FileIO.seek"(1, 2, true)
+           "seekable" |-> def "FileIO.seekable"(0, 0, true)
+           "tell" |-> def "FileIO.tell" (0, 0, true)
+           "truncate" |-> def "FileIO.truncate" (0, 1, true)
+           "writable" |-> def "FileIO.writable" (0, 0, true)
            "write" |-> def "FileIO.write"(1, 1, true)
            ,.) ~>
+         object "FileIO.closed"("attribute",.,.,"__get__" |-> "closed") ~>
+         object "FileIO.closefd"("attribute",.,.,"__get__" |-> "closefd") ~>
+         object "FileIO.mode"("attribute",.,.,"__get__" |-> "mode") ~>
          object "IncrementalNewlineDecoder"("type", ListItem("object"),
            "__init__" |-> def "IncrementalNewlineDecoder.__init__"(2, 3, true)
            "decode" |-> def "IncrementalNewlineDecoder.decode"(1, 2, true)
            ,.) ~>
          object "_IOBase"("type", ListItem("object"),
+           "__enter__" |-> def "_IOBase.__enter__"(0, 0, true)
+           "__exit__" |-> def "_IOBase.__exit__"(3, 3, true)
+           "__iter__" |-> def "_IOBase.__iter__"(0, 0, true)
            "__new__" |-> def "_IOBase.__new__"(1, -1, false)
+           "__next__" |-> def "_IOBase.__next__"(0, 0, true)
+           "close" |-> def "_IOBase.close"(0, 0, true)
+           "closed" |-> ref("_IOBase.closed")
+           "fileno" |-> def "_IOBase.fileno"(0, 0, true)
+           "flush" |-> def "_IOBase.flush"(0, 0, true)
+           "isatty" |-> def "_IOBase.isatty"(0, 0, true)
+           "readable" |-> def "_IOBase.readable"(0, 0, true)
+           "readline" |-> def "_IOBase.readline"(0, 1, true)
+           "readlines" |-> def "_IOBase.readlines"(0, 1, true)
+           "seek" |-> def "_IOBase.seek"(1, 2, true)
+           "seekable" |-> def "_IOBase.seekable"(0, 0, true)
+           "tell" |-> def "_IOBase.tell" (0, 0, true)
+           "truncate" |-> def "_IOBase.truncate"(0, 1, true)
+           "writable" |-> def "_IOBase.writable"(0, 0, true)
+           "writelines" |-> def "_IOBase.writelines"(1, 1, true)
            ,.) ~>
+         object "_IOBase.closed"("attribute",.,.,"__get__" |-> "closed") ~>
          object "_RawIOBase"("type", ListItem("_IOBase"),
            "read" |-> def "_RawIOBase.read"(0, 1, true)
+           "readall" |-> def "_RawIOBase.readall"(0, 0, true)
            ,.) ~>
          object "_BufferedIOBase"("type", ListItem("_IOBase"),.,.) ~>
 
@@ -494,7 +534,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "BytesIO" : ref("BytesIO")
          , "FileIO" : ref("FileIO")
          , "IncrementalNewlineDecoder" : ref("IncrementalNewlineDecoder")
-	 }) ~>
+     }) ~>
          module "_warnings"({
            "warn" : ref("_warnings.warn")
          }) ~>
@@ -546,6 +586,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "compile" : ref("compile")
          , "complex" : ref("complex")
          , "dict" : ref("dict")
+         , "eval" : ref("eval")
+         , "exec" : ref("exec")
          , "float" : ref("float")
          , "format" : ref("format")
          , "getattr" : ref("getattr")
