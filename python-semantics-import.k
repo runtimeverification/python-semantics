@@ -33,6 +33,10 @@ module PYTHON-SEMANTICS-IMPORT
   rule invokeBuiltin(obj("imp_get_frozen_object",_), ListItem(O), .) => test(istype(O, ref("str")), raiseInternal("ImportError", "no such frozen object named " +String strvalue(O)), raiseInternal("TypeError", "must be str"))
   rule invokeBuiltin(obj("imp_is_frozen_package",_), ListItem(O), .) => test(istype(O, ref("str")), raiseInternal("ImportError", "no such frozen object named " +String strvalue(O)), raiseInternal("TypeError", "must be str"))
 
+  rule invokeBuiltin(obj("module.__new__",_), ListItem(Cls) L:List, M:Map) => newHelper(Cls, ref("module"), .) ~> mutable("__dict__" |-> ref("None"), Cls)
+  rule invokeBuiltin(obj("module.__init__",_), ListItem(Self:Object) ListItem(Name:Object), .) => ref("module.__init__")(Self, Name, ref("None"))
+  rule invokeBuiltin(obj("module.__init__",_), ListItem(Self:Object) ListItem(Name:Object) ListItem(Doc:Object), .) => setref(id(Self), "__dict__", {.KeyData}) ~> ref(id(Self)) . __dict__ ["__name__"] = Name ~> ref(id(Self)) . __dict__ ["__doc__"] = Doc ~> ref("None")
+
   // import statement
 
   rule (. => moduleTarget(Module) = doImport(Module, .Aliases) ) ~> import (Module:Alias , Rest => Rest)

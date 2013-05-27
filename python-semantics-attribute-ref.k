@@ -24,6 +24,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule invokeBuiltin(obj("getattribute_type",_), ListItem(O) ListItem(O2), .) => checkAttribute(O2) ~> checkData(getmember(O, O2, false, false, false), O) -> getmember(O, O2, true, true, true)
   //super.__getattribute__ will fall through to look up attributes on the super object itself if the attribute is not present, if the super object isn't bound correctly, or if we are looking up the "__class__" attribute
   rule invokeBuiltin(obj("super.__getattribute__",_), ListItem(Super:Object) ListItem(Key:Object), .) => checkAttribute(Key) ~> test(getref(Super, "__thisclass__") is None or getref(Super, "__self__") is None or strvalue(Key) ==String "__class__", .Obj, descriptor(basesLookup(getSuperclass(Super), Key), getref(Super, "__self__"), getref(Super, "__self_class__"), #if getattr(Super, "__self__") ==K getattr(Super, "__self_class__") #then true #else false #fi)) -> ref("getattribute_object")(Super, Key)
+  rule invokeBuiltin(obj("module.__getattribute__",_), ListItem(O:Object) ListItem(O2:Object), .) => checkAttribute(O2) ~> checkData(getmember(O, O2, false, false, false), O) -> test(getref(O, "__dict__") is None, .Obj, mapLookup(O, O2)) -> getmember(O, O2, true, false, true)
 
   rule checkData(O:Object, O2:Object) => test((getmember(O, "__set__", false, false, false) -> getmember(O, "__delete__", false, false, false)) ==Obj .Obj, .Obj, descriptor(O, O2, gettype(O2), false))
   rule checkData(.Obj, _) => .Obj

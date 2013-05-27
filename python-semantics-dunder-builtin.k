@@ -205,9 +205,14 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__next__" |-> def "map_next" (0, 0, true)
            ,.) ~>
          object "module"("type",ListItem("object"),
-           "__dict__" |-> ref("__dict__module")
+		   "__delattr__" |-> def "module.__delattr__"(1, 1, true)
+           "__dict__" |-> ref("module.__dict__")
+		   "__getattribute__" |-> def "module.__getattribute__"(1, 1, true)
+		   "__new__" |-> def "module.__new__"(1, -1, false)
+		   "__init__" |-> def "module.__init__"(1, 2, true)
+		   "__setattr__" |-> def "module.__setattr__" (2, 2, true)
            ,.) ~>
-         object "__dict__module"("attribute",.,., "__get__" |-> "__dict__") ~>
+         object "module.__dict__"("attribute",.,., "__get__" |-> "__dict__") ~>
          object "object"("type",.,
            "__class__" |-> ref("__class__")
            "__getattribute__" |-> def "getattribute_object" (1, 1, true)
