@@ -448,7 +448,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "readable" |-> def "FileIO.readable"(0, 0, true)
            "readall" |-> def "FileIO.readall"(0, 0, true)
            "readinto" |-> def "FileIO.readinto"(1, 1, true)
-           "seek" |-> def "FileIO.seek"(1, 2, true)
+           "seek" |-> def "FileIO.seek"(0, -1, true)
            "seekable" |-> def "FileIO.seekable"(0, 0, true)
            "tell" |-> def "FileIO.tell" (0, 0, true)
            "truncate" |-> def "FileIO.truncate" (0, 1, true)
@@ -462,9 +462,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__init__" |-> def "IncrementalNewlineDecoder.__init__"(2, 3, true)
            "decode" |-> def "IncrementalNewlineDecoder.decode"(1, 2, true)
            ,.) ~>
+         object "UnsupportedOperation"("type", ListItem("ValueError") ListItem("OSError"),.,.) ~>
          object "_IOBase"("type", ListItem("object"),
            "__enter__" |-> def "_IOBase.__enter__"(0, 0, true)
-           "__exit__" |-> def "_IOBase.__exit__"(3, 3, true)
+           "__exit__" |-> def "_IOBase.__exit__"(0, -1, true)
            "__iter__" |-> def "_IOBase.__iter__"(0, 0, true)
            "__new__" |-> def "_IOBase.__new__"(1, -1, false)
            "__next__" |-> def "_IOBase.__next__"(0, 0, true)
@@ -536,9 +537,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "release_lock" : ref("imp_release_lock")
          }) ~>
          module "_io"({
-           "BytesIO" : ref("BytesIO")
+		   "_IOBase" : ref("_IOBase")
+		 , "_RawIOBase" : ref("_RawIOBase")
+         , "BytesIO" : ref("BytesIO")
          , "FileIO" : ref("FileIO")
          , "IncrementalNewlineDecoder" : ref("IncrementalNewlineDecoder")
+		 , "UnsupportedOperation" : ref("UnsupportedOperation")
      }) ~>
          module "_warnings"({
            "warn" : ref("_warnings.warn")

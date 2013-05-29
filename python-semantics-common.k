@@ -58,7 +58,7 @@ module PYTHON-SEMANTICS-COMMON
              | getMro(Exp, Exp) [strict]
              | doBind(String, Exp, Exp) [strict(3)]
 
-  syntax #Id ::= "__class__" | "__dict__"
+  syntax #Id ::= "__class__" | "__dict__" | "__next__"
 
   syntax Test ::= "istype" "(" Exp "," Exp ")" [strict]
                 | "hasbase" "(" K "," Exp ")" [strict]

@@ -1,7 +1,7 @@
-require "python-semantics-common.k"
+require "python-semantics-boolean-ops.k"
 
 module PYTHON-SEMANTICS-IO
-  imports PYTHON-SEMANTICS-COMMON
+  imports PYTHON-SEMANTICS-BOOLEAN-OPS
 
   syntax #Id ::= "follow_symlinks"
   rule invokeBuiltin(obj("posix.stat",_), ListItem(O:Object), .) => ref("posix.stat")(O, follow_symlinks=ref("True"))
@@ -50,4 +50,45 @@ module PYTHON-SEMANTICS-IO
   rule makeListdir(S:String ,, Kl:KList, Type, File) => immutable(S, Type), makeListdir(Kl, Type, File)
   rule makeListdir(.KList, _, _) => .Exps
 
+  syntax #Id ::= "write" | "read" | "extend" | "seek" | "readline"
+  rule invokeBuiltin(obj("_IOBase.__new__",_), ListItem(Cls) L:List, M:Map) => newHelper(Cls, ref("_IOBase"), SetItem("FileIO") SetItem("BytesIO") SetItem("BufferedReader") SetItem("BufferedWriter") SetItem("BufferedRandom") SetItem("BufferedRWPair") SetItem("TextIOWrapper") SetItem("StringIO") SetItem("IncrementalNewlineDecoder")) ~> mutable("closed" |-> ref("False"), Cls)
+  rule invokeBuiltin(obj("_IOBase.__iter__",_), ListItem(Self), .) => Self
+  rule invokeBuiltin(obj("_IOBase.close",_), ListItem(Self), .) => if getref(Self, "closed"): pass else: (Self . String2Id("flush")(.Arguments) ; ~> setref(id(Self), "closed", ref("True"))) ~> ref("None")
+  rule invokeBuiltin(obj("_IOBase.__enter__",_), ListItem(Self), .) => if getref(Self, "closed") : raiseInternal("ValueError", "I/O operation on closed file") else: Self
+  rule invokeBuiltin(obj("_IOBase.__exit__",_), ListItem(Self:Object) L:List, M:Map) => ref("_IOBase.close")(Self)
+  rule invokeBuiltin(obj("_IOBase.flush",_), ListItem(Self), .) => if getref(Self, "closed"): raiseInternal("ValueError", "I/O operation on closed file") else: ref("None")
+  rule invokeBuiltin(obj("_IOBase.isatty",_), ListItem(Self), .) => if getref(Self, "closed"): raiseInternal("ValueError", "I/O operation on closed file") else: ref("False")
+  rule invokeBuiltin(obj("_IOBase.readable",_), ListItem(Self), .) => ref("False")
+  rule invokeBuiltin(obj("_IOBase.seekable",_), ListItem(Self), .) => ref("False")
+  rule invokeBuiltin(obj("_IOBase.writable",_), ListItem(Self), .) => ref("False")
+  rule invokeBuiltin(obj("_IOBase.writelines",_), ListItem(Self) ListItem(Lines:Object), .) => if getref(Self, "closed") : raiseInternal("ValueError", "I/O operation on closed file") else: try: writelines(ref("iter")(Lines), Self) except ref("StopIteration"): ref("None")
+  syntax K ::= writelines(Exp, Exp) [strict]
+  //we write an explicit freezer here because we need to evaluate O.__next__ *before* evaluating
+  //Self.write, otherwise if write isn't defined, we will get an AttributeError instead of a
+  //StopIteration
+  rule writelines(O:Object, Self) => doWrite(O.__next__(.Arguments), Self) ~> writelines(O, Self)
+  syntax K ::= doWrite(Exp, Exp) [strict]
+  rule doWrite(O:Object, Self) => Self . write(O) ;
+  rule invokeBuiltin(obj("_IOBase.fileno",_), ListItem(Self), .) => raise ref("UnsupportedOperation")("fileno")
+  rule invokeBuiltin(obj("_IOBase.readline",_), ListItem(Self), .) => ref("_IOBase.readline")(Self, -1)
+  rule invokeBuiltin(obj("_IOBase.readline",_), ListItem(Self) ListItem(Limit), .) => readLine(Self, ref(id(Limit)))
+  syntax K ::= readLine(Exp, Exp) [strict(1)]
+  rule readLine(S, L) => ref("index")(L ::Exp) ~> readLine(S, HOLE) when isInt(L) =/=K true [heat]
+  rule O ~> readLine(S, HOLE) => readLine(S, intvalue(O)) [cool]
+  rule readLine(Self, Limit:Int) => test(Limit ==Int 0, b "", readLine(Self, Limit, Self . read(1)))
+  syntax K ::= readLine(Exp, Int, Exp) [strict(1, 3)]
+  rule readLine(Self, Limit, ReadByte:Object) => test(istype(ReadByte, ref("bytes")), test(strvalue(ReadByte) ==String "\n" orBool strvalue(ReadByte) ==String "", ReadByte, ReadByte + readLine(Self, Limit -Int 1)), raiseInternal("OSError", "read() should have returned a bytes object"))
+  rule invokeBuiltin(obj("_IOBase.readlines",_), ListItem(Self), .) => ref("_IOBase.readlines")(Self, -1)
+  rule invokeBuiltin(obj("_IOBase.readlines",_), ListItem(Self) ListItem(Hint), .) => if getref(Self, "closed"): raiseInternal("ValueError", "I/O operation on closed file") else: readLines(Self, ref(id(Hint)), [.Exps])
+  syntax K ::= readLines(Exp, Exp, Exp) [strict(1, 3)]
+  rule readLines(S, L, R) => ref("index")(L ::Exp) ~> readLines(S, HOLE, R) when isInt(L) =/=K true [heat]
+  rule O ~> readLines(S, HOLE, R) => readLines(S, intvalue(O), R) [cool]
+  rule readLines(Self, Hint:Int, List:Object) => try: List . extend(Self . __next__(.Arguments)) ; except ref("StopIteration"): ref(id(List)) else: if Hint - ref("len")(List[-1]) < 0 and bool(Hint >=Int 0) : ref(id(List)) else: readLines(Self, Hint - ref("len")(List[-1]), List)
+
+  rule invokeBuiltin(obj("_IOBase.seek",_), ListItem(Self) L:List, M:Map) => raise ref("UnsupportedOperation")("seek")
+  rule invokeBuiltin(obj("_IOBase.tell",_), ListItem(Self), .) => Self . seek(0, 1)
+  rule invokeBuiltin(obj("_IOBase.truncate",_), ListItem(Self) L:List, M:Map) => raise ref("UnsupportedOperation")("truncate")
+  rule invokeBuiltin(obj("_IOBase.__next__",_), ListItem(Self), .) => checkLineLength(Self . readline(.Arguments))
+  syntax Exp ::= checkLineLength(Exp) [strict]
+  rule checkLineLength(Line:Object) => if ref("len")(Line) == 0: raise ref("StopIteration") else: Line
 endmodule
