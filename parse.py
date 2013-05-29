@@ -126,7 +126,7 @@ class KPythonVisitor(ast.NodeVisitor):
       return "'raise_from_(" + self.visit(node.exc) + ",," + self.visit(node.cause) + ")"
 
   def visit_Try(self, node):
-    return "'try:__else:_finally:_(" + self.visit_list(node.body, "'_newline_", "newline") + ",," + self.visit_list(node.handlers, "'__","") + ",," + (self.visit_list(node.orelse, "'_newline_", "newline") if len(node.orelse) > 0 else "'pass(.KList)") + ",," + (self.visit_list(node.finalbody, "'_newline_", "newline") if len(node.finalbody) > 0 else "'pass(.KList)") + ")"
+    return "'try:__else:_" + ("finally:_" if len(node.finalbody) > 0 else "") + "(" + self.visit_list(node.body, "'_newline_", "newline") + ",," + self.visit_list(node.handlers, "'__","") + ",," + (self.visit_list(node.orelse, "'_newline_", "newline") if len(node.orelse) > 0 else "'pass(.KList)") + (",," + self.visit_list(node.finalbody, "'_newline_", "newline") if len(node.finalbody) > 0 else "") + ")"
 
   def visit_ExceptHandler(self, node):
     if not node.type:
