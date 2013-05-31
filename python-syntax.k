@@ -142,7 +142,7 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
 
   syntax Suite ::= StmtList NEWLINE | NEWLINE INDENT Stmts DEDENT
   syntax Stmt ::= StmtList NEWLINE | CompoundStmt
-  syntax Stmts ::= List{Stmt,""}
+  syntax Stmts ::= NeList{Stmt,""}
 
   //TODO: add lexer rules
   syntax NEWLINE
