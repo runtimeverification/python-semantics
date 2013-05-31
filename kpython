@@ -8,6 +8,7 @@ IMPORTLIB=fake-importlib.py
 SIXTYFOUR_BIT='"sys.hash_info.width" |-> 64 "sys.hash_info.modulus" |-> 2305843009213693951 "sys.hash_info.inf" |-> 314159 "sys.hash_info.nan" |-> 0 "sys.hash_info.imag" |-> 1000003 "tuple.__hash__:begin" |-> 3430008 "tuple.__hash__:addend" |-> 82520 "tuple.__hash__:end" |-> 97531'
 DEBUG='"__debug__" |-> true'
 VERBOSE='"PYTHONVERBOSE" |-> false'
+DEFAULT_BUFFER_SIZE='"_io.DEFAULT_BUFFER_SIZE" |-> 8192'
 HASHINFO=$SIXTYFOUR_BIT
 GC_THRESHOLD=100
 PROGRAM_DIR="\"\""
@@ -23,4 +24,4 @@ SYS_PATH="ListItem($PROGRAM_DIR) ListItem(\"$PYTHON_LIB\")"
 HASHSEED='"PYTHONHASHSEED" |-> 1'
 ERRNO=`python3.3 errno.py`
 OS='"sys.platform" |-> "linux" "posix.O_WRONLY" |-> 1 "posix.O_CREAT" |-> 64 "posix.O_EXCL" |-> 128'
-krun --parser "./parser" -cGCTHRESHOLD="$GC_THRESHOLD" -cSYSPATH="$SYS_PATH" -cCONSTANTS="$SIXTYFOUR_BIT $DEBUG $VERBOSE $HASHINFO $HASHSEED $OS $ERRNO" -cENVIRON="$ENVIRON" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" --cfg-parser="kast -groundParser -e" "$@"
+krun --parser "./parser" -cGCTHRESHOLD="$GC_THRESHOLD" -cSYSPATH="$SYS_PATH" -cCONSTANTS="$SIXTYFOUR_BIT $DEBUG $VERBOSE $HASHINFO $HASHSEED $OS $ERRNO $DEFAULT_BUFFER_SIZE" -cENVIRON="$ENVIRON" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" --cfg-parser="kast -groundParser -e" "$@"

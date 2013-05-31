@@ -69,6 +69,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "bool"("type",ListItem("int"),
            "__new__" |-> def "new_bool" (1, 2, false)
            ,.) ~>
+		 object "bytearray"("type",ListItem("object"),
+		   "__new__" |-> def "bytearray.__new__"(1, -1, false)
+		   "__init__" |-> def "bytearray.__init__"(0, 3, true)
+		   ,.) ~>
          object "bytes"("type",ListItem("object"),
            "__add__" |-> def "add_bytes"(1, 1, true)
            "__eq__" |-> def "eq_bytes"(1, 1, true)
@@ -78,7 +82,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__lt__" |-> def "lt_bytes" (1, 1, true)
            "__mul__" |-> def "mul_bytes" (1, 1, true)
            "__ne__" |-> def "ne_bytes" (1, 1, true)
-           "__new__" |-> def "new_bytes" (0, 3, true)
+           "__new__" |-> def "new_bytes" (1, 4, false)
            "__radd__" |-> def "radd_bytes"(1, 1, true)
            "__rmul__" |-> def "rmul_bytes" (1, 1, true)
            ,.) ~>
@@ -540,6 +544,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
 		   "_IOBase" : ref("_IOBase")
 		 , "_RawIOBase" : ref("_RawIOBase")
          , "BytesIO" : ref("BytesIO")
+		 , "DEFAULT_BUFFER_SIZE" : Constants("_io.DEFAULT_BUFFER_SIZE")
          , "FileIO" : ref("FileIO")
          , "IncrementalNewlineDecoder" : ref("IncrementalNewlineDecoder")
 		 , "UnsupportedOperation" : ref("UnsupportedOperation")
@@ -590,6 +595,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."
          , "all" : ref("all")
          , "bool" : ref("bool")
+		 , "bytearray" : ref("bytearray")
          , "bytes" : ref("bytes")
          , "classmethod" : ref("classmethod")
          , "compile" : ref("compile")

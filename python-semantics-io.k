@@ -50,7 +50,8 @@ module PYTHON-SEMANTICS-IO
   rule makeListdir(S:String ,, Kl:KList, Type, File) => immutable(S, Type), makeListdir(Kl, Type, File)
   rule makeListdir(.KList, _, _) => .Exps
 
-  syntax #Id ::= "write" | "read" | "extend" | "seek" | "readline"
+  syntax #Id ::= "write" | "read" | "extend" | "seek" | "readline" | "readall" | "readinto" 
+  syntax #Id ::= "DEFAULT_BUFFER_SIZE"
   rule invokeBuiltin(obj("_IOBase.__new__",_), ListItem(Cls) L:List, M:Map) => newHelper(Cls, ref("_IOBase"), SetItem("FileIO") SetItem("BytesIO") SetItem("BufferedReader") SetItem("BufferedWriter") SetItem("BufferedRandom") SetItem("BufferedRWPair") SetItem("TextIOWrapper") SetItem("StringIO") SetItem("IncrementalNewlineDecoder")) ~> mutable("closed" |-> ref("False"), Cls)
   rule invokeBuiltin(obj("_IOBase.__iter__",_), ListItem(Self), .) => Self
   rule invokeBuiltin(obj("_IOBase.close",_), ListItem(Self), .) => if getref(Self, "closed"): pass else: (Self . String2Id("flush")(.Arguments) ; ~> setref(id(Self), "closed", ref("True"))) ~> ref("None")
@@ -70,16 +71,16 @@ module PYTHON-SEMANTICS-IO
   syntax K ::= doWrite(Exp, Exp) [strict]
   rule doWrite(O:Object, Self) => Self . write(O) ;
   rule invokeBuiltin(obj("_IOBase.fileno",_), ListItem(Self), .) => raise ref("UnsupportedOperation")("fileno")
-  rule invokeBuiltin(obj("_IOBase.readline",_), ListItem(Self), .) => ref("_IOBase.readline")(Self, -1)
-  rule invokeBuiltin(obj("_IOBase.readline",_), ListItem(Self) ListItem(Limit), .) => readLine(Self, ref(id(Limit)))
+  rule invokeBuiltin(obj("_IOBase.readline",_), ListItem(Self), .) => ref("_IOBase.readline")(Self, ref("None"))
+  rule invokeBuiltin(obj("_IOBase.readline",_), ListItem(Self) ListItem(Limit), .) => test(Limit is None, readLine(Self, -1), readLine(Self, ref(id(Limit))))
   syntax K ::= readLine(Exp, Exp) [strict(1)]
   rule readLine(S, L) => ref("index")(L ::Exp) ~> readLine(S, HOLE) when isInt(L) =/=K true [heat]
   rule O ~> readLine(S, HOLE) => readLine(S, intvalue(O)) [cool]
   rule readLine(Self, Limit:Int) => test(Limit ==Int 0, b "", readLine(Self, Limit, Self . read(1)))
   syntax K ::= readLine(Exp, Int, Exp) [strict(1, 3)]
   rule readLine(Self, Limit, ReadByte:Object) => test(istype(ReadByte, ref("bytes")), test(strvalue(ReadByte) ==String "\n" orBool strvalue(ReadByte) ==String "", ReadByte, ReadByte + readLine(Self, Limit -Int 1)), raiseInternal("OSError", "read() should have returned a bytes object"))
-  rule invokeBuiltin(obj("_IOBase.readlines",_), ListItem(Self), .) => ref("_IOBase.readlines")(Self, -1)
-  rule invokeBuiltin(obj("_IOBase.readlines",_), ListItem(Self) ListItem(Hint), .) => if getref(Self, "closed"): raiseInternal("ValueError", "I/O operation on closed file") else: readLines(Self, ref(id(Hint)), [.Exps])
+  rule invokeBuiltin(obj("_IOBase.readlines",_), ListItem(Self), .) => ref("_IOBase.readlines")(Self, ref("None"))
+  rule invokeBuiltin(obj("_IOBase.readlines",_), ListItem(Self) ListItem(Hint), .) => if getref(Self, "closed"): raiseInternal("ValueError", "I/O operation on closed file") else: test(Hint is None, readLines(Self, -1, [.Exps]), readLines(Self, ref(id(Hint)), [.Exps]))
   syntax K ::= readLines(Exp, Exp, Exp) [strict(1, 3)]
   rule readLines(S, L, R) => ref("index")(L ::Exp) ~> readLines(S, HOLE, R) when isInt(L) =/=K true [heat]
   rule O ~> readLines(S, HOLE, R) => readLines(S, intvalue(O), R) [cool]
@@ -91,4 +92,16 @@ module PYTHON-SEMANTICS-IO
   rule invokeBuiltin(obj("_IOBase.__next__",_), ListItem(Self), .) => checkLineLength(Self . readline(.Arguments))
   syntax Exp ::= checkLineLength(Exp) [strict]
   rule checkLineLength(Line:Object) => if ref("len")(Line) == 0: raise ref("StopIteration") else: Line
+
+  rule invokeBuiltin(obj("_RawIOBase.read",_), ListItem(Self), .) => ref("_RawIOBase.read")(Self, -1)
+  rule invokeBuiltin(obj("_RawIOBase.read",_), ListItem(Self) ListItem(N), .) => doRead(Self, ref(id(N)))
+  syntax Exp ::= doRead(Exp, Exp) [strict(1)]
+  rule doRead(S, N) => N ~> doRead(S, HOLE) when isInt(N) =/=K true [heat]
+  rule O ~> doRead(S, HOLE) => doRead(S, intvalue(O)) [cool]
+  rule doRead(Self, N:Int) => test(N <Int 0, Self . readall(.Arguments), doRead(Self, N, ref("bytearray")(N)))
+  syntax Exp ::= doRead(Exp, Int, Exp) [strict(1, 3)]
+  rule doRead(Self, _, ByteArray:Object) => Self . readinto(ByteArray) ; ~> ref("bytes")(ref(id(ByteArray)))
+  rule invokeBuiltin(obj("_RawIOBase.readall",_), ListItem(Self), .) => readAll(Self . read(ref("_io") . DEFAULT_BUFFER_SIZE), b "", Self)
+  syntax Exp ::= readAll(Exp, Exp, Exp) [strict]
+  rule readAll(O:Object, Bytes, Self) => test(O is None, test(strvalue(Bytes) ==String "", ref("None"), Bytes), test(istype(O, ref("bytes")), test(strvalue(O) ==String "", Bytes, readAll(Self . read(ref("_io") . DEFAULT_BUFFER_SIZE), Bytes + O, Self)), raiseInternal("TypeError", "read() should return bytes")))
 endmodule
