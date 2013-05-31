@@ -459,7 +459,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "writable" |-> def "FileIO.writable" (0, 0, true)
            "write" |-> def "FileIO.write"(1, 1, true)
            ,.) ~>
-         object "FileIO.closed"("attribute",.,.,"__get__" |-> "closed") ~>
+         object "FileIO.closed"("attribute",.,.,"__get__" |-> "FileIO.closed") ~>
          object "FileIO.closefd"("attribute",.,.,"__get__" |-> "closefd") ~>
          object "FileIO.mode"("attribute",.,.,"__get__" |-> "mode") ~>
          object "IncrementalNewlineDecoder"("type", ListItem("object"),
@@ -488,7 +488,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "writable" |-> def "_IOBase.writable"(0, 0, true)
            "writelines" |-> def "_IOBase.writelines"(1, 1, true)
            ,.) ~>
-         object "_IOBase.closed"("attribute",.,.,"__get__" |-> "closed") ~>
+         object "_IOBase.closed"("attribute",.,.,"__get__" |-> "_IOBase.closed") ~>
          object "_RawIOBase"("type", ListItem("_IOBase"),
            "read" |-> def "_RawIOBase.read"(0, 1, true)
            "readall" |-> def "_RawIOBase.readall"(0, 0, true)
