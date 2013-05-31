@@ -23,8 +23,6 @@ module PYTHON-SEMANTICS-SYNTAX
   rule isKResult(list(_)) => true
   rule isKResult(map(_)) => true
 
-  syntax Stmt ::= Exp
-
   syntax Test ::= Bool
   syntax ObjRef ::= Object
   syntax K ::= "list" "(" List ")"
@@ -34,5 +32,9 @@ module PYTHON-SEMANTICS-SYNTAX
   rule isExp(list(_)) => true
   rule isValue(map(_)) => true
   rule isExp(map(_)) => true
+
+  syntax NEWLINE ::= "newline"
+  syntax INDENT ::= "indent"
+  syntax DEDENT ::= "dedent"
 
 endmodule

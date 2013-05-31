@@ -16,9 +16,9 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
 
   rule [attribute]: O:Object . X:Id => ref("getattr")(O, Id2String(X))
 
-  rule invokeBuiltin(obj("getattr",_), ListItem(O) ListItem(S:Object), .) => checkAttribute(S) ~> try: (getmember(O, "__getattribute__", true, false, true) (S)) except ref("AttributeError") : (getmember(O, "__getattr__", true, false, false) (S) -> raise) else: pass
-  rule invokeBuiltin(obj("getattr",_), ListItem(O:Object) ListItem(S:Object) ListItem(Default), .) => checkAttribute(S) ~> try: ref("getattr")(O, S) except ref("AttributeError") : Default else: pass
-  rule invokeBuiltin(obj("hasattr",_), ListItem(O:Object) ListItem(S:Object), .) => checkAttribute(S) ~> try: (ref("getattr")(O, S) ; ~> ref("True")) except ref("AttributeError") : ref("False") else: pass
+  rule invokeBuiltin(obj("getattr",_), ListItem(O) ListItem(S:Object), .) => checkAttribute(S) ~> try: returnInternal(getmember(O, "__getattribute__", true, false, true) (S)) except ref("AttributeError") : returnInternal(getmember(O, "__getattr__", true, false, false) (S) -> raise) else: .K
+  rule invokeBuiltin(obj("getattr",_), ListItem(O:Object) ListItem(S:Object) ListItem(Default), .) => checkAttribute(S) ~> try: returnInternal(ref("getattr")(O, S)) except ref("AttributeError") : returnInternal(Default) else: .K
+  rule invokeBuiltin(obj("hasattr",_), ListItem(O:Object) ListItem(S:Object), .) => checkAttribute(S) ~> try: returnInternal('Expr((ref("getattr")(O, S)) ~> ref("True"))) except ref("AttributeError") : returnInternal(ref("False")) else: .K
 
   rule invokeBuiltin(obj("getattribute_object",_), ListItem(O) ListItem(O2:Object), .) => checkAttribute(O2) ~> checkData(getmember(O, O2, false, false, false), O) -> mapLookup(O, O2) -> getmember(O, O2, true, false, true)
   rule invokeBuiltin(obj("getattribute_type",_), ListItem(O) ListItem(O2), .) => checkAttribute(O2) ~> checkData(getmember(O, O2, false, false, false), O) -> getmember(O, O2, true, true, true)
@@ -44,7 +44,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
 
   rule hasmember(O:Object, O2:Object) => getmember(O, O2, false, false, false) =/=Obj .Obj
 
-  rule <k> mapLookup(obj(B,_), O) => try: K[O] except ref("KeyError") : .Obj else: pass ...</k>
+  rule <k> mapLookup(obj(B,_), O) => try: returnInternal(K[O]) except ref("KeyError") : returnInternal(.Obj) else: .K ...</k>
        <object>
          <id>B</id>
          <oattrs>... "__dict__" |-> K ...</oattrs>

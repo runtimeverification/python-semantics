@@ -14,6 +14,7 @@ module PYTHON-SEMANTICS-LOGIC
   syntax Test ::= Exp "=/=Obj" Exp [strict]
 
   syntax Test ::= Test "or" Test [strict(1), left]
+  syntax K ::= "if" Test ":" K "else" ":" K [strict(1)]
   syntax Test ::= Exp "is" "None" [strict]
 
   //TODO: is None / is not None
@@ -33,6 +34,8 @@ module PYTHON-SEMANTICS-LOGIC
 
   rule test(true, K:K, _) => K
   rule test(false, _, K) => K
+  rule if true: K else: _ => K
+  rule if false: _ else: K => K
 
   rule (O:Object -> _) => O
   rule map(M:Map) -> _ => map(M)

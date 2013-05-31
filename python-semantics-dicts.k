@@ -59,9 +59,9 @@ module PYTHON-SEMANTICS-DICTS
   rule invokeBuiltin(obj("get_dict",_), ListItem(O:Object) ListItem(Key:Object), .) => ref("get_dict")(O, Key, ref("None"))
   rule invokeBuiltin(obj("get_dict",_), ListItem(obj(B,_)) ListItem(Key:Object) ListItem(Default:Object), .) => try: (ref("hash")(Key) ~> tableLookup(B, 0, Key)) except ref("KeyError"): Default
   rule (O:Object => .) ~> tableLookup(_,(_ => intvalue(O)),_)
-  rule (O:Object => .) ~> tableLookup(_,(_ => intvalue(O)),_) ;
+  rule (O:Object => .) ~> 'Expr(tableLookup(_,(_ => intvalue(O)),_))
 
-  rule invokeBuiltin(obj("setitem_dict",_), ListItem(O) ListItem(Key) ListItem(Value:Object), .) => processDict(O, Key |-> Value) ; ~> ref("None") 
+  rule invokeBuiltin(obj("setitem_dict",_), ListItem(O) ListItem(Key) ListItem(Value:Object), .) => 'Expr(processDict(O, Key |-> Value)) ~> ref("None") 
 
   rule invokeBuiltin(obj("delitem_dict",_), ListItem(obj(B,_)) ListItem(Key:Object), .) => ref("hash")(Key) ~> tableDelete(B, 0, Key) ~> ref("None")
   rule (O:Object => .) ~> tableDelete(_,(_ => intvalue(O)),_)
@@ -89,6 +89,6 @@ module PYTHON-SEMANTICS-DICTS
   rule equalDict(Key |-> Value M:Map, Dict) => Key in Dict and Dict[Key] == Value and equalDict(M, Dict)
   rule equalDict(.Map, _) => ref("True")
 
-  rule invokeBuiltin(obj("contains_dict",_), ListItem(Dict) ListItem(Key:Object), .) => try: (ref("hash")(Key) ~> tableLookup(id(Dict), 0, Key) ; ~> ref("True")) except ref("KeyError"): ref("False") else: pass
+  rule invokeBuiltin(obj("contains_dict",_), ListItem(Dict) ListItem(Key:Object), .) => try: (ref("hash")(Key) ~> 'Expr(tableLookup(id(Dict), 0, Key)) ~> ref("True")) except ref("KeyError"): ref("False") else: .K
 
 endmodule

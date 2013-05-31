@@ -61,10 +61,10 @@ module PYTHON-SEMANTICS-STATEMENTS
 
   rule [unroll-for]: lmark ~> for Target:Target in O : Ss else: Ss2 => try: (((Target) = getmember(O, "__next__", true, false, true) (.Arguments)) ~> Ss ~> lmark ~> for Target in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
 
-  rule O:Object ; => .
+  rule 'Expr(O:Object) => .
 
-  rule Stmt:K newline Ss => Stmt ~> Ss when Ss =/=K .Stmts
-  rule Stmt:K newline .Stmts => Stmt [macro]
+  rule Stmt:K ; Ss => Stmt ~> Ss when Ss =/=K .StmtList
+  rule Stmt:K ; .StmtList => Stmt [macro]
 
   rule with O:Object : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), ., Ss)
   rule with O:Object as T:Exp : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), T, Ss)
@@ -74,11 +74,11 @@ module PYTHON-SEMANTICS-STATEMENTS
   rule isKResult(O:KResult as _) => true
 
   // we copy from python-semantics-try.k so we can reuse finally functionality and still choose whether we suppress a raised exception
-  rule <k> (doWith(Exit:Object, Enter:Object, T, Ss) => #if T ==K . #then . #else T ::Target = Enter #fi ~> Ss ~> popfinally ~> Exit(* ref("sys_exc_info")(.Arguments)) ;) ~> K </k>
+  rule <k> (doWith(Exit:Object, Enter:Object, T, Ss) => #if T ==K . #then . #else T ::Target = Enter #fi ~> Ss ~> popfinally ~> Expr(Exit(* ref("sys_exc_info")(.Arguments)))) ~> K </k>
        <currentFrame>
          <xstack> (. => ListItem(finally(if not Exit(* ref("sys_exc_info")(.Arguments)): raise else: (setx(Ex) ~> K), C, XL, LL, FL, Ex))) XL:List </xstack> 
-         <lstack> (. => ListItem(finally(Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex))) LL:List </lstack>
-         <fstack> (. => ListItem(finally(Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex))) FL:List </fstack>
+         <lstack> (. => ListItem(finally('Expr(Exit(* ref("sys_exc_info")(.Arguments))), C, XL, LL, FL, Ex))) LL:List </lstack>
+         <fstack> (. => ListItem(finally('Expr(Exit(* ref("sys_exc_info")(.Arguments))), C, XL, LL, FL, Ex))) FL:List </fstack>
          <xcontext> Ex </xcontext>
          C:Bag
        </currentFrame>

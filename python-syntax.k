@@ -140,7 +140,16 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
 
   syntax ExceptClauses ::= NeList{ExceptClause,""}
 
-  syntax Stmt ::= Exp ";" [strict, klabel('Expr)] //TODO: subsort
+  syntax Suite ::= StmtList NEWLINE | NEWLINE INDENT Stmts DEDENT
+  syntax Stmt ::= StmtList NEWLINE | CompoundStmt
+  syntax Stmts ::= List{Stmt,""}
+
+  //TODO: add lexer rules
+  syntax NEWLINE
+  syntax INDENT
+  syntax DEDENT
+
+  syntax SimpleStmt ::= Exp [strict, klabel('Expr), onlyLabel] //TODO: remove onlyLabel
                      | AssignTargets "=" Exp [strict(2)] 
                      | Target "+=" Exp       [strict(2)]
                      | Target "-=" Exp       [strict(2)]
@@ -171,39 +180,38 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
                      | "global" NAMES
                      | "nonlocal" NAMES 
                      //TODO: elif
-                     > "if" Exp ":" Stmts
-                     | "if" Exp ":" Stmts "else" ":" Stmts [strict(1)]
-                     | "while" Exp ":" Stmts
-                     | "while" Exp ":" Stmts "else" ":" Stmts
-                     | "for" Target "in" Exp ":" Stmts
-                     | "for" Target "in" Exp ":" Stmts "else" ":" Stmts
-                     | "try" ":" Stmts ExceptClauses
-                     | "try" ":" Stmts ExceptClauses "else" ":" Stmts //"finally" ":" Stmts
-                     | "try" ":" Stmts ExceptClauses "else" ":" Stmts "finally" ":" Stmts
-                     | "try" ":" Stmts "finally" ":" Stmts
-                     | "with" Aliases ":" Stmts [strict(1)]
-                     | Decorated
+  syntax CompoundStmt ::= "if" Exp ":" Suite
+                        | "if" Exp ":" Suite "else" ":" Suite [strict(1)]
+                        | "while" Exp ":" Suite
+                        | "while" Exp ":" Suite "else" ":" Suite
+                        | "for" Target "in" Exp ":" Suite
+                        | "for" Target "in" Exp ":" Suite "else" ":" Suite
+                        | "try" ":" Suite ExceptClauses
+                        | "try" ":" Suite ExceptClauses "else" ":" Suite
+                        | "try" ":" Suite ExceptClauses "else" ":" Suite "finally" ":" Suite
+                        | "try" ":" Suite "finally" ":" Suite
+                        | "with" Aliases ":" Suite [strict(1)]
+                        | Decorated
 
-  syntax Stmts ::= Stmt
-                      > List{Stmt,"newline"}
+  syntax StmtList ::= List{SimpleStmt,";"}
 
-  syntax ExceptClause ::= "except" ":" Stmts
-                        | "except" Exp ":" Stmts [strict(1)]
-                        | "except" Exp "as" NAME ":" Stmts [strict(1)]
+  syntax ExceptClause ::= "except" ":" Suite
+                        | "except" Exp ":" Suite [strict(1)]
+                        | "except" Exp "as" NAME ":" Suite [strict(1)]
 
   syntax Decorated ::= ClassDef
                      | FuncDef
-                     | "@" Exp Decorated [strict(1)]
+                     | "@" Exp NEWLINE Decorated [strict(1)]
 
   syntax Parameters ::= List{Parameter,","} [seqstrict]
   syntax Parameter ::= Argument
                      | Argument ":" Exp [klabel('annotation)]
                      | "*"
 
-  syntax FuncDef ::= "def" NAME "(" Parameters ")" "->" Exp ":" Stmts
-                   | "def" NAME "(" Parameters ")" ":" Stmts
+  syntax FuncDef ::= "def" NAME "(" Parameters ")" "->" Exp ":" Suite
+                   | "def" NAME "(" Parameters ")" ":" Suite
 
 
-  syntax ClassDef ::= "class" NAME "(" Arguments ")" ":" Stmts [strict(2)]
+  syntax ClassDef ::= "class" NAME "(" Arguments ")" ":" Suite [strict(2)]
 
 endmodule

@@ -58,6 +58,9 @@ module PYTHON-SEMANTICS-COMMON
              | getMro(Exp, Exp) [strict]
              | doBind(String, Exp, Exp) [strict(3)]
 
+  syntax Suite ::= returnInternal(Exp)
+  rule returnInternal(E) => E [macro]
+
   syntax #Id ::= "__class__" | "__dict__" | "__next__"
 
   syntax Test ::= "istype" "(" Exp "," Exp ")" [strict]
@@ -103,11 +106,11 @@ module PYTHON-SEMANTICS-COMMON
   rule reduce(ListItem(I) L:List, K, Lbl) => Lbl(I,,reduce(L, K, Lbl))
 
   syntax String ::= "docString" "(" K ")" [function]
-  rule docString(S:String ;) => S 
-  rule docString(S:String ; newline _) => S 
-  rule docString(Lbl:KLabel(_)) => ref("None") when Lbl =/=KLabel '_newline_ andBool Lbl =/=KLabel 'Expr 
-  rule docString(Lbl:KLabel(Lbl2:KLabel(_),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 =/=KLabel 'Expr
-  rule docString(Lbl:KLabel(Lbl2:KLabel(K),,_)) => ref("None") when Lbl ==KLabel '_newline_ andBool Lbl2 ==KLabel 'Expr andBool isString(K) =/=K true 
+  rule docString('Expr(S:String)) => S 
+  rule docString('Expr(S:String) ; _) => S 
+  rule docString(Lbl:KLabel(_)) => ref("None") when Lbl =/=KLabel '_;_ andBool Lbl =/=KLabel 'Expr 
+  rule docString(Lbl:KLabel(Lbl2:KLabel(_),,_)) => ref("None") when Lbl ==KLabel '_;_ andBool Lbl2 =/=KLabel 'Expr
+  rule docString(Lbl:KLabel(Lbl2:KLabel(K),,_)) => ref("None") when Lbl ==KLabel '_;_ andBool Lbl2 ==KLabel 'Expr andBool isString(K) =/=K true 
   rule docString(Lbl:KLabel(K,,_)) => ref("None") when Lbl ==KLabel 'Expr andBool isString(K) =/=K true 
   rule docString(.) => ref("None") 
 
@@ -317,7 +320,7 @@ module PYTHON-SEMANTICS-COMMON
 
   context list(.) ~> iterate(HOLE,_)
 
-  rule iterate(O:Object, K) => try: (list(.) ~> iterate(ref("iter") (O), K)) except ref("TypeError") : test(K ==K ., raise, K) else: pass
+  rule iterate(O:Object, K) => try: (list(.) ~> iterate(ref("iter") (O), K)) except ref("TypeError") : test(K ==K ., raise, K) else: .K
   rule list(L:List) ~> iterate(O:Object, K) => try: addItem(getmember(O, "__next__", true, false, false) (.Arguments)) except ref("StopIteration") : list(L) else: (list(L) ~> iterate(O, K))
   rule (addItem(O:Object) => .) ~> popx ~> list(_ (. => ListItem(O)))
   rule Lbl:KLabel(Kl:KList) ~> setx(K2)  => setx(K2) ~> Lbl(Kl) when isKResult(Lbl(Kl))

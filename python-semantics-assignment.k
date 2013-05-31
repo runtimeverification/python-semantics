@@ -9,8 +9,8 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   rule (. => bind(X:Id, ref(B:ObjId))) ~> ((X)::Target = Ts:AssignTargets => Ts) = obj(B,_)
   rule (. => bindList(Listify(Ts2), O, false)) ~> (tuple(Ts2:Targets) = Ts:AssignTargets => Ts) = O:Object
   rule (. => bindList(Listify(Ts2), O, false)) ~> ([ Ts2 ] = Ts:AssignTargets => Ts) = O
-  rule (. => ref("setattr")(O, Id2String(X), O2) ;) ~> (O:Object . X:Id = Ts:AssignTargets => Ts) = O2:Object
-  rule (. => (getmember(O, "__setitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item assignment")) (Key:Object, Value:Object) ;) ~> (O:Object [ Key:Object ] = Ts:AssignTargets => Ts) = Value
+  rule (. => 'Expr(ref("setattr")(O, Id2String(X), O2))) ~> (O:Object . X:Id = Ts:AssignTargets => Ts) = O2:Object
+  rule (. => 'Expr((getmember(O, "__setitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item assignment")) (Key:Object, Value:Object))) ~> (O:Object [ Key:Object ] = Ts:AssignTargets => Ts) = Value
   rule .AssignTargets = _ => .
 
   context HOLE . _:Id = _ = K:Exp when isKResult(K)
@@ -20,8 +20,8 @@ module PYTHON-SEMANTICS-ASSIGNMENT
   rule (. => unbind(X:Id)) ~> del (X , Ts:NeTargets => Ts)
   rule (. => unbindList(Listify(Ts2))) ~> del (tuple(Ts2) , Ts => Ts)
   rule (. => unbindList(Listify(Ts2))) ~> del ([ Ts2 ] , Ts => Ts)
-  rule (. => (getmember(O, "__delattr__", true, false, true) (Id2String(X)) ;)) ~> del (O:Object . X:Id , Ts => Ts)
-  rule (. => (getmember(O, "__delitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item deletion")) (Key) ;)  ~> del (O:Object [ Key:Object ] , Ts => Ts)
+  rule (. => 'Expr(getmember(O, "__delattr__", true, false, true) (Id2String(X)))) ~> del (O:Object . X:Id , Ts => Ts)
+  rule (. => 'Expr((getmember(O, "__delitem__", true, false, false) -> raiseInternal("TypeError", "object does not support item deletion")) (Key)))  ~> del (O:Object [ Key:Object ] , Ts => Ts)
   rule del .NeTargets => .
 
   context del HOLE . _:Id , _

@@ -13,7 +13,7 @@ module PYTHON-SEMANTICS-OBJECTS
 
   rule <k> init(O:Object, Type, L, M) => test(istype(O, Type), test(plbool(doCall(getmember(O, "__init__", true, false, false), L, M) is ref("None")), ref(id(O)), raiseInternal("TypeError", "__init__() should return None")), O) ...</k>
 
-  rule <k> invokeBuiltin(obj("new_object",_), ListItem(O:Object) _, _) => newHelper(O, ref("object"), SetItem("iterator") SetItem("attribute") SetItem("builtin-function") SetItem("builtin-method") SetItem("frame") SetItem("reference")) ~> (if O is not ref("object") : setref(N, "__dict__", {.KeyData}) else: pass) ~> ref(N) ...</k>
+  rule <k> invokeBuiltin(obj("new_object",_), ListItem(O:Object) _, _) => newHelper(O, ref("object"), SetItem("iterator") SetItem("attribute") SetItem("builtin-function") SetItem("builtin-method") SetItem("frame") SetItem("reference")) ~> (if O is not ref("object") : setref(N, "__dict__", {.KeyData}) else: .K) ~> ref(N) ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
        (. => <object>
          <id>N</id>

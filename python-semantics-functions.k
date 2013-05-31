@@ -164,9 +164,9 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule createClass(X:Id, As, O:Object) => visited((X)::Target = class(As, O))
   rule createGenerator(O:Object) => visited(function(.Parameters, O, .Obj)(.Arguments))
 
-  rule comprehension(E, for T in E2 Comps ::Comps) => for T in E2 : comprehension(E, Comps) else: pass
-  rule comprehension(E, if E2 Comps ::Comps) => if E2 : comprehension(E, Comps) else: pass
-  rule comprehension(E, .Comps) => yield E ;
+  rule comprehension(E, for T in E2 Comps ::Comps) => for T in E2 : comprehension(E, Comps) else: .K
+  rule comprehension(E, if E2 Comps ::Comps) => if E2 : comprehension(E, Comps) else: .K
+  rule comprehension(E, .Comps) => 'Expr(yield E)
 
   rule makeCodeObject(N, ., Ss, _) => visit(Ss, 'compileVisitor) ~> visit(Ss, 'childScopeVisitor) ~> storescope ~> propscope ~> delscope
   rule (visited(_) => .) ~> visit(_, 'childScopeVisitor)

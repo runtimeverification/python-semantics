@@ -54,7 +54,7 @@ module PYTHON-SEMANTICS-IO
   syntax #Id ::= "DEFAULT_BUFFER_SIZE"
   rule invokeBuiltin(obj("_IOBase.__new__",_), ListItem(Cls) L:List, M:Map) => newHelper(Cls, ref("_IOBase"), SetItem("FileIO") SetItem("BytesIO") SetItem("BufferedReader") SetItem("BufferedWriter") SetItem("BufferedRandom") SetItem("BufferedRWPair") SetItem("TextIOWrapper") SetItem("StringIO") SetItem("IncrementalNewlineDecoder")) ~> mutable("closed" |-> ref("False"), Cls)
   rule invokeBuiltin(obj("_IOBase.__iter__",_), ListItem(Self), .) => Self
-  rule invokeBuiltin(obj("_IOBase.close",_), ListItem(Self), .) => if getref(Self, "closed"): pass else: (Self . String2Id("flush")(.Arguments) ; ~> setref(id(Self), "closed", ref("True"))) ~> ref("None")
+  rule invokeBuiltin(obj("_IOBase.close",_), ListItem(Self), .) => if getref(Self, "closed"): .K else: 'Expr((Self . String2Id("flush")(.Arguments)) ~> setref(id(Self), "closed", ref("True"))) ~> ref("None")
   rule invokeBuiltin(obj("_IOBase.__enter__",_), ListItem(Self), .) => if getref(Self, "closed") : raiseInternal("ValueError", "I/O operation on closed file") else: Self
   rule invokeBuiltin(obj("_IOBase.__exit__",_), ListItem(Self:Object) L:List, M:Map) => ref("_IOBase.close")(Self)
   rule invokeBuiltin(obj("_IOBase.flush",_), ListItem(Self), .) => if getref(Self, "closed"): raiseInternal("ValueError", "I/O operation on closed file") else: ref("None")
@@ -69,7 +69,7 @@ module PYTHON-SEMANTICS-IO
   //StopIteration
   rule writelines(O:Object, Self) => doWrite(O.__next__(.Arguments), Self) ~> writelines(O, Self)
   syntax K ::= doWrite(Exp, Exp) [strict]
-  rule doWrite(O:Object, Self) => Self . write(O) ;
+  rule doWrite(O:Object, Self) => 'Expr(Self . write(O))
   rule invokeBuiltin(obj("_IOBase.fileno",_), ListItem(Self), .) => raise ref("UnsupportedOperation")("fileno")
   rule invokeBuiltin(obj("_IOBase.readline",_), ListItem(Self), .) => ref("_IOBase.readline")(Self, ref("None"))
   rule invokeBuiltin(obj("_IOBase.readline",_), ListItem(Self) ListItem(Limit), .) => test(Limit is None, readLine(Self, -1), readLine(Self, ref(id(Limit))))
@@ -84,7 +84,7 @@ module PYTHON-SEMANTICS-IO
   syntax K ::= readLines(Exp, Exp, Exp) [strict(1, 3)]
   rule readLines(S, L, R) => ref("index")(L ::Exp) ~> readLines(S, HOLE, R) when isInt(L) =/=K true [heat]
   rule O ~> readLines(S, HOLE, R) => readLines(S, intvalue(O), R) [cool]
-  rule readLines(Self, Hint:Int, List:Object) => try: List . extend(Self . __next__(.Arguments)) ; except ref("StopIteration"): ref(id(List)) else: if Hint - ref("len")(List[-1]) < 0 and bool(Hint >=Int 0) : ref(id(List)) else: readLines(Self, Hint - ref("len")(List[-1]), List)
+  rule readLines(Self, Hint:Int, List:Object) => try: 'Expr(List . extend(Self . __next__(.Arguments))) except ref("StopIteration"): ref(id(List)) else: if Hint - ref("len")(List[-1]) < 0 and bool(Hint >=Int 0) : ref(id(List)) else: readLines(Self, Hint - ref("len")(List[-1]), List)
 
   rule invokeBuiltin(obj("_IOBase.seek",_), ListItem(Self) L:List, M:Map) => raise ref("UnsupportedOperation")("seek")
   rule invokeBuiltin(obj("_IOBase.tell",_), ListItem(Self), .) => Self . seek(0, 1)
@@ -100,7 +100,7 @@ module PYTHON-SEMANTICS-IO
   rule O ~> doRead(S, HOLE) => doRead(S, intvalue(O)) [cool]
   rule doRead(Self, N:Int) => test(N <Int 0, Self . readall(.Arguments), doRead(Self, N, ref("bytearray")(N)))
   syntax Exp ::= doRead(Exp, Int, Exp) [strict(1, 3)]
-  rule doRead(Self, _, ByteArray:Object) => Self . readinto(ByteArray) ; ~> ref("bytes")(ref(id(ByteArray)))
+  rule doRead(Self, _, ByteArray:Object) => 'Expr(Self . readinto(ByteArray)) ~> ref("bytes")(ref(id(ByteArray)))
   rule invokeBuiltin(obj("_RawIOBase.readall",_), ListItem(Self), .) => readAll(Self . read(ref("_io") . DEFAULT_BUFFER_SIZE), b "", Self)
   syntax Exp ::= readAll(Exp, Exp, Exp) [strict]
   rule readAll(O:Object, Bytes, Self) => test(O is None, test(strvalue(Bytes) ==String "", ref("None"), Bytes), test(istype(O, ref("bytes")), test(strvalue(O) ==String "", Bytes, readAll(Self . read(ref("_io") . DEFAULT_BUFFER_SIZE), Bytes + O, Self)), raiseInternal("TypeError", "read() should return bytes")))

@@ -65,7 +65,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "ValueError"("type",ListItem("Exception"),.,.) ~>
          object "Warning"("type",ListItem("Exception"),.,.) ~>
          object "ZeroDivisionError"("type", ListItem("ArithmeticError"),.,.) ~>
-         (def "all"(1, 1, false) ;) ~>
+         ('Expr( "all"(1, 1, false) )) ~>
          object "bool"("type",ListItem("int"),
            "__new__" |-> def "new_bool" (1, 2, false)
            ,.) ~>
@@ -91,7 +91,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__init__" |-> def "init_classmethod"(1, 1, true)
            "__new__" |-> def "new_classmethod"(2, 2, false)
            ,.) ~>
-         (def "compile"(3, 6, false) ;) ~>
+         ('Expr( "compile"(3, 6, false) )) ~>
          object "complex"("type",ListItem("object"),.,.) ~>
          object "dict"("type",ListItem("object"),
            "get" |-> def "get_dict" (1, 2, true)
@@ -110,8 +110,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "dict_keys" ("type",ListItem("object"),
            "__iter__" |-> def "iter_dict_keys" (0, 0, true)
            ,.) ~>
-         (def "eval" (1, 3, false) ;) ~>
-         (def "exec" (1, 3, false) ;) ~>
+         ('Expr( "eval" (1, 3, false) )) ~>
+         ('Expr( "exec" (1, 3, false) )) ~>
          object "float"("type",ListItem("object"),
            "__eq__" |-> def "float.__eq__"(1, 1, true)
            "__ge__" |-> def "float.__ge__" (1, 1, true)
@@ -121,13 +121,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__lt__" |-> def "float.__lt__" (1, 1, true)
            "__ne__" |-> def "float.__ne__" (1, 1, true)
            ,.) ~>
-         (def "format" (1, 2, false) ;) ~>
-         (def "getattr" (2, 3, false) ;) ~>
-         (def "globals" (0, 0, false) ;) ~>
-         (def "hasattr" (2, 2, false) ;) ~>
-         (def "hash" (1, 1, false) ;) ~>
-         (def "id"(1, 1, false) ;) ~>
-         (def "index" (1, 1, false) ;) ~>
+         ('Expr( "format" (1, 2, false) )) ~>
+         ('Expr( "getattr" (2, 3, false) )) ~>
+         ('Expr( "globals" (0, 0, false) )) ~>
+         ('Expr( "hasattr" (2, 2, false) )) ~>
+         ('Expr( "hash" (1, 1, false) )) ~>
+         ('Expr( "id"(1, 1, false) )) ~>
+         ('Expr( "index" (1, 1, false) )) ~>
          object "int"("type",ListItem("object"),
            "__abs__" |-> def "abs_int" (0, 0, true)
            "__add__" |-> def "add_int" (1, 1, true)
@@ -181,14 +181,14 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            //TODO: bit_length, conjugate, denominator, from_bytes, imag,
            //        numerator, real, to_bytes
            ,.) ~>
-         (def "isinstance" (2, 2, false) ;) ~>
-         (def "issubclass" (2, 2, false) ;) ~>
-         (def "iter" (1, 2, false) ;) ~>
+         ('Expr( "isinstance" (2, 2, false) )) ~>
+         ('Expr( "issubclass" (2, 2, false) )) ~>
+         ('Expr( "iter" (1, 2, false) )) ~>
          object "iterator"("type",ListItem("object"),
            "__iter__" |-> def "iter_iter" (0, 0, true)
            "__next__" |-> def "iter_next" (0, 0, true)
            ,.) ~> 
-         (def "len" (1, 1, false) ;) ~>
+         ('Expr( "len" (1, 1, false) )) ~>
          object "list"("type",ListItem("object"),
            "append" |-> def "append_list"(1, 1, true)
            "extend" |-> def "extend_list"(1, 1, true)
@@ -202,7 +202,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__new__" |-> def "new_list" (1, -1, false)
            "__setitem__" |-> def "setitem_list" (2, 2, true)
            ,.) ~>
-         (def "locals" (0, 0, false) ;) ~>
+         ('Expr( "locals" (0, 0, false) )) ~>
          object "map"("type",ListItem("object"),
            "__iter__" |-> ref("iter_iter")
            "__new__" |-> def "new_map" (3, -1, false)
@@ -229,12 +229,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__subclasshook__" |-> def "subclasshook_object"(0, -1, false)
            ,.) ~>
          object "__class__" ("attribute",.,., "__get__" |-> "__class__") ~>
-         (def "ord" (1, 1, false) ;) ~>
+         ('Expr( "ord" (1, 1, false) )) ~>
          object "range" ("type",ListItem("object"),
            "__iter__" |-> def "iter_range" (0, 0, true)
            "__new__" |-> def "new_range" (1, 4, false)
            ,.) ~>
-         (def "repr" (1, 1, false) ;) ~>
+         ('Expr( "repr" (1, 1, false) )) ~>
          object "reversed" ("type", ListItem("object"),
            "__new__" |-> def "reversed.__new__"(2, 2, false)
            "__next__" |-> def "reversed.__next__"(0, 0, true)
@@ -250,7 +250,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__ne__" |-> def "ne_set"(1, 1, true)
            "__new__" |-> def "new_set" (1, -1, false)
            ,.) ~>
-     (def "setattr" (3, 3, false) ;) ~>
+     ('Expr( "setattr" (3, 3, false) )) ~>
          object "slice" ("type",ListItem("object"),
            "indices" |-> def "indices_slice" (1, 1, true)
            "start" |-> ref("start")
@@ -412,27 +412,27 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "cell"("type",ListItem("object"),
            ., .) ~>
          object "cell_contents" ("attribute",.,., "__get__" |-> "cell_contents") ~>
-         (def "new_structseq" (2, 2, false) ;) ~>
+         ('Expr( "new_structseq" (2, 2, false) )) ~>
 
          //module "sys"
-         (def "sys_exc_info" (0, 0, false) ;) ~>
+         ('Expr( "sys_exc_info" (0, 0, false) )) ~>
          struct "sys.flags"("optimize","verbose") ~>
          struct "sys.hash_info"("width", "modulus", "inf", "nan", "imag") ~>
          struct "sys.version_info"("major", "minor", "micro", "releaselevel", "serial") ~>
          struct "sys.implementation"("name", "version", "hexversion", "cache_tag") ~>
 
          //module "_imp"
-         (def "imp__fix_co_filename"(2, 2, false) ;) ~>
-         (def "imp_acquire_lock" (0, 0, false) ;) ~>
-         (def "imp_extension_suffixes" (0, 0, false) ;) ~>
-         (def "imp_init_builtin" (1, 1, false) ;) ~>
-         (def "imp_init_frozen" (1, 1, false) ;) ~>
-         (def "imp_is_builtin" (1, 1, false) ;) ~>
-         (def "imp_is_frozen" (1, 1, false) ;) ~>
-         (def "imp_is_frozen_package" (1, 1, false) ;) ~>
-         (def "imp_get_frozen_object" (1, 1, false) ;) ~>
-         (def "imp_load_dynamic" (2, 3, false) ;) ~>
-         (def "imp_release_lock" (0, 0, false) ;) ~>
+         ('Expr( "imp__fix_co_filename"(2, 2, false) )) ~>
+         ('Expr( "imp_acquire_lock" (0, 0, false) )) ~>
+         ('Expr( "imp_extension_suffixes" (0, 0, false) )) ~>
+         ('Expr( "imp_init_builtin" (1, 1, false) )) ~>
+         ('Expr( "imp_init_frozen" (1, 1, false) )) ~>
+         ('Expr( "imp_is_builtin" (1, 1, false) )) ~>
+         ('Expr( "imp_is_frozen" (1, 1, false) )) ~>
+         ('Expr( "imp_is_frozen_package" (1, 1, false) )) ~>
+         ('Expr( "imp_get_frozen_object" (1, 1, false) )) ~>
+         ('Expr( "imp_load_dynamic" (2, 3, false) )) ~>
+         ('Expr( "imp_release_lock" (0, 0, false) )) ~>
 
          //module "_io"
          object "BytesIO"("type", ListItem("_BufferedIOBase"),
@@ -496,7 +496,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "_BufferedIOBase"("type", ListItem("_IOBase"),.,.) ~>
 
          //module "_warnings" 
-         (def "_warnings.warn" (1, 3, false) ;) ~>
+         ('Expr( "_warnings.warn" (1, 3, false) )) ~>
 
          //module "_weakref"
          object "weakref"("type", ListItem("object"),
@@ -505,20 +505,20 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ,.) ~>
 
          //module "gc"
-         (def "gc.collect"(0, 0, false) ;) ~>
+         ('Expr( "gc.collect"(0, 0, false) )) ~>
 
          //module "marshal"
-         (def "marshal.dumps"(1, 2, false) ;) ~>
-         (def "marshal.loads"(1, 1, false) ;) ~>
+         ('Expr( "marshal.dumps"(1, 2, false) )) ~>
+         ('Expr( "marshal.loads"(1, 1, false) )) ~>
 
          //module "posix"
-         (def "posix.getcwd"(0, 0, false) ;) ~>
-         (def "posix.listdir"(0, 1, false) ;) ~>
-         (def "posix.mkdir"(1, 2, false) ;) ~>
-         (def "posix.open"(2, 3, false) ;) ~>
-         (def "posix.replace"(2, 2, false) ;) ~>
-         (def "posix.stat"(1, 1, false) ;) ~>
-         (def "posix.unlink"(1, 1, false) ;) ~>
+         ('Expr( "posix.getcwd"(0, 0, false) )) ~>
+         ('Expr( "posix.listdir"(0, 1, false) )) ~>
+         ('Expr( "posix.mkdir"(1, 2, false) )) ~>
+         ('Expr( "posix.open"(2, 3, false) )) ~>
+         ('Expr( "posix.replace"(2, 2, false) )) ~>
+         ('Expr( "posix.stat"(1, 1, false) )) ~>
+         ('Expr( "posix.unlink"(1, 1, false) )) ~>
          struct "posix.stat_result" ("st_mode", "st_ino", "st_dev", "st_nlink", "st_uid", "st_gid", "st_size", "st_atime", "st_mtime", "st_ctime") ~>
          .K
        )

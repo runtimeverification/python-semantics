@@ -24,7 +24,7 @@ module PYTHON-SEMANTICS-GENERATOR
   rule createRaiseStatement(O, Type, .Obj, Traceback:Object) => test(istype(Type, ref("BaseException")), throwGenerator(O, Type . String2Id("with_traceback")(Traceback)), throwGenerator(O, Type(.Arguments) . String2Id("with_traceback")(Traceback)))
   rule createRaiseStatement(O, Type, Value:Object, Traceback:Object) => throwGenerator(O, Type(Value) . String2Id("with_traceback")(Traceback))
 
-  rule invokeBuiltin(obj("close_generator",_), ListItem(O), .) => try: throwGenerator(O, ref("GeneratorExit")) ; except ref("GeneratorExit") : ref("None") except ref("StopIteration") : ref("None") else: raiseInternal("RuntimeError", "generator ignored GeneratorExit")
+  rule invokeBuiltin(obj("close_generator",_), ListItem(O), .) => try: 'Expr(throwGenerator(O, ref("GeneratorExit"))) except ref("GeneratorExit") : ref("None") except ref("StopIteration") : ref("None") else: raiseInternal("RuntimeError", "generator ignored GeneratorExit")
 
   syntax ObjRef ::= runGenerator(Exp, Exp) [strict]
                   | throwGenerator(Exp, Exp) [strict]
@@ -58,7 +58,7 @@ module PYTHON-SEMANTICS-GENERATOR
        ...</control>
 
   syntax Arguments ::= "#if" Bool "#then" Arguments "#else" Arguments "#fi" [function]
-  rule <k> return O:Object ~> _ => setattr(N, "gi_state", (#freezer (HOLE ;)(.KList), SavedC, .List, SavedXC)) ~> raise ref("StopIteration")(#if id(O) ==K NoneId #then .Arguments #else O #fi) ~> K </k>
+  rule <k> return O:Object ~> _ => setattr(N, "gi_state", (#freezer ('Expr(HOLE))(.KList), SavedC, .List, SavedXC)) ~> raise ref("StopIteration")(#if id(O) ==K NoneId #then .Arguments #else O #fi) ~> K </k>
        <control>...
          <cstack> ListItem(generator(Frame, C, FL, XC, K, ref(N))) => . ...</cstack>
          <currentFrame>
@@ -81,7 +81,7 @@ module PYTHON-SEMANTICS-GENERATOR
          </currentFrame>
        </control>
 
-  rule [raise-out-of-generator]: <k> (. => setattr(N, "gi_state", (#freezer (HOLE ;)(.KList), <xstack> . </xstack> SavedC, .List, ref("None")))) ~> raise ...</k>
+  rule [raise-out-of-generator]: <k> (. => setattr(N, "gi_state", (#freezer 'Expr((HOLE))(.KList), <xstack> . </xstack> SavedC, .List, ref("None")))) ~> raise ...</k>
        <control>...
          <cstack> ListItem(generator(Frame, C, FL, _, _, ref(N))) => . ...</cstack>
          <currentFrame>

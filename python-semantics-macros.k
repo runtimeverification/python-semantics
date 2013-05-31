@@ -11,7 +11,7 @@ module PYTHON-SEMANTICS-MACROS
   rule assert E => if __debug__ : if not E : raise AssertionError [macro]
   rule assert E , E2 => if __debug__ : if not E : raise AssertionError(E2 ::Exp) [macro]
 
-  rule if E ::Exp : S => if E : S else : pass [macro]
+  rule if E ::Exp : S => if E : S else : .K [macro]
 
   rule return => return ref("None") [macro]
   rule yield => yield ref("None") [macro]
@@ -29,12 +29,12 @@ module PYTHON-SEMANTICS-MACROS
   rule declName(def X:Id ( _ ) -> _ : _) => X 
   rule declName(def X ( _ ) : _) => X 
   rule declName(class X ( _ ) : _) => X 
-  rule declName(K newline _) => declName(K) 
+  rule declName(K ; _) => declName(K) 
 
-  rule @ K ::Exp K2:K => K2 newline declName(K2) = K(declName(K2)) [macro]
+  rule @ K ::Exp _:NEWLINE K2:K => K2 ?Newline:NEWLINE declName(K2) = K(declName(K2)) [macro]
 
   rule try: Try ExceptClauses else: Else finally: Finally => try: try: Try ExceptClauses else: Else finally: Finally [macro]
-  rule try: Try ExceptClauses => try: Try ExceptClauses else: pass [macro]
+  rule try: Try ExceptClauses => try: Try ExceptClauses else: .K [macro]
 
   rule with W, W2, W3 : Body => with W ::Alias : with W2, W3 : Body [macro]
 
