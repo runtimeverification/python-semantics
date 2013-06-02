@@ -23,6 +23,9 @@ module PYTHON-SEMANTICS-IO
        <constants>... "errno.ELOOP" |-> Errno ...</constants>
   rule <k> raiseOSError(#ENAMETOOLONG,File) => raiseInternal("OSError", "File name too long: '" +String File +String "'", tuple(Errno, ?Msg:String)) ...</k>
        <constants>... "errno.ENAMETOOLONG" |-> Errno ...</constants>
+  rule <k> raiseOSError(#EBADF,_) => raiseInternal("OSError", "Bad file descriptor", tuple(Errno, ?Msg:String)) ...</k>
+       <constants>... "errno.EBADF" |-> Errno ...</constants>
+  rule raiseOSError(K,_) => K when isTCPError(K) =/=K true
 
   syntax Int ::= fileType(Bool, Bool, Bool) [function]
   rule fileType(true, false, false) => 32768 //S_IFREG
@@ -56,7 +59,7 @@ module PYTHON-SEMANTICS-IO
   rule invokeBuiltin(obj("_IOBase.__iter__",_), ListItem(Self), .) => if Self . closed: raiseInternal("ValueError", "I/O operation on closed file") else: Self
   rule invokeBuiltin(obj("_IOBase.close",_), ListItem(Self), .) => if getref(Self, "_IOBase.closed"): pass else: (Self . String2Id("flush")(.Arguments) ; ~> setref(id(Self), "_IOBase.closed", ref("True"))) ~> ref("None")
   rule invokeBuiltin(obj("_IOBase.__enter__",_), ListItem(Self), .) => if Self . closed : raiseInternal("ValueError", "I/O operation on closed file") else: Self
-  rule invokeBuiltin(obj("_IOBase.__exit__",_), ListItem(Self:Object) L:List, M:Map) => ref("_IOBase.close")(Self)
+  rule invokeBuiltin(obj("_IOBase.__exit__",_), ListItem(Self:Object) L:List, M:Map) => Self . String2Id("close") (.Arguments)
   rule invokeBuiltin(obj("_IOBase.flush",_), ListItem(Self), .) => if getref(Self, "_IOBase.closed"): raiseInternal("ValueError", "I/O operation on closed file") else: ref("None")
   rule invokeBuiltin(obj("_IOBase.isatty",_), ListItem(Self), .) => if Self . closed: raiseInternal("ValueError", "I/O operation on closed file") else: ref("False")
   rule invokeBuiltin(obj("_IOBase.readable",_), ListItem(Self), .) => ref("False")
@@ -100,44 +103,58 @@ module PYTHON-SEMANTICS-IO
   rule O ~> doRead(S, HOLE) => doRead(S, intvalue(O)) [cool]
   rule doRead(Self, N:Int) => test(N <Int 0, Self . readall(.Arguments), doRead(Self, N, ref("bytearray")(N)))
   syntax Exp ::= doRead(Exp, Int, Exp) [strict(1, 3)]
-  rule doRead(Self, _, ByteArray:Object) => Self . readinto(ByteArray) ; ~> ref("bytes")(ref(id(ByteArray)))
+  rule doRead(Self, N, ByteArray:Object) => doRead(Self, N, ByteArray, Self . readinto(ByteArray))
+  syntax Exp ::= doRead(Exp, Int, Exp, Exp) [strict(1, 3, 4)]
+  rule doRead(Self, _, ByteArray, ReadInto:Object) => test(ReadInto is None, ref("None"), readFromByteArray(ref("index")(ReadInto), ref(id(ByteArray))))
+  syntax Exp ::= readFromByteArray(Exp, Exp) [strict]
+  rule readFromByteArray(NumBytes:Object, ByteArray:Object) => b substrString(strvalue(ByteArray), 0, intvalue(NumBytes))
   rule invokeBuiltin(obj("_RawIOBase.readall",_), ListItem(Self), .) => readAll(Self . read(ref("_io") . DEFAULT_BUFFER_SIZE), b "", Self)
   syntax Exp ::= readAll(Exp, Exp, Exp) [strict]
   rule readAll(O:Object, Bytes, Self) => test(O is None, test(strvalue(Bytes) ==String "", ref("None"), Bytes), test(istype(O, ref("bytes")), test(strvalue(O) ==String "", Bytes, readAll(Self . read(ref("_io") . DEFAULT_BUFFER_SIZE), Bytes + O, Self)), raiseInternal("TypeError", "read() should return bytes")))
 
-  rule invokeBuiltin(obj("FileIO.__new__",_), ListItem(Cls) L:List, M:Map) => newHelper(Cls, ref("FileIO"), .) ~> mutable("_IOBase.closed" |-> ref("False") "FileIO.closed" |-> ref("True") "closefd" |-> ref("True") "fileno" |-> -1, Cls)
+  rule invokeBuiltin(obj("FileIO.__new__",_), ListItem(Cls) L:List, M:Map) => newHelper(Cls, ref("FileIO"), .) ~> newFileIO(-1, {.KeyData}, Cls)
+  syntax Exp ::= newFileIO(Exp, Exp, Exp) [strict]
+  rule newFileIO(O:Object, O2:Object, Cls) => mutable("_IOBase.closed" |-> ref("False") "FileIO.closed" |-> ref("True") "closefd" |-> ref("True") "fileno" |-> ref(id(O)) "readable" |-> ref("False") "writable" |-> ref("False") "__dict__" |-> ref(id(O2)), Cls)
   rule invokeBuiltin(obj("FileIO.__init__",_), ListItem(Self) ListItem(Name), .) => ref("FileIO.__init__")(Self, Name, "r", ref("True"), ref("None"))
   rule invokeBuiltin(obj("FileIO.__init__",_), ListItem(Self) ListItem(Name) ListItem(Mode), .) => ref("FileIO.__init__")(Self, Name, Mode, ref("True"), ref("None"))
   rule invokeBuiltin(obj("FileIO.__init__",_), ListItem(Self) ListItem(Name) ListItem(Mode) ListItem(Closefd), .) => ref("FileIO.__init__")(Self, Name, Mode, Closefd, ref("None"))
-  rule invokeBuiltin(obj("FileIO.__init__",_), ListItem(Self) ListItem(Name) ListItem(Mode) ListItem(Closefd) ListItem(Opener), .) => 
-  if istype(Mode, ref("str")): pass
-  else: raiseInternal("TypeError", "fileio() argument 2 must be str") ~>
-  if istype(Closefd, ref("int")): pass
-  else: raiseInternal("TypeError", "an integer is required") ~>
-  if hasmember(Name, "__index__"):
+  rule invokeBuiltin(obj("FileIO.__init__",_), ListItem(Self:Object) ListItem(Name:Object) ListItem(Mode) ListItem(Closefd) ListItem(Opener), .) => 
+  test(istype(Mode, ref("str")), pass, raiseInternal("TypeError", "fileio() argument 2 must be str")) ~>
+  test(istype(Closefd, ref("int")), pass, raiseInternal("TypeError", "an integer is required")) ~>
+  test(hasmember(Name, "__index__"),
     (setref(id(Self), "fileno", ref("index")(Name)) ~>
 	if getref2(ref(id(Self)), "fileno") < 0: raiseInternal("ValueError", "Negative filedescriptor")
-	else: pass)
-  else:
-	if istype(Name, ref("str")): pass
-	else: raiseInternal("TypeError", "Can't convert to string implicitly") ~>
-  if strvalue(Mode) ==String "r": setref(id(Self), "readable", ref("True"))
-  else: ?Mode:Stmt ~>
+	else: pass),
+	test(istype(Name, ref("str")), pass, raiseInternal("TypeError", "Can't convert to string implicitly"))) ~>
+  test(strvalue(Mode) ==String "r", setref(id(Self), "readable", ref("True")), ?ModeInt:Stmt) ~>
   if getref2(ref(id(Self)), "fileno") >= 0: setref(id(Self), "closefd", bool(Closefd))
   else:
-    ((if intvalue(Closefd) ==Int 0: raiseInternal("ValueError", "Cannot use closefd=False with file name")
-    else: pass) ~>
-    if Opener is None:
-      setref(id(Self), "fileno", doOpen(strvalue(Name), strvalue(Mode)))
-	else:
+    ((test(intvalue(Closefd) ==Int 0, raiseInternal("ValueError", "Cannot use closefd=False with file name"), pass) ~>
+    test(Opener is None,
+	  setref(id(Self), "fileno", doOpen(strvalue(Name), strvalue(Mode))),
 	  (setref(id(Self), "fileno", Opener(Name, strvalue(Mode))) ~>
-	  if istype(getref2(ref(id(Self)), "fileno"), ref("int")): pass
-	  else: (setref(id(Self), "fileno", -1) ~> raiseInternal("TypeError", "expected integer from opener")))) ~>
+	  test(istype(getref2(ref(id(Self)), "fileno"), ref("int")),
+	    pass,
+	    (setref(id(Self), "fileno", -1) ~> raiseInternal("TypeError", "expected integer from opener"))))))) ~>
   Self . String2Id("name") = Name ~>
+  setref(id(Self), "FileIO.closed", ref("False")) ~>
   ref("None")
 
   syntax Exp ::= doOpen(String, String) [strict(2)]
-  rule doOpen(Name, "r") => #open("file:" +String Name +String "\001r")
-
-test(hasmember(Name, "__index__"), (setref(id(Self), "fileno", ref("index")(Name) ~> if getref2(ref(id(Self)), "fileno") < 0: raiseInternal("ValueError", "Negative filedescriptor") else: pass), test(istype(Mode, ref("str")), , raiseInternal("TypeError", "fileio() argument 2 must be str"))
+  rule doOpen(Name, "r") => raiseOSError(#open("file:" +String Name +String "\001r"), Name)
+  rule invokeBuiltin(obj("FileIO.readable",_), ListItem(Self), .) => if getref(Self, "fileno") < 0 : raiseInternal("ValueError", "I/O operation on closed file") else: getref(Self, "readable")
+  rule invokeBuiltin(obj("FileIO.writable",_), ListItem(Self), .) => if getref(Self, "fileno") < 0 : raiseInternal("ValueError", "I/O operation on closed file") else: getref(Self, "writable")
+  rule invokeBuiltin(obj("FileIO.seekable",_), ListItem(Self), .) => if getref(Self, "fileno") < 0 : raiseInternal("ValueError", "I/O operation on closed file") else: try: ref("FileIO.seek")(Self, 0, 1) ; except ref("IOError"): ref("False") else: ref("True")
+  rule invokeBuiltin(obj("FileIO.fileno",_), ListItem(Self), .) => if getref(Self, "fileno") < 0 : raiseInternal("ValueError", "I/O operation on closed file") else: getref(Self, "fileno")
+  rule invokeBuiltin(obj("FileIO.close",_), ListItem(Self), .) => setref(id(Self), "FileIO.closed", ref("True")) ~> if not getref(Self, "closefd") : (setref(id(Self), "fileno", -1) ~> ref("None")) else: (doClose(getref(Self, "fileno")) ~> ref("_RawIOBase") . String2Id("close") (ref(id(Self))))
+  syntax K ::= doClose(Exp) [strict]
+  rule doClose(O:Object) => raiseOSError(#close(intvalue(O)), "")
+  rule invokeBuiltin(obj("FileIO.read",_), L:List, M:Map) => doCall(ref("_RawIOBase.read"), L, M)
+  rule invokeBuiltin(obj("FileIO.readall",_), L:List, M:Map) => doCall(ref("_RawIOBase.readall"), L, M)
+  rule invokeBuiltin(obj("FileIO.readinto",_), ListItem(Self) ListItem(ByteArray:Object), .) => test(istype(ByteArray, ref("bytearray")), doReadInto(getref(Self, "fileno"), ref("len")(ByteArray), ByteArray), raiseInternal("TypeError", "must be read-write buffer"))
+  syntax Exp ::= doReadInto(Exp, Exp, Exp) [strict]
+  rule doReadInto(Fileno:Object, Len:Object, ByteArray) => readIntoBytearray(raiseOSError(#fReadBytes(intvalue(Fileno), intvalue(Len)), ""), ByteArray)
+  syntax Exp ::= readIntoBytearray(Exp, Exp) [strict]
+  rule readIntoBytearray(O:Object, ByteArray) => setattr(id(ByteArray), "__value__", strvalue(O) +String substrString(getattr(ByteArray, "__value__"), lengthString(strvalue(O)), lengthString(strvalue(ByteArray)))) ~> lengthString(strvalue(O))
+  rule raiseOSError(#EOF,_) ~> #freezer readIntoBytearray(HOLE, _) (.KList) => 0
 endmodule

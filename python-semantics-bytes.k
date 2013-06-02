@@ -42,4 +42,6 @@ module PYTHON-SEMANTICS-BYTES
   rule (O:Object => setattr(id(Self), "__value__", getattr(Self, "__value__") +String charString(intvalue(O)))) ~> setBytearrayValue(_, Self) when intvalue(O) >=Int 0 andBool intvalue(O) <Int 256
   rule O:Object ~> setBytearrayValue(_, _) => raiseInternal("ValueError", "byte must be in range(0, 256)") when intvalue(O) <Int 0 orBool intvalue(O) >=Int 256
 
+  rule invokeBuiltin(obj("bytearray.__len__",_), ListItem(Self), .) => lengthString(strvalue(Self))
+
 endmodule

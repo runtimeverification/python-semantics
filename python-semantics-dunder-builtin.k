@@ -72,6 +72,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
 		 object "bytearray"("type",ListItem("object"),
 		   "__new__" |-> def "bytearray.__new__"(1, -1, false)
 		   "__init__" |-> def "bytearray.__init__"(0, 3, true)
+		   "__len__" |-> def "bytearray.__len__"(0, 0, true)
 		   ,.) ~>
          object "bytes"("type",ListItem("object"),
            "__add__" |-> def "add_bytes"(1, 1, true)
@@ -633,6 +634,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          }) ~>
          module "errno"({
            "EACCES" : Constants("errno.EACCES")
+		 , "EBADF" : Constants("errno.EBADF")
          , "ELOOP" : Constants("errno.ELOOP")
          , "ENAMETOOLONG" : Constants("errno.ENAMETOOLONG")
          , "ENOENT" : Constants("errno.ENOENT")
