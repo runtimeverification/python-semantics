@@ -37,7 +37,6 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   syntax Set ::= everything(StoreCellFragment) [function]
   syntax Bag ::= refcount(TCellFragment) [function]
                | refcountbag(Bag) [function]
-               | refcountstore(StoreCellFragment) [function]
                | refcountk(K) [function]
                | refcountlistk(KList) [function]
                | refcountklabel(KLabel) [function]
@@ -68,7 +67,7 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   rule B1 =/=Bag B2 => Bag2KLabel B1(.KList) =/=K Bag2KLabel B2(.KList)
 
   //ideally we would treat a ref(S:String) to an object with an integer ID as a reference to that object. But we can't do that easily. Fortunately, objects in the global symbol table should never die, so we just keep them alive artificially.
-  rule [refcount]: refcount(<k> K </k> <control> C <currentFrame> C2 </currentFrame> </control> <store> C3 </store> <symbols> Symbols </symbols> _:Bag) => Bagify(keys Symbols values Symbols) refcountk(K) refcountbag(C C2) refcountstore(C3)
+  rule [refcount]: refcount(<k> K </k> <control> C <currentFrame> C2 </currentFrame> </control> <store> C3 </store> <symbols> Symbols </symbols> _:Bag) => Bagify(keys Symbols values Symbols) refcountk(K) refcountbag(C C2 C3)
   rule refcountbag(BI:BagItem BI2:BagItem C) => refcountbag(BI) refcountbag(BI2) refcountbag(C)
   rule refcountbag(.) => .
 
@@ -80,9 +79,8 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   rule refcountbag(<xcontext> K </xcontext>) => refcountk(K)
   rule refcountbag(<frameObject> Frame </frameObject>) => BagItem(Frame)
 
-  rule refcountstore(<object>... <oenv> Env:Map </oenv> <oattrs> Attrs:Map </oattrs> ...</object> C) => refcountset(values Env) refcountset(values Attrs) refcountstore(C)
-  rule refcountstore(<object>... <oattrs> Attrs:Map </oattrs> ...</object> C) => refcountset(values Attrs) refcountstore(C)
-  rule refcountstore(.) => .
+  rule refcountbag(<object>... <oenv> Env:Map </oenv> <oattrs> Attrs:Map </oattrs> ...</object>) => refcountset(values Env) refcountset(values Attrs)
+  rule refcountbag(<object> <id> _ </id> <oattrs> Attrs:Map </oattrs> </object>) => refcountset(values Attrs)
 
   rule refcountk(Lbl:KLabel(Kl:KList) ~> Lbl2:KLabel(Kl2:KList) ~> K2) => refcountk(Lbl(Kl)) refcountk(Lbl2(Kl2)) refcountk(K2)
   rule refcountk(Lbl:KLabel(Kl:KList)) => refcountklabel(Lbl) refcountlistk(Kl) when Lbl =/=KLabel 'obj`(_`,_`) andThenBool Lbl =/=KLabel 'ref`(_`)
