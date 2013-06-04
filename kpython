@@ -24,4 +24,5 @@ SYS_PATH="ListItem($PROGRAM_DIR) ListItem(\"$PYTHON_LIB\")"
 HASHSEED='"PYTHONHASHSEED" |-> 1'
 ERRNO=`python3.3 errno.py`
 OS='"sys.platform" |-> "linux" "posix.O_WRONLY" |-> 1 "posix.O_CREAT" |-> 64 "posix.O_EXCL" |-> 128'
+ulimit -s unlimited
 krun --parser "./parser" -cGCTHRESHOLD="$GC_THRESHOLD" -cSYSPATH="$SYS_PATH" -cCONSTANTS="$SIXTYFOUR_BIT $DEBUG $VERBOSE $HASHINFO $HASHSEED $OS $ERRNO $DEFAULT_BUFFER_SIZE" -cENVIRON="$ENVIRON" --cfg-parser="./parser" -cIMPORTLIB="$IMPORTLIB" --cfg-parser="kast -groundParser -e" "$@"
