@@ -592,7 +592,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "ValueError" : ref("ValueError")
          , "Warning" : ref("Warning")
          , "ZeroDivisionError" : ref("ZeroDivisionError")
-         , "__debug__" : #if Constants("__debug__") #then ref("True") #else ref("False") #fi
+		 , "__debug__" : #if Constants("PYTHONOPTIMIZE") ==Int 0 #then ref("True") #else ref("False") #fi
          , "__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."
          , "all" : ref("all")
          , "bool" : ref("bool")
@@ -664,7 +664,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "builtin_module_names" : ["_imp", "_io", "_warnings", "_weakref", "builtins", "marshal", "posix", "sys", "types"]
          , "dont_write_bytecode" : ref("True")
          , "exc_info" : ref("sys_exc_info")
-         , "flags": ref("sys.flags")(tuple(#if Constants("__debug__") #then 0 #else 1 #fi, #if Constants("PYTHONVERBOSE") #then 1 #else 0 #fi, .Exps))
+         , "flags": ref("sys.flags")(tuple(Constants("PYTHONOPTIMIZE"), #if Constants("PYTHONVERBOSE") #then 1 #else 0 #fi, .Exps))
          , "hash_info" : ref("sys.hash_info")(tuple(Constants("sys.hash_info.width"), Constants("sys.hash_info.modulus"), Constants("sys.hash_info.inf"), Constants("sys.hash_info.nan"), Constants("sys.hash_info.imag"), .Exps))
          , "hexversion": 50528496
          , "implementation" : ref("sys.implementation")(tuple("kpython", ref("sys.version_info")(tuple(1, 0, 0, "alpha", 1)), 16777377 /* 0x010000A1 */, ref("None")))
