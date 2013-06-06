@@ -1,10 +1,17 @@
 #!/usr/bin/env python3.3
 
 import ast
+import os
 import re
 import sys
 
 class KPythonVisitor(ast.NodeVisitor):
+
+  def visit_Expression(self, node):
+    return self.visit(node.body)
+
+  def visit_Interactive(self, node):
+    return self.visit_list(node.body, "'_newline_", "newline")
 
   def visit_Module(self, node):
     return self.visit_list(node.body, "'_newline_", "newline")
@@ -376,5 +383,17 @@ class KPythonVisitor(ast.NodeVisitor):
     else:
       return self.getid(node.name)
 
+def getMode(m):
+  if not m:
+    return "exec"
+  elif m == "Exp":
+    return "eval"
+  elif m == "Stmt":
+    return "single"
+  elif m == "Stmts":
+    return "exec"
+  raise ValueError
+
 input = "".join(sys.stdin.readlines())
-print(KPythonVisitor().visit(ast.parse(input)))
+ast = ast.parse(input, "<unknown>", getMode(os.environ.get("KRUN_SORT")))
+print(KPythonVisitor().visit(ast))
