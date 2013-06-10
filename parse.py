@@ -289,7 +289,7 @@ class KPythonVisitor(ast.NodeVisitor):
 
   @staticmethod
   def getid(s):
-    return '#token("#Id", "' + s + '")(.KList)'
+    return '_`(_`)(#token("#Id", "' + s + '"), .KList)'
 
   def visit_List(self, node):
     return "'`[_`](" + self.visit_list(node.elts, "'_`,_", "`,") + ")"
@@ -384,16 +384,17 @@ class KPythonVisitor(ast.NodeVisitor):
       return self.getid(node.name)
 
 def getMode(m):
-  if not m:
+  if m == "K" or m == "Stmts":
     return "exec"
   elif m == "Exp":
     return "eval"
   elif m == "Stmt":
     return "single"
-  elif m == "Stmts":
-    return "exec"
   raise ValueError
 
-input = "".join(sys.stdin.readlines())
-ast = ast.parse(input, "<unknown>", getMode(os.environ.get("KRUN_SORT")))
+if os.environ.get("KRUN_IS_NOT_FILE", "false") == "true":
+  input = sys.argv[1]
+else:
+  input = open(sys.argv[1]).read()
+ast = ast.parse(input, "<unknown>", getMode(os.environ.get("KRUN_SORT", "K")))
 print(KPythonVisitor().visit(ast))

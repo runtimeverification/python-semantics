@@ -19,7 +19,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule [evaluate-function-object]: <k> function(Ps:K, O:Object, Return:K) =>
            setref(N, "__doc__", (O . String2Id("co_consts") [0])) ~> 
            setref(N, "__name__", O . String2Id("co_name")) ~> 
-           setref(N, "__module__", (ref("globals")(.Arguments)["__name__"])) ~> 
+           setref(N, "__module__", (ref("globals")(.Arguments) . String2Id("get")("__name__"))) ~> 
            setref(N, "__defaults__", ref("None")) ~>
            setref(N, "__globals__", (ref("globals")(.Arguments))) ~> 
            setref(N, "__dict__", {.KeyData}) ~> 
@@ -168,8 +168,10 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule comprehension(E, if E2 Comps ::Comps) => if E2 : comprehension(E, Comps) else: pass
   rule comprehension(E, .Comps) => yield E ;
 
-  rule makeCodeObject(N, ., Ss, _) => visit(Ss, 'compileVisitor) ~> visit(Ss, 'childScopeVisitor) ~> storescope ~> propscope ~> delscope
-  rule (visited(_) => .) ~> visit(_, 'childScopeVisitor)
+  rule makeCodeObject(N, ., Ss, _) => visit(Ss, 'optimizeVisitor) ~> visit(Ss, 'compileVisitor) ~> visit(Ss, 'childScopeVisitor) ~> visit(Ss, 'syntaxCheckerVisitor) ~> storescope ~> propscope ~> delscope
+  rule (visited(Ss) => .) ~> visit((_ => Ss), 'compileVisitor)
+  rule (visited(Ss) => .) ~> visit((_ => Ss), 'childScopeVisitor)
+  rule (visited(Ss) => .) ~> visit((_ => Ss), 'syntaxCheckerVisitor)
  
   syntax K ::= compileVisitor(KLabel, Int, K)
              | parameterVisitor(KLabel, Int, K)
@@ -177,6 +179,8 @@ module PYTHON-SEMANTICS-FUNCTIONS
              | importVisitor(KLabel, Int, K)
              | withVisitor(KLabel, Int, K)
              | childScopeVisitor(KLabel, Int, K)
+             | syntaxCheckerVisitor(KLabel, Int, K)
+             | optimizeVisitor(KLabel, Int, K)
 
   syntax K ::= addDef(Id)
              | addUse(Id)
@@ -287,12 +291,28 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule bindVisitor(returner, -1, X:Id) => addDef(X) ~> visited(X)
   rule bindVisitor(returner, -1, K) => visited(K) when isId(K) =/=K true
 
-  rule childScopeVisitor(Lbl, N, K) => visit(K, 'childScopeVisitor) when notBool (Lbl ==KLabel 'def_`(_`)->_:_ orElseBool Lbl ==KLabel 'class_`(_`):_ orElseBool Lbl ==KLabel 'def_`(_`):_) andBool N =/=Int -1
+  rule childScopeVisitor(Lbl, N, K) => visit(K, 'childScopeVisitor) when notBool (Lbl ==KLabel 'def_`(_`)->_:_ orElseBool Lbl ==KLabel 'class_`(_`):_ orElseBool Lbl ==KLabel 'def_`(_`):_ orElseBool Lbl ==KLabel 'lambda_:_ orElseBool Lbl ==KLabel 'GeneratorExp) andBool N =/=Int -1
   rule compileVisitor(Lbl, N, K) => visit(K, 'compileVisitor) when notBool ((Lbl ==KLabel 'def_`(_`)->_:_ andBool N =/=Int 2) orElseBool (Lbl ==KLabel 'class_`(_`):_ andBool N =/=Int 1) orElseBool (N ==Int 0 andBool (Lbl ==KLabel '_=_ orElseBool Lbl ==KLabel '_+=_ orElseBool Lbl ==KLabel '_-=_ orElseBool Lbl ==KLabel '_*=_ orElseBool Lbl ==KLabel '_/=_ orElseBool Lbl ==KLabel '_FloorDiv=_ orElseBool Lbl ==KLabel '_%=_ orElseBool Lbl ==KLabel '_**=_ orElseBool Lbl ==KLabel '_>>=_ orElseBool Lbl ==KLabel '_<<=_ orElseBool Lbl ==KLabel '_&=_ orElseBool Lbl ==KLabel '_^=_ orElseBool Lbl ==KLabel '_|=_)) orElseBool (Lbl ==KLabel 'for_in_:_else:_ andBool N ==Int 0) orElseBool (Lbl ==KLabel 'with_:_ andBool N ==Int 0) orElseBool (Lbl ==KLabel 'except_as_:_ andBool N ==Int 1) orElseBool Lbl ==KLabel 'del_ orElseBool Lbl ==KLabel 'global_ orElseBool Lbl ==KLabel 'nonlocal_ orElseBool (Lbl ==KLabel '_=_ andBool N ==Int 0) orElseBool Lbl ==KLabel 'import_ orElseBool Lbl ==KLabel 'from_import_ orElseBool Lbl ==KLabel 'def_`(_`):_ orElseBool Lbl ==KLabel 'lambda_:_ orElseBool Lbl ==KLabel 'GeneratorExp) andBool N =/=Int -1
+
+  rule <k> syntaxCheckerVisitor('return_, 0, K) => #if Type:CodeObjectType ==K funcobject #then visit(K, 'syntaxCheckerVisitor) #else raiseInternal("SyntaxError", "return outside function") #fi ...</k>
+       <scope> ListItem(scope(_, _, _, _, _, _, _, Type, _)) ...</scope>
+  rule syntaxCheckerVisitor(Lbl, N, K) => visit(K, 'syntaxCheckerVisitor) when notBool(Lbl ==KLabel 'return_) andBool N =/=Int -1
+  rule syntaxCheckerVisitor(returner, -1, K) => visited(K)
 
   rule compileVisitor(returner, -1, K) => visited(K) when isId(K) =/=K true andBool getKLabel K =/=KLabel 'yield_
   rule childScopeVisitor(returner, -1, K) => visited(K) when getKLabel K =/=KLabel 'def_`(_`)->_:_ andBool getKLabel K =/=KLabel 'def_`(_`):_ andBool getKLabel K =/=KLabel 'class_`(_`):_
   rule compileVisitor(returner, -1, .) => visited(.)
   rule childScopeVisitor(returner, -1, .) => visited(.)
+
+  rule <k> optimizeVisitor(returner, -1, if __debug__ : Ss else: Ss2) => visited(#if N ==Int 0 #then Ss #else Ss2 #fi) ...</k>
+       <optimize> N </optimize>
+  rule optimizeVisitor(Lbl, N, K) => visit(K, 'optimizeVisitor) when N =/=Int -1
+  rule optimizeVisitor(returner, -1, if K:K : Ss else: Ss2) => visited(if K : Ss else: Ss2) when K =/=K __debug__
+  rule optimizeVisitor(returner, -1, K) => visited(K) when getKLabel K =/=KLabel 'if_:_else:_ andBool isId(K) =/=K true
+  rule optimizeVisitor(returner, -1, X:Id) => visited(ref(Id2String(X))) when Id2String(X) in keywords
+  rule optimizeVisitor(returner, -1, X:Id) => visited(X) when notBool Id2String(X) in keywords
+
+  syntax Set ::= "keywords" [function]
+  rule keywords => SetItem("True") SetItem("False") SetItem("None")
 
 endmodule

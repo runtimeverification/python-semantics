@@ -55,6 +55,9 @@ module PYTHON-SEMANTICS-ENVIRONMENT
                                                    setattr(id(getref(Frame, "f_cells")[S]), "cell_contents", .Obj),
                                                    setref(id(getref(Frame, "f_cells")[S]), "cell_contents", ref(B)))
                                          else: pass ~>
+                                         if S in Code . String2Id("co_freevars") :
+                                              doBind(S, ref(B), getref2(getref(Frame, "f_cells")[S], "cell_frame"))
+                                         else: pass ~>
                                          if S in Code . String2Id("co_names") :
                                               test(B ==K 0,
                                                    (if S in Frame . f_globals : del ((Frame . f_globals [S])) else: raiseInternal("NameError", "name '" +String S +String "' is not defined")),

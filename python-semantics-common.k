@@ -35,6 +35,7 @@ module PYTHON-SEMANTICS-COMMON
                   <environ> $ENVIRON:Map </environ>
                   <constants> $CONSTANTS:Map </constants>
                   <importlib> $IMPORTLIB:K </importlib>
+                  <optimize> $CONSTANTS:Map ( "PYTHONOPTIMIZE" ) </optimize>
                 </T>
 
   syntax K ::= "initialize" "(" K ")"
@@ -58,7 +59,7 @@ module PYTHON-SEMANTICS-COMMON
              | getMro(Exp, Exp) [strict]
              | doBind(String, Exp, Exp) [strict(3)]
 
-  syntax #Id ::= "__class__" | "__dict__" | "__next__"
+  syntax #Id ::= "__class__" | "__dict__" | "__next__" | "f_builtins" | "co_freevars"
 
   syntax Test ::= "istype" "(" Exp "," Exp ")" [strict]
                 | "hasbase" "(" K "," Exp ")" [strict]
@@ -357,7 +358,8 @@ module PYTHON-SEMANTICS-COMMON
   rule [executeFrame]: <k> executeFrame(N, CO:Object, Back:Object, Locals:Object, Globals:Object, Builtins:Object, Cells:Object, Args:Map) => makeFrame(N, CO, Back, Locals, Globals, Builtins, Cells, Args) ~> getattr(CO, "co_code") ...</k>
        <frameObject> _ => N </frameObject>
 
-  rule (. => doBind(Id2String(X), ref(B), ref(N))) ~> setArgs(N, (X |-> ref(B) => .) _)
+  rule [setArgs]: (. => doBind(Id2String(X), ref(B), ref(N))) ~> setArgs(N, (X |-> ref(B) => .) _)
+  rule [setArgs]: setArgs(N, (X |-> .Obj) _) => raiseInternal("TypeError", "missing argument to function '" +String Id2String(X) +String "'")
   rule [dissolve-setArgs]: setArgs(_, .) => .
 
   rule <k> describe(Self, Instance, Owner, S) => doDescribe(Self, Instance, gettype(Instance), S) ...</k>

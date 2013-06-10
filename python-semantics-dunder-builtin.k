@@ -417,6 +417,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
 
          //module "sys"
          (def "sys_exc_info" (0, 0, false) ;) ~>
+		 (def "sys.displayhook"(0, 0, false) ;) ~>
          struct "sys.flags"("optimize","verbose") ~>
          struct "sys.hash_info"("width", "modulus", "inf", "nan", "imag") ~>
          struct "sys.version_info"("major", "minor", "micro", "releaselevel", "serial") ~>
@@ -521,6 +522,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          (def "posix.stat"(1, 1, false) ;) ~>
          (def "posix.unlink"(1, 1, false) ;) ~>
          struct "posix.stat_result" ("st_mode", "st_ino", "st_dev", "st_nlink", "st_uid", "st_gid", "st_size", "st_atime", "st_mtime", "st_ctime") ~>
+
+		 //module "_ast"
+		 object "AST"("type", ListItem("object"), ., .) ~>
          .K
        )
        ...</k>
@@ -528,6 +532,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
   rule <k> modules => (
 
          // module declarations
+		 module "_ast"({
+		   "AST" : ref("AST")
+		 }) ~>
          module "_imp"({
            "_fix_co_filename": ref("imp__fix_co_filename")
          , "acquire_lock" : ref("imp_acquire_lock")
@@ -661,7 +668,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "O_EXCL": Constants("posix.O_EXCL")
          }) ~>
          module "sys"({
-           "builtin_module_names" : ["_imp", "_io", "_warnings", "_weakref", "builtins", "marshal", "posix", "sys", "types"]
+           "builtin_module_names" : ["_ast", "_imp", "_io", "_warnings", "_weakref", "builtins", "marshal", "posix", "sys", "types"]
+		 , "displayhook" : ref("sys.displayhook")
          , "dont_write_bytecode" : ref("True")
          , "exc_info" : ref("sys_exc_info")
          , "flags": ref("sys.flags")(tuple(Constants("PYTHONOPTIMIZE"), #if Constants("PYTHONVERBOSE") #then 1 #else 0 #fi, .Exps))
