@@ -24,7 +24,7 @@ module PYTHON-SEMANTICS-BUILTIN-FUNCTIONS
   rule invokeBuiltin(obj("super.__init__",_), ListItem(O) ListItem(ThisClass), .) => ref("super.__init__")(O, ThisClass, ref("None"))
   rule invokeBuiltin(obj("super.__init__",_), ListItem(O) ListItem(ThisClass) ListItem(Self), .) => test(istype(ThisClass, ref("type")), setref(id(O), "__thisclass__", ThisClass), raiseInternal("TypeError", "must be type")) ~> test(istype(Self, ThisClass) or hasbase(Self, ThisClass) or Self is None, setref(id(O), "__self__", Self), raiseInternal("TypeError", "super(type, obj): obj must be instance or subtype of type")) ~> test(istype(Self, ThisClass), setref(id(O), "__self_class__", getref(Self, "__class__")), test(hasbase(Self, ThisClass), setref(id(O), "__self_class__", Self), setref(id(O), "__self_class__", ref("None")))) ~> ref("None")
 
-  rule invokeBuiltin(obj("reversed.__new__",_), ListItem(Cls) ListItem(Sequence:Object), .) => newHelper(Cls, ref("reversed"), .) ~> test(hasmember(Sequence, "__getitem__"), makeReversed(Cls, Sequence, ref("len")(Sequence)), raiseInternal("TypeError", "argument to reversed() must be a sequence"))
+  rule invokeBuiltin(obj("reversed.__new__",_), ListItem(Cls) ListItem(Sequence:Object), .) => newHelper(Cls, ref("reversed"), .) ~> test(hasmember(Sequence, "__getitem__", false), makeReversed(Cls, Sequence, ref("len")(Sequence)), raiseInternal("TypeError", "argument to reversed() must be a sequence"))
   syntax Exp ::= makeReversed(Exp, Exp, Exp) [strict]
   rule makeReversed(Cls, Sequence, Len:Object) => mutable("__state__" |-> intvalue(Len) -Int 1 "__value__" |-> Sequence, Cls)
   rule invokeBuiltin(obj("reversed.__iter__",_), ListItem(Self), .) => Self
@@ -33,7 +33,8 @@ module PYTHON-SEMANTICS-BUILTIN-FUNCTIONS
 
   rule invokeBuiltin(obj("compile",_), ListItem(Source) ListItem(Filename) ListItem(Mode), .) => ref("compile")(Source, Filename, Mode, 0, ref("False"), -1)
   rule invokeBuiltin(obj("compile",_), ListItem(Source) ListItem(Filename) ListItem(Mode) ListItem(Flags), .) => ref("compile")(Source, Filename, Mode, Flags, ref("False"), -1)
-  rule invokeBuiltin(obj("compile",_), ListItem(Source) ListItem(Filename) ListItem(Mode) ListItem(Flags) ListItem(DontInherit), .) => ref("compile")(Source, Filename, Mode, 0, DontInherit, -1)
+  rule invokeBuiltin(obj("compile",_), ListItem(Source) ListItem(Filename) ListItem(Mode) ListItem(Flags) ListItem(DontInherit), .) => ref("compile")(Source, Filename, Mode, Flags, DontInherit, -1)
+  rule invokeBuiltin(obj("compile",_), ListItem(Source) ListItem(Filename) ListItem(Mode), "dont_inherit" |-> DontInherit) => ref("compile")(Source, Filename, Mode, 0, DontInherit, -1)
   rule <k> invokeBuiltin(obj("compile",_), ListItem(Source) ListItem(Filename) ListItem(Mode) ListItem(Flags) ListItem(DontInherit) ListItem(Optimize), .) =>
   test(istype(Filename, ref("str")), .K, raiseInternal("TypeError", "Can't convert object to str implicitly")) ~>
   test(istype(Mode, ref("str")), .K, raiseInternal("TypeError", "compile() arg 3 must be str")) ~>
@@ -41,7 +42,6 @@ module PYTHON-SEMANTICS-BUILTIN-FUNCTIONS
   test(istype(DontInherit, ref("int")), .K, raiseInternal("TypeError", "an integer is required")) ~>
   test(istype(Optimize, ref("int")), .K, raiseInternal("TypeError", "an integer is required")) ~>
   test(intvalue(Flags) =/=Int 0, ?Futures:Stmt, .K) ~>
-  test(intvalue(DontInherit) =/=Int 0, ?Futures:Stmt, .K) ~>
   test(intvalue(Optimize) <Int -1 orBool intvalue(Optimize) >Int 2, raiseInternal("ValueError", "compile(): invalid optimize value"), .K) ~>
   test(intvalue(Optimize) >=Int 0, setOptimize(intvalue(Optimize)), .K) ~>
   test(strvalue(Mode) =/=String "exec" andBool strvalue(Mode) =/=String "eval" andBool strvalue(Mode) =/=String "single", raiseInternal("ValueError", "compile() arg 3 must be 'exec', 'eval' or 'single'"), .K) ~>
@@ -80,7 +80,7 @@ module PYTHON-SEMANTICS-BUILTIN-FUNCTIONS
   rule invokeBuiltin(obj("exec",_), ListItem(Expression) ListItem(Globals) ListItem(Locals), .) => doExecOrEval(Expression, Globals, Locals, "exec")
   syntax Exp ::= doExecOrEval(Object, Object, Object, String)
   rule doExecOrEval(Expression, Globals, Locals, S:String) =>
-  test(Locals is not None, test(hasmember(Locals, "keys"), .K, raiseInternal("TypeError", "locals must be a mapping")), .K) ~>
+  test(Locals is not None, test(hasmember(Locals, "keys", false), .K, raiseInternal("TypeError", "locals must be a mapping")), .K) ~>
   test(Globals is not None, test(istype(Globals, ref("dict")), .K, raiseInternal("TypeError", "globals must be a dict")), .K) ~>
   test(Globals is None, test(Locals is None, parseAndExecOrEval(Expression, ref("globals")(.Arguments), ref("locals")(.Arguments), S), parseAndExecOrEval(Expression, ref("globals")(.Arguments), Locals, S)), test(Locals is None, parseAndExecOrEval(Expression, Globals, Globals, S), parseAndExecOrEval(Expression, Globals, Locals, S)))
   syntax Exp ::= parseAndExecOrEval(Exp, Exp, Exp, String) [strict(1, 2, 3)]

@@ -14,7 +14,7 @@ test.py
 IN.maude
 *.rej
 junit-results.xml
-programs/__pycache__
+**/__pycache__
 nohup.out
 bootstrapped.bin
 programs/*.bin

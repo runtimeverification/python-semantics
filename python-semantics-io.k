@@ -121,7 +121,7 @@ module PYTHON-SEMANTICS-IO
   rule invokeBuiltin(obj("FileIO.__init__",_), ListItem(Self:Object) ListItem(Name:Object) ListItem(Mode) ListItem(Closefd) ListItem(Opener), .) => 
   test(istype(Mode, ref("str")), pass, raiseInternal("TypeError", "fileio() argument 2 must be str")) ~>
   test(istype(Closefd, ref("int")), pass, raiseInternal("TypeError", "an integer is required")) ~>
-  test(hasmember(Name, "__index__"),
+  test(hasmember(Name, "__index__", false),
     (setref(id(Self), "fileno", ref("index")(Name)) ~>
 	if getref2(ref(id(Self)), "fileno") < 0: raiseInternal("ValueError", "Negative filedescriptor")
 	else: pass),

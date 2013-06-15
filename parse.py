@@ -152,6 +152,26 @@ class KPythonVisitor(ast.NodeVisitor):
   def visit_Import(self, node):
     return "'import_(" + self.visit_list(node.names, "'_`,_", "`,") + ")"
 
+  def visit_ImportFrom(self, node):
+    if node.names[0].name == "*":
+      return "'from_import*(" + self.getmodule(node.module) + ")"
+    return "'from_import_(" + self.makerelative(node.module, node.level) + ",," + self.visit_list(node.names, "'_`,_", "`,") + ")"
+
+  def getmodule(self, module):
+    parts = module.split(".")
+    if (len(parts) == 1): return self.getid(module)
+    s = ""
+    s += ("'_._(" * (len(parts) - 1)) + self.getid(parts[0])
+    for part in parts[1:]:
+      s += ",," + self.getid(part) + ")"
+    return s
+
+  def makerelative(self, module, level):
+    if not module:
+      return ("'._(" * (level - 1)) + "'.(.KList)" + (")" * (level - 1))
+    else:
+      return ("'._(" * level) + self.getmodule(module) + (")" * level)
+
   def visit_Global(self, node):
     return "'global_(" + self.visit_list(node.names, "'_`,_", "`,") + ")"
 
@@ -379,9 +399,9 @@ class KPythonVisitor(ast.NodeVisitor):
 
   def visit_alias(self, node):
     if node.asname:
-      return "'_as_(" + self.getid(node.name) + ",," + self.getid(node.asname) + ")"
+      return "'_as_(" + self.getmodule(node.name) + ",," + self.getid(node.asname) + ")"
     else:
-      return self.getid(node.name)
+      return self.getmodule(node.name)
 
 def getMode(m):
   if m == "K" or m == "Stmts":

@@ -6,7 +6,7 @@ module PYTHON-SEMANTICS-BYTES
   //TODO: memoryview
 
   rule invokeBuiltin(obj("new_bytes",_), ListItem(Cls), .) => newHelper(Cls, ref("bytes"), .Set) ~> immutable("", Cls)
-  rule invokeBuiltin(obj("new_bytes",_), ListItem(Cls) ListItem(Source:Object), .) => test(istype(Source, ref("str")), raiseInternal("TypeError", "string argument without an encoding"), test(hasmember(Source, "__index__"), immutable(charString(0), Cls) * ref("index")(Source), iterate(Source, .) ~> makebytes(.List, "", Cls)))
+  rule invokeBuiltin(obj("new_bytes",_), ListItem(Cls) ListItem(Source:Object), .) => test(istype(Source, ref("str")), raiseInternal("TypeError", "string argument without an encoding"), test(hasmember(Source, "__index__", false), immutable(charString(0), Cls) * ref("index")(Source), iterate(Source, .) ~> makebytes(.List, "", Cls)))
   rule invokeBuiltin(obj("new_bytes",_), ListItem(Cls) ListItem(Source) ListItem(Encoding), .) => test(istype(Source, ref("str")), Source . String2Id("encode") (Encoding), invokeBuiltin(ref("new_bytes"), ListItem(Cls) ListItem(Source), .))
   rule invokeBuiltin(obj("new_bytes",_), ListItem(Cls) ListItem(Source) ListItem(Encoding) ListItem(Errors), .) => test(istype(Source, ref("str")), Source . String2Id("encode") (Encoding, Errors), invokeBuiltin(ref("new_bytes"), ListItem(Cls) ListItem(Source), .))
 
@@ -33,7 +33,7 @@ module PYTHON-SEMANTICS-BYTES
   syntax #Id ::= "encode"
   rule invokeBuiltin(obj("bytearray.__new__",_), ListItem(Cls) L:List, M:Map) => newHelper(Cls, ref("bytearray"), .) ~> mutable("", Cls)
   rule invokeBuiltin(obj("bytearray.__init__",_), ListItem(Self), .) => ref("None")
-  rule invokeBuiltin(obj("bytearray.__init__",_), ListItem(Self) ListItem(Source:Object), .) => test(istype(Source, ref("str")), raiseInternal("TypeError", "string argument without an encoding"), test(hasmember(Source, "__index__"), setBytearrayValue("\000" * ref("index")(Source), Self), setBytearrayValue(iterate(Source, .), Self))) ~> ref("None")
+  rule invokeBuiltin(obj("bytearray.__init__",_), ListItem(Self) ListItem(Source:Object), .) => test(istype(Source, ref("str")), raiseInternal("TypeError", "string argument without an encoding"), test(hasmember(Source, "__index__", false), setBytearrayValue("\000" * ref("index")(Source), Self), setBytearrayValue(iterate(Source, .), Self))) ~> ref("None")
   rule invokeBuiltin(obj("bytearray.__init__",_), ListItem(Self) ListItem(Source:Object) ListItem(Encoding:Object), .) => test(istype(Source, ref("str")), setBytearrayValue(Source . encode(Encoding), Self), ref("bytearray.__init__")(Self, Source))
   rule invokeBuiltin(obj("bytearray.__init__",_), ListItem(Self) ListItem(Source:Object) ListItem(Encoding:Object) ListItem(Errors:Object), .) => test(istype(Source, ref("str")), setBytearrayValue(Source . encode(Encoding, Errors), Self), ref("bytearray.__init__")(Self, Source))
   syntax K ::= setBytearrayValue(Exp, Exp) [strict]

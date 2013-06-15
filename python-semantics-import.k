@@ -39,10 +39,29 @@ module PYTHON-SEMANTICS-IMPORT
 
   // import statement
 
-  rule (. => moduleTarget(Module) = doImport(Module, .Aliases) ) ~> import (Module:Alias , Rest => Rest)
+  rule (. => moduleTarget(Module) = moduleToAssign(doImport(Module, .Aliases), Module) ) ~> import (Module:Alias , Rest => Rest)
   rule import .Aliases => .
 
   rule from Module:RelativeModule import Fromlist:Aliases => tuple(moduleTargets(Fromlist)) = tuple(importFrom(doImport(Module, Fromlist), moduleNameIds(Fromlist)))
+  rule from Module import * => doImportStar(doImport(Module, String2Id("*"), .Aliases))
+
+  syntax K ::= doImportStar(Exp) [strict]
+  syntax #Id ::= "__all__"
+  rule doImportStar(O:Object) => test(hasmember(O, "__all__", true), doImportStar(O, iterate(O . __all__, .), true), test(hasmember(O, "__dict__", true), doImportStar(O, iterate(O . __dict__ . String2Id("keys") (.Arguments), .), false), raiseInternal("ImportError", "from-import-* object has no __dict__ and no __all__")))
+  syntax K ::= doImportStar(Object, K, Bool) [strict(2)]
+  rule (. => test(istype(O, ref("str")), #if B orBool substrString(strvalue(O), 0, 1) =/=String "_" #then (String2Id(strvalue(O))) ::Target = (Module . String2Id(strvalue(O))) ::Exp #else . #fi, raiseInternal("TypeError", "attribute name must be string"))) ~> doImportStar(Module:Object, list((ListItem(O:Object) => .) _), B:Bool)
+  rule doImportStar(_, list(.), _) => .
+
+  syntax ObjRef ::= moduleToAssign(Exp, K) [strict(1)]
+  rule moduleToAssign(O:Object, Name:Id) => O
+  rule moduleToAssign(O:Object, Module . Name) => O
+  rule moduleToAssign(O:Object, Module as Name) => innermostModule(O, Module, .List)
+
+  syntax ObjRef ::= innermostModule(Exp, K, List) [strict(1)]
+  rule innermostModule(O, (Name:Id => .K), L)
+  rule innermostModule(O, (Module . Name => Module), _ (. => ListItem(Name)))
+  rule innermostModule((O:Object => O . Name), .K, _ (ListItem(Name) => .))
+  rule innermostModule(O:Object, .K, .List) => O
 
   syntax ObjRef ::= doImport(K, K)
   rule doImport(Module, Fromlist) => ref("builtins") . String2Id("__import__") (moduleName(Module), ref("globals")(.Arguments), ref("locals")(.Arguments), test(Fromlist ==K .Aliases, ref("None"), tuple(moduleNames(Fromlist))), moduleLevel(Module))

@@ -230,6 +230,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__subclasshook__" |-> def "subclasshook_object"(0, -1, false)
            ,.) ~>
          object "__class__" ("attribute",.,., "__get__" |-> "__class__") ~>
+         object "object.__dict__" ("attribute", ., ., "__get__" |-> "__dict__") ~>
          (def "ord" (1, 1, false) ;) ~>
          object "range" ("type",ListItem("object"),
            "__iter__" |-> def "iter_range" (0, 0, true)
