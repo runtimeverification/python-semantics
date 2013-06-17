@@ -285,11 +285,11 @@ class KPythonVisitor(ast.NodeVisitor):
   @staticmethod
   def getstr(s, convert):
     result = repr(bytes("'\"" + s, "UTF-8"))[5:-1].replace('"', '\\"')
-    return re.sub("\\\\x([0-9a-f]{2})", convert, result)
+    return re.sub(r"(?<!\\)\\x([0-9a-f]{2})", convert, result)
 
   @staticmethod
   def convert(match):
-    return "\\" + oct(int(match.group(1), 16))[2:]
+    return "\\{:03o}".format(int(match.group(1), 16))
 
   def visit_Bytes(self, node):
     if type(node.s) is bytes:
