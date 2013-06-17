@@ -285,6 +285,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__mod__" |-> def "mod_str"(1, 1, true)
            "__mul__" |-> def "mul_str"(1, 1, true)
            "__ne__" |-> def "ne_str" (1, 1, true)
+           "__repr__" |-> def "str.__repr__" (0, 0, true)
            ,.) ~>
          object "super"("type",ListItem("object"),
            "__getattribute__" |-> def "super.__getattribute__"(1, 1, true)
@@ -630,6 +631,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "object" : ref("object")
          , "ord" : ref("ord")
          , "range" : ref("range")
+         , "repr" : ref("repr")
          , "reversed" : ref("reversed")
          , "set" : ref("set")
          , "setattr" : ref("setattr")

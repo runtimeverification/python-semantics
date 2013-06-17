@@ -189,4 +189,35 @@ module PYTHON-SEMANTICS-STRINGS
   rule joinString2(_, list(ListItem(O)), S) => test(istype(O, ref("str")), S +String strvalue(O), raiseInternal("TypeError", "expected str instance as sequence item"))
   rule joinString2(_, list(.), S) => S
 
+  rule invokeBuiltin(obj("repr",_), ListItem(S), .) => checkRepr(getmember(S, "__repr__", true, false, true) (.Arguments))
+  syntax Exp ::= checkRepr(Exp) [strict]
+  rule checkRepr(O:Object) => test(istype(O, ref("str")), O, raiseInternal("TypeError", "__repr__ returned non-string"))
+
+  rule invokeBuiltin(obj("str.__repr__",_), ListItem(S), .) => reprString(strvalue(S), #if findString(strvalue(S), "'", 0) =/=Int -1 andBool findString(strvalue(S), "\"", 0) ==Int -1 #then "\"" #else "'" #fi)
+  syntax String ::= reprString(String, String) [function]
+  rule reprString(S, Quote) => Quote +String reprString2(S, Quote) +String Quote
+  syntax String ::= reprString2(String, String) [function]
+  rule reprString2(S, Quote) => reprString3(bytes(S, UTF-8, 0), Quote) +String reprString2(substrString(S, lengthString(bytes(S, UTF-8, 0)), lengthString(S)), Quote) when S =/=String ""
+  rule reprString2("", _) => ""
+  syntax String ::= reprString3(String, String) [function]
+  rule reprString3(Quote, Quote) => "\\" +String Quote
+  rule reprString3("\\", _) => "\\\\"
+  rule reprString3("\t", _) => "\\t"
+  rule reprString3("\n", _) => "\\n"
+  rule reprString3("\r", _) => "\\r"
+  rule reprString3(S, Quote) => reprString4(codePoint(S, UTF-8, 0), S) when S =/=String Quote andBool S =/=String "\\" andBool S =/=String "\t" andBool S =/=String "\n" andBool S =/=String "\r"
+  syntax String ::= reprString4(Int, String) [function]
+  rule reprString4(CodePoint, _) => "\\x" +String Int2Hex(CodePoint, 2) when CodePoint <Int 32 orBool CodePoint ==Int 127
+  rule reprString4(CodePoint, S) => S when CodePoint >=Int 32 andBool CodePoint <Int 127
+
+  // these are commented out because we don't want to implement isPrintable yet because that would
+  // require access to the Unicode character database. For now it's fine because I don't intend to
+  // use unicode characters in any of the relevant strings.
+
+  //rule reprString4(CodePoint, S) => S when CodePoint >Int 127 andBool isPrintable(CodePoint)
+  //rule reprString4(CodePoint, _) => "\\x" +String Int2Hex(CodePoint, 2) when CodePoint >Int 127 andBool CodePoint <Int 256 andBool notBool isPrintable(CodePoint)
+  //rule reprString4(CodePoint, _) => "\\u" +String Int2Hex(CodePoint, 4) when CodePoint >=Int 256 andBool CodePoint <Int 65536 andBool notBool isPrintable(CodePoint)
+  //rule reprString4(CodePoint, _) => "\\U" +String Int2Hex(CodePoint, 8) when CodePoint >=Int 65536 andBool notBool isPrintable(CodePoint)
+
+
 endmodule

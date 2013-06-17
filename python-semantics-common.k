@@ -103,6 +103,18 @@ module PYTHON-SEMANTICS-COMMON
   rule reduce(.List, K, _) => K
   rule reduce(ListItem(I) L:List, K, Lbl) => Lbl(I,,reduce(L, K, Lbl))
 
+  syntax String ::= Int2Hex(Int, Int) [function]
+                  | Int2Hex(Int) [function]
+  rule Int2Hex(I:Int, Digits:Int) => Int2Hex(I /Int 16, Digits -Int 1) +String Int2Hex(I modInt 16) when Digits >Int 0
+  rule Int2Hex(_, 0) => ""
+  rule Int2Hex(I) => Int2String(I) when I >=Int 0 andBool I <Int 10
+  rule Int2Hex(10) => "a"
+  rule Int2Hex(11) => "b"
+  rule Int2Hex(12) => "c"
+  rule Int2Hex(13) => "d"
+  rule Int2Hex(14) => "e"
+  rule Int2Hex(15) => "f"
+
   syntax String ::= "docString" "(" K ")" [function]
   rule docString(S:String ;) => S 
   rule docString(S:String ; newline _) => S 
