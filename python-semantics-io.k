@@ -35,12 +35,12 @@ module PYTHON-SEMANTICS-IO
 
 
   //simplification rules for bitwise math in this file. needed to avoid using smt for mode arithmetic
-  rule (A:Int |Int B:Int) &Int C:Int => A &Int C when B &Int C ==Int 0
-  rule (A:Int |Int B:Int) &Int C:Int => B &Int C when A &Int C ==Int 0
-  rule (A:Int &Int B:#Int) &Int C:#Int => A &Int (B &Int C)
-  rule A:Int &Int 0 => 0
-  rule (A:Int |Int B:#Int) |Int C:#Int => A |Int (B |Int C)
-  rule A:Int |Int 0 => A
+  rule (A:Int |Int B:Int) &Int C:Int => A &Int C when B &Int C ==Int 0 [simplification]
+  rule (A:Int |Int B:Int) &Int C:Int => B &Int C when A &Int C ==Int 0 [simplification]
+  rule (A:Int &Int B:#Int) &Int C:#Int => A &Int (B &Int C) [simplification]
+  rule A:Int &Int 0 => 0 [simplification]
+  rule (A:Int |Int B:#Int) |Int C:#Int => A |Int (B |Int C) [simplification]
+  rule A:Int |Int 0 => A [simplification]
 
   rule invokeBuiltin(obj("posix.listdir",_), ., .) => ref("posix.listdir")(".")
   //this rule abuses K a little bit because I am putting a function which can rewrite into a raise statement into a list display, which should rightly only contain expressions. but it works correctly, and that's what I care about
