@@ -42,7 +42,7 @@ module PYTHON-SEMANTICS-IMPORT
   rule (. => moduleTarget(Module) = moduleToAssign(doImport(Module, .Aliases), Module) ) ~> import (Module:Alias , Rest => Rest)
   rule import .Aliases => .
 
-  rule from Module:RelativeModule import Fromlist:Aliases => tuple(moduleTargets(Fromlist)) = tuple(importFrom(doImport(Module, Fromlist), moduleNameIds(Fromlist)))
+  rule from Module:RelativeModule import Fromlist:Aliases => try: tuple(moduleTargets(Fromlist)) = tuple(importFrom(doImport(Module, Fromlist), moduleNameIds(Fromlist))) except ref("AttributeError"): raiseInternal("ImportError", "cannot import name")
   rule from Module import * => doImportStar(doImport(Module, String2Id("*"), .Aliases))
 
   syntax K ::= doImportStar(Exp) [strict]
