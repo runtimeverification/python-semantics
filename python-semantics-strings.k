@@ -17,6 +17,10 @@ module PYTHON-SEMANTICS-STRINGS
   rule [hash-str]: <k> invokeBuiltin(obj("hash_str",_), ListItem(O), .) => test(lengthString(strvalue(O)) ==Int 0, 0, accumulate(strvalue(O), (asciiString(substrString(strvalue(O), 0, 1)) <<Int 7) xorInt hashPrefix(Seed, Width), lengthString(strvalue(O)))) ...</k>
        <constants>... "PYTHONHASHSEED" |-> Seed "sys.hash_info.width" |-> Width ...</constants>
 
+  rule invokeBuiltin(obj("str.__new__",_), ListItem(Cls:Object), .) => newHelper(Cls, ref("str"), .) ~> immutable("", Cls)
+  rule invokeBuiltin(obj("str.__new__",_), ListItem(Cls:Object) ListItem(O:Object), .) => newHelper(Cls, ref("str"), .) ~> immutable(strvalue(getmember(O, "__str__", true, false, true)(.Arguments)), Cls)
+  context immutable(strvalue(HOLE), _)
+
   syntax ObjRef ::= accumulate(String, Int, Int)
   syntax Int ::= hashPrefix(Int, Int) [function]
                | hashSuffix(Int, Int) [function]

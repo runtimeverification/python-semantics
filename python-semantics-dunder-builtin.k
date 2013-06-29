@@ -65,9 +65,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "ValueError"("type",ListItem("Exception"),.,.) ~>
          object "Warning"("type",ListItem("Exception"),.,.) ~>
          object "ZeroDivisionError"("type", ListItem("ArithmeticError"),.,.) ~>
+         (def "abs"(1, 1, false) ;) ~>
          (def "all"(1, 1, false) ;) ~>
+         (def "any"(1, 1, false) ;) ~>
          object "bool"("type",ListItem("int"),
-           "__new__" |-> def "new_bool" (1, 2, false)
+           "__new__" |-> def "bool.__new__" (1, 2, false)
+           "__str__" |-> def "bool.__str__" (0, 0, true)
            ,.) ~>
 		 object "bytearray"("type",ListItem("object"),
 		   "__new__" |-> def "bytearray.__new__"(1, -1, false)
@@ -87,6 +90,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__radd__" |-> def "radd_bytes"(1, 1, true)
            "__rmul__" |-> def "rmul_bytes" (1, 1, true)
            ,.) ~>
+         (def "callable"(1, 1, false) ;) ~>
          object "classmethod"("type", ListItem("object"),
            "__get__" |-> def "get_classmethod"(1, 2, true)
            "__init__" |-> def "init_classmethod"(1, 1, true)
@@ -121,6 +125,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__le__" |-> def "float.__le__" (1, 1, true)
            "__lt__" |-> def "float.__lt__" (1, 1, true)
            "__ne__" |-> def "float.__ne__" (1, 1, true)
+           "__new__" |-> def "float.__new__" (1, 2, false)
            ,.) ~>
          (def "format" (1, 2, false) ;) ~>
          (def "getattr" (2, 3, false) ;) ~>
@@ -137,7 +142,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__ceil__" |-> def "ceil_int" (0, 0, true)
            //TODO: divmod, doc
            "__eq__" |-> def "eq_int"(1, 1, true)
-           //TODO: float
+           "__float__" |-> def "int.__float__"(0, 0, true)
            "__floor__" |-> def "floor_int" (0, 0, true)
            "__floordiv__" |-> def "floordiv_int" (1, 1, true)
            //TODO: format
@@ -218,6 +223,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
 		   "__setattr__" |-> def "module.__setattr__" (2, 2, true)
            ,.) ~>
          object "module.__dict__"("attribute",.,., "__get__" |-> "__dict__") ~>
+         (def "next" (1, 2, false) ;) ~>
          object "object"("type",.,
            "__class__" |-> ref("__class__")
            "__getattribute__" |-> def "getattribute_object" (1, 1, true)
@@ -285,6 +291,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__mod__" |-> def "mod_str"(1, 1, true)
            "__mul__" |-> def "mul_str"(1, 1, true)
            "__ne__" |-> def "ne_str" (1, 1, true)
+           "__new__" |-> def "str.__new__" (1, 4, false)
            "__repr__" |-> def "str.__repr__" (0, 0, true)
            ,.) ~>
          object "super"("type",ListItem("object"),
@@ -606,9 +613,11 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
 		 , "__debug__" : #if Constants("PYTHONOPTIMIZE") ==Int 0 #then ref("True") #else ref("False") #fi
          , "__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."
          , "all" : ref("all")
+         , "any" : ref("any")
          , "bool" : ref("bool")
 		 , "bytearray" : ref("bytearray")
          , "bytes" : ref("bytes")
+         , "callable" : ref("callable")
          , "classmethod" : ref("classmethod")
          , "compile" : ref("compile")
          , "complex" : ref("complex")
@@ -630,6 +639,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "list" : ref("list")
          , "locals" : ref("locals")
          , "map" : ref("map")
+         , "next" : ref("next")
          , "object" : ref("object")
          , "ord" : ref("ord")
          , "range" : ref("range")

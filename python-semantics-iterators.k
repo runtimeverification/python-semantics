@@ -33,4 +33,7 @@ module PYTHON-SEMANTICS-ITERATORS
   rule <k> checkIter(O) => test(getmember(O, "__next__", true, false, false) ==Obj .Obj, raiseInternal("TypeError", "iter() returned non-iterator"), O) ...</k>
   //TODO: sentinels
 
+  rule invokeBuiltin(obj("next",_), ListItem(O:Object), .) => getmember(O, "__next__", true, false, false)(.Arguments) -> raiseInternal("TypeError", "object is not an iterator")
+  rule invokeBuiltin(obj("next",_), ListItem(O:Object) ListItem(Default:Object), .) => try: ref("next")(O) except ref("StopIteration"): Default
+
 endmodule

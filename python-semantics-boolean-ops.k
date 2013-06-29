@@ -19,8 +19,9 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule checkBool(.Obj) => .Obj
   rule checkInt(O:Object) => test(intvalue(O) ==Int 0, ref("False"), ref("True"))
   rule checkInt(.Obj) => .Obj
-  rule invokeBuiltin(obj("new_bool",_), ListItem(O), .) => newHelper(O, ref("bool"), .) ~> ref("False")
-  rule invokeBuiltin(obj("new_bool",_), ListItem(O:Object) ListItem(O2:Object), .) => newHelper(O, ref("bool"), .) ~> bool(O2)
+  rule invokeBuiltin(obj("bool.__new__",_), ListItem(O), .) => newHelper(O, ref("bool"), .) ~> ref("False")
+  rule invokeBuiltin(obj("bool.__new__",_), ListItem(O:Object) ListItem(O2:Object), .) => newHelper(O, ref("bool"), .) ~> bool(O2)
+  rule invokeBuiltin(obj("bool.__str__",_), ListItem(O:Object), .) => if O: "True" else: "False"
 
   rule len(O) => checkLen(index(getmember(O, "__len__", true, false, false) (.Arguments)))
   rule checkLen(O:Object) => test(intvalue(O) >=Int 0, O, raiseInternal("ValueError", "__len__() should return >= 0"))

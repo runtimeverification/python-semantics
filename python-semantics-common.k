@@ -204,7 +204,7 @@ module PYTHON-SEMANTICS-COMMON
   syntax Float ::= "floatvalue" "(" Exp ")" [function]
   rule floatvalue(obj(_,<oattrs>... "__value__" |-> F:Float ...</oattrs>)) => F 
 
-  syntax String ::= "strvalue" "(" Object ")" [function]
+  syntax String ::= "strvalue" "(" Exp ")" [function]
   rule strvalue(obj(_,<oattrs>... "__value__" |-> S:String ...</oattrs>)) => S 
 
   syntax List ::= "listvalue" "(" Object ")" [function]

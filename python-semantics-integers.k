@@ -57,10 +57,11 @@ module PYTHON-SEMANTICS-INTEGERS
 
   //TODO: string conversion
   rule invokeBuiltin(obj("new_int",_), ListItem(O), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(0, O)
-  rule invokeBuiltin(obj("new_int",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(intvalue(O2 . String2Id("__int__") (.Arguments)), O)
+  rule invokeBuiltin(obj("new_int",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(intvalue(getmember(O2, "__int__", true, false, true) (.Arguments)), O)
   context immutable(intvalue(HOLE), _)
 
   rule invokeBuiltin(obj("int_int",_), ListItem(O), .) => O
+  rule invokeBuiltin(obj("int.__float__",_), ListItem(O:Object), .) => Int2Float(intvalue(O))
 
   rule <k> invokeBuiltin(obj("hash_int",_), ListItem(O), .) => unaryOp(O, "int", #if intvalue(O) %Int Modulus ==Int -1 #then -2 #else intvalue(O) %Int Modulus #fi) ...</k>
        <constants>... "sys.hash_info.modulus" |-> Modulus ...</constants>

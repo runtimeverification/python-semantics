@@ -12,4 +12,8 @@ module PYTHON-SEMANTICS-FLOATS
 
   rule invokeBuiltin(obj("float.__int__",_), ListItem(O), .) => unaryOp(O, "float", Float2Int(floatvalue(O)))
 
+  rule invokeBuiltin(obj("float.__new__",_), ListItem(O:Object), .) => newHelper(O, ref("float"), .) ~> immutable(0.0, O)
+  rule invokeBuiltin(obj("float.__new__",_), ListItem(O:Object) ListItem(O2:Object), .) => newHelper(O, ref("float"), .) ~> immutable(floatvalue(getmember(O2, "__float__", true, false, true) (.Arguments)), O)
+  context immutable(floatvalue(HOLE), _)
+
 endmodule
