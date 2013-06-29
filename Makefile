@@ -18,12 +18,12 @@ ref: ${TEST_REFERENCE}
 
 %.out: %.py bootstrapped.bin
 	@echo "Testing $<"
-	@./kpython --output-mode raw $< > $@.tmp
+	@./kpython --output-mode raw -- $< one two "three four" > $@.tmp
 	@- test "`grep "< k > .K </ k >" $@.tmp`" && cp $@.tmp $@ && echo "$< passed"
 
 
 %.ref: %.py
-	-PYTHONHASHSEED=1 python3.3 $< > /dev/null 2>&1 && touch $@
+	-PYTHONHASHSEED=1 python3.3 $< one two "three four" > /dev/null 2>&1 && touch $@
 
 bootstrapped.bin: python-kompiled/base.maude kpython
 	rm -f bootstrapped.bin

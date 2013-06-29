@@ -32,10 +32,12 @@ module PYTHON-SEMANTICS-COMMON
                   <bootstrapping> 3 </bootstrapping>
                   <nextLoc> 1 </nextLoc>
                   <sysPath> $SYSPATH:List </sysPath>
+                  <sysArgv> $SYSARGV:List </sysArgv>
                   <environ> $ENVIRON:Map </environ>
                   <constants> $CONSTANTS:Map </constants>
                   <importlib> $IMPORTLIB:K </importlib>
                   <optimize> $CONSTANTS:Map ( "PYTHONOPTIMIZE" ) </optimize>
+                  <semanticsdir> $SEMANTICSDIR:String </semanticsdir>
                 </T>
 
   syntax K ::= "initialize" "(" K ")"

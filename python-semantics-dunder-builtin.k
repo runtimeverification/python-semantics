@@ -313,16 +313,18 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "mro" |-> def "mro_type"(0, 0, true)
            "__bases__" |-> ref("__bases__")
            "__call__" |-> def "call_type" (0, -1, true)
+           "__dict__" |-> ref("type.__dict__")
            "__getattribute__" |-> def "getattribute_type" (1, 1, true)
            "__instancecheck__" |-> def "instancecheck_type" (1, 1, true)
            "__mro__" |-> ref("__mro__")
-           "__name__" |-> ref("__name__type")
+           "__name__" |-> ref("type.__name__")
            "__new__" |-> def "new_type"(2, 4, false)
            "__prepare__" |-> def "prepare_type"(0, -1, false)
            "__setattr__" |-> def "setattr_type"(2, 2, true)
            "__subclasscheck__" |-> def "subclasscheck_type"(1, 1, true)
            ,.) ~>
-         object "__name__type" ("attribute",.,., "__get__" |-> "__name__") ~>
+         object "type.__dict__" ("attribute", ., ., "__get__" |-> "__dict__") ~>
+         object "type.__name__" ("attribute",.,., "__get__" |-> "__name__") ~>
          object "__bases__" ("attribute",.,., "__get__" |-> "__bases__") ~>
          object "__mro__" ("attribute",.,., "__get__" |-> "__mro__") ~>
          // module "types"
