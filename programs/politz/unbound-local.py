@@ -1,5 +1,5 @@
 def errorInOuter():
-    print(y)
+    y
     def inner():
         return y
     y = 1

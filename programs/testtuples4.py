@@ -8,4 +8,4 @@ except StopIteration as e:
   z = 6
   assert y == 5
   assert e.__context__ is None
-assert z == 6
+assert z == 6, z

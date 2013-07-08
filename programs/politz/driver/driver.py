@@ -2,16 +2,16 @@ import _io
 import sys
 
 class A: 
-  def assertEqual(self, other): assert self == other
-  def fail(): assert False
-  def assertFail(): assert False
-  def assertFalse(self): assert not self
-  def assertIn(self, other): assert self in other
-  def assertIs(self, other): assert self is other
-  def assertIsNot(self, other): assert self is not other
-  def assertNotEqual(self, other): assert self != other
-  def assertNotIn(self, other): assert self not in other
-  def assertTrue(self): assert self
+  def assertEqual(self, other): assert self == other, (self, other)
+  def fail(msg=""): assert False, msg
+  def assertFail(msg=""): assert False, msg
+  def assertFalse(self): assert not self, self
+  def assertIn(self, other): assert self in other, (self, other)
+  def assertIs(self, other): assert self is other, (self, other)
+  def assertIsNot(self, other): assert self is not other, (self, other)
+  def assertNotEqual(self, other): assert self != other, (self, other)
+  def assertNotIn(self, other): assert self not in other, (self, other)
+  def assertTrue(self): assert self, self
   def assertRaises(self, other, *args, **kwargs):
     try:
       other(*args, **kwargs)

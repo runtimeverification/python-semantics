@@ -15,7 +15,7 @@ assert sr.st_nlink.__class__ is int
 assert sr.st_uid == 1003
 assert sr.st_gid == 1003
 assert sr.st_size == 4
-assert int(sr.st_atime) == 1366755238, sr.st_atime
+assert int(sr.st_atime) == 1372977779, sr.st_atime
 assert int(sr.st_mtime) == 1366755120, sr.st_mtime
 assert sr.st_ctime.__class__ is float
 

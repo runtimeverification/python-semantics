@@ -3,6 +3,12 @@ class A:
     global x
     x = 5
 
-y = A()
-y |= A()
+c = {"foo" : A()}
+def b():
+  global x
+  x += 1
+  assert x == 1
+  return  c
+x = 0
+b()["foo"] |= A()
 assert x == 5

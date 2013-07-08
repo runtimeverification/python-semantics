@@ -1,7 +1,7 @@
 def errorInOuter():
   y = 1
   del y
-  print(y)
+  y
   def inner():
     return y
 
