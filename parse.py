@@ -295,6 +295,9 @@ class KPythonVisitor(ast.NodeVisitor):
     if type(node.s) is bytes:
       return "'b_(# \"" + self.getstr(node.s.decode("utf-8"), self.convert) + '"(.KList))'
 
+  def visit_Ellipsis(self, node):
+    return "'...(.KList)"
+
   def visit_Attribute(self, node):
     return "'_._(" + self.visit(node.value) + ",," + self.getid(node.attr) + ")"
 
