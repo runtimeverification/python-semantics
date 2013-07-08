@@ -1,9 +1,9 @@
 syntax: glob
 tests/*
 python-kompiled
-programs/*.out
-programs/*.out.tmp
-programs/*.ref
+**/*.out
+**/*.out.tmp
+**/*.ref
 .k
 .*.sw?
 kompile_*
