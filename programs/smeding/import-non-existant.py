@@ -1,0 +1,2 @@
+expectException(ImportError)
+import non_existant_module
