@@ -36,7 +36,7 @@ module PYTHON-SEMANTICS-ATTRIBUTE-REF
   rule searchSuperclass(ThisClass, list((ListItem(ref(N)) => .) ListItem(_) L:List)) when id(ThisClass) =/=K N
   rule searchSuperclass(ThisClass, list(ListItem(_))) => tuple(.Exps)
 
-  rule getmember(O:Object, O2, T:Bool, T2:Bool, true) => getmember(O, O2, T, T2, false) -> raiseInternal("AttributeError", "object has no attribute '" +String strvalue(O2) +String "'")
+  rule getmember(O:Object, O2:Object, T:Bool, T2:Bool, true) => getmember(O, O2, T, T2, false) -> raiseInternal("AttributeError", "object has no attribute '" +String strvalue(O2) +String "'")
   rule getmember(O:Object, O2, true, false, false) => descriptor(getmember(O, O2, false, false, false), O, gettype(O), false)
   rule getmember(O:Object, O2, false, true, false) => basesLookup(getref(O, "__mro__"), O2) -> getmember(O, O2, false, false, false)
   rule getmember(O:Object, O2, true, true, false) => descriptor(basesLookup(getref(O, "__mro__"), O2), O, gettype(O), true) -> getmember(O, O2, true, false, false)

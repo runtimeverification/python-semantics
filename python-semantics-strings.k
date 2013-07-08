@@ -21,6 +21,8 @@ module PYTHON-SEMANTICS-STRINGS
   rule invokeBuiltin(obj("str.__new__",_), ListItem(Cls:Object) ListItem(O:Object), .) => newHelper(Cls, ref("str"), .) ~> immutable(strvalue(getmember(O, "__str__", true, false, true)(.Arguments)), Cls)
   context immutable(strvalue(HOLE), _)
 
+  rule invokeBuiltin(obj("str.__str__",_), ListItem(O), .) => O
+
   syntax ObjRef ::= accumulate(String, Int, Int)
   syntax Int ::= hashPrefix(Int, Int) [function]
                | hashSuffix(Int, Int) [function]
@@ -63,15 +65,15 @@ module PYTHON-SEMANTICS-STRINGS
              | lookupElementIndex(String, Object) [function]
 
   syntax Int ::= "notFound"
-  rule notFound +Int I:Int => notFound
-  rule notFound -Int I:Int => notFound
-  rule notFound ==Int notFound => true
-  rule notFound ==Int I:#Int => false
-  rule I:#Int ==Int notFound => false
-  rule minInt(notFound, I:Int) => I
-  rule minInt(I:Int, notFound) => I
-  rule substrString(S, notFound, _) => ""
-  rule substrString(S, Start, notFound) => substrString(S, Start, lengthString(S))
+  rule notFound +Int I:Int => notFound [simplification]
+  rule notFound -Int I:Int => notFound [simplification]
+  rule notFound ==Int notFound => true [simplification]
+  rule notFound ==Int I:#Int => false [simplification]
+  rule I:#Int ==Int notFound => false [simplification]
+  rule minInt(notFound, I:Int) => I [simplification]
+  rule minInt(I:Int, notFound) => I [simplification] 
+  rule substrString(S, notFound, _) => "" [simplification]
+  rule substrString(S, Start, notFound) => substrString(S, Start, lengthString(S)) [simplification]
 
   syntax Int ::= findChar(String, String, Int) [function]
   rule findChar(S, Pattern, I) => minInt(#if findString(S, substrString(Pattern, 0, 1), I) ==Int -1 #then notFound #else findString(S, substrString(Pattern, 0, 1), I) #fi, findChar(S, substrString(Pattern, 1, lengthString(Pattern)), I)) when Pattern =/=String ""
@@ -178,7 +180,8 @@ module PYTHON-SEMANTICS-STRINGS
   rule O:Object ~> getitemString(S, HOLE) => getitemString(S, intvalue(O)) [cool]
   rule getitemString(S:String, I:Int) => test(I >=Int 0 -Int length(S, UTF-8) andBool I <Int length(S, UTF-8), test(I >=Int 0, bytes(S, UTF-8, I), bytes(S, UTF-8, I +Int length(S, UTF-8))), raiseInternal("IndexError", "string index out of range"))
 
-  rule invokeBuiltin(obj("mul_str",_), ListItem(S) ListItem(I), .) => multiplyString(strvalue(S), ref(id(I)))
+  rule invokeBuiltin(obj("str.__mul__",_), ListItem(S) ListItem(I), .) => multiplyString(strvalue(S), ref(id(I)))
+  rule invokeBuiltin(obj("str.__rmul__",_), ListItem(S) ListItem(I), .) => multiplyString(strvalue(S), ref(id(I)))
   syntax Exp ::= multiplyString(String, Exp)
   rule multiplyString(S, E:Exp) => ref("index")(E) ~> multiplyString(S, HOLE) when isInt(E) =/=K true [heat]
   rule O:Object ~> multiplyString(S, HOLE) => multiplyString(S, intvalue(O)) [cool]

@@ -15,7 +15,7 @@ module PYTHON-SEMANTICS-CLASSES
              | setWinner(Exp) [strict]
   rule class(Args, CO:Object) => sortArgs(Listify(Args)) ~> processArgs(.,.,.Obj,.Obj) ~> invokeClass(getMetaclass(Args), CO, .Obj, .) when isKResult(Args)
 
-  rule invokeClass(Metaclass:Object, CO:Object, Bases:Object, M:Map) => executeClass(Metaclass, CO, Bases, ref("builtins"), ref("globals")(.Arguments), doCall(Metaclass . String2Id("__prepare__"), ListItem(CO . String2Id("co_name")) ListItem(Bases), M), M)
+  rule invokeClass(Metaclass:Object, CO:Object, Bases:Object, M:Map) => executeClass(Metaclass, CO, Bases, ref("builtins"), ref("globals")(.Arguments), test(hasmember(Metaclass, "__prepare__", true), doCall(Metaclass . String2Id("__prepare__"), ListItem(CO . String2Id("co_name")) ListItem(Bases), M), {.KeyData}), M)
 
   rule <k> executeClass(Metaclass:Object, CO:Object, Bases:Object, Builtins:Object, Globals:Object, Locals:Object, M:Map) => executeFrame(N, CO, ref(Back), Locals, Globals, Builtins, makeCells(CO . String2Id("co_freevars"), CO . String2Id("co_cellvars"), ref("tuple")(ref("map")(getref2(ref(Back), "f_cells") . String2Id("__getitem__"), CO . String2Id("co_freevars"))), N), .) ~> ((Locals["__module__"]) = ref("globals")(.Arguments) . String2Id("get")("__name__", "builtins")) ~> (if CO . String2Id("co_consts")[0] is not ref("None") : (Locals["__doc__"]) = CO . String2Id("co_consts")[0] else: pass) ~> restoreContext(LL, FL, Back) ~> setClass(doCall(Metaclass, ListItem(CO . String2Id("co_name")) ListItem(Bases) ListItem(Locals), M), CO, ref(N)) ...</k>
        <nextLoc> N => N +Int 1 </nextLoc>
@@ -23,7 +23,7 @@ module PYTHON-SEMANTICS-CLASSES
        <fstack> FL => . </fstack>
        <lstack> LL => . </lstack> [allocation]
 
- rule setClass(Cls:Object, CO:Object, Frame:Object) => doBind("__class__", ref(id(Cls)), Frame) ~> Cls
+ rule setClass(Cls:Object, CO:Object, Frame:Object) => STOREDEREF("__class__", ref(id(Cls)), Frame, getref(Frame, "f_code")) ~> Cls
 
  rule <k> restoreContext(LL, FL, N) => . ...</k>
       <fstack> _ => FL </fstack>
@@ -51,7 +51,7 @@ module PYTHON-SEMANTICS-CLASSES
   rule invokeBuiltin(obj("new_type",_), ListItem(Type:Object) ListItem(Name:Object) ListItem(Bases:Object) ListItem(Dict:Object), _) => newHelper(Type, ref("type"), .Set) ~> test(istype(Name, ref("str")), test(istype(Bases, ref("tuple")), test(istype(Dict, ref("dict")), calculateMetaclass(Name, Bases, Type, Dict, Type), raiseInternal("TypeError", "type() argument 3 must be dict")), raiseInternal("TypeError", "type() argument 2 must be tuple")), raiseInternal("TypeError", "type() argument 1 must be str"))
 
   rule (. => iterate(Bases, .)) ~> calculateMetaclass(_, Bases, _, _, _)
-  rule (. => if gettype(O) is ref("type") or bool(hasbase(Winner, gettype(O))) : pass else: test(hasbase(gettype(O), Winner), setWinner(gettype(O)), raiseInternal("TypeError", "metaclass conflict: the metaclass of a derived class must be a (non-strict) subclass of the metaclasses of all its bases"))) ~> list((ListItem(O) => .) _) ~> calculateMetaclass(_, _, _, _, Winner)
+  rule (. => if O is ref("bool") or O is ref("NoneType") or O is ref("function") or O is ref("slice") or O is ref("generator") or O is ref("builtin-function") or O is ref("builtin-method") or O is ref("traceback") or O is ref("code") or O is ref("frame") or O is ref("method") or O is ref("cell"): raiseInternal("TypeError", "type is not an acceptable base type") ~> if gettype(O) is ref("type") or bool(hasbase(Winner, gettype(O))) : pass else: test(hasbase(gettype(O), Winner), setWinner(gettype(O)), raiseInternal("TypeError", "metaclass conflict: the metaclass of a derived class must be a (non-strict) subclass of the metaclasses of all its bases"))) ~> list((ListItem(O) => .) _) ~> calculateMetaclass(_, _, _, _, Winner)
   rule (setWinner(O:Object) => .) ~> list(_) ~> calculateMetaclass(_, _, _, _, (_ => O))
   rule list(.) ~> calculateMetaclass(Name, Bases, Type, Dict:Object, Type) => makeType(mutable("__name__" |-> strvalue(Name) "__bases__" |-> ref(id(Bases)), Type), ref("dict")(Dict))
   rule list(.) ~> calculateMetaclass(Name:Object, Bases:Object, Type, Dict:Object, Winner:Object) => Winner . String2Id("__new__") (Winner, Name, Bases, Dict) when Winner =/=K Type

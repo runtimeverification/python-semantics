@@ -59,15 +59,16 @@ module PYTHON-SEMANTICS-STATEMENTS
          C:Bag
        </currentFrame>
 
-  rule [unroll-for]: lmark ~> for Target:Target in O : Ss else: Ss2 => try: (((Target) = getmember(O, "__next__", true, false, true) (.Arguments)) ~> Ss ~> lmark ~> for Target in O : Ss else: Ss2) except ref("StopIteration"): Ss2 else: .
+  rule [unroll-for]: lmark ~> for Target:Target in O : Ss else: Ss2 => try: (((Target) = getmember(O, "__next__", true, false, true) (.Arguments))) except ref("StopIteration"): Ss2 else: (Ss ~> lmark ~> for Target in O : Ss else: Ss2)
 
   rule O:Object ; => .
 
-  rule Stmt:K newline Ss => Stmt ~> Ss when Ss =/=K .Stmts
-  rule Stmt:K newline .Stmts => Stmt [macro]
+  rule Stmt:K newline Ss => Stmt ~> Ss
+  rule Stmt newline .K => Stmt [macro]
+  rule .Stmts => .K [macro]
 
-  rule with O:Object : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), ., Ss)
-  rule with O:Object as T:Exp : Ss => doWith(O . String2Id("__exit__"), O . String2Id("__enter__") (.Arguments), T, Ss)
+  rule with O:Object : Ss => doWith(getmember(O, "__exit__", true, false, true), getmember(O, "__enter__", true, false, true) (.Arguments), ., Ss)
+  rule with O:Object as T:Exp : Ss => doWith(getmember(O, "__exit__", true, false, true), getmember(O, "__enter__", true, false, true) (.Arguments), T, Ss)
   
   syntax K ::= doWith(Exp, Exp, K, K) [seqstrict(1, 2)]
 

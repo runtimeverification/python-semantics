@@ -12,20 +12,23 @@ module PYTHON-SEMANTICS-OBJECTS
   rule <k> invokeBuiltin(obj("call_type",_), ListItem(Type:Object) L:List, M:Map) => init(doCall(Type . String2Id("__new__"), ListItem(Type) L, M), Type, L, M) ...</k>
 
   rule <k> init(O:Object, Type, L, M) => test(istype(O, Type), test(plbool(doCall(getmember(O, "__init__", true, false, false), L, M) is ref("None")), ref(id(O)), raiseInternal("TypeError", "__init__() should return None")), O) ...</k>
-
-  rule <k> invokeBuiltin(obj("new_object",_), ListItem(O:Object) _, _) => newHelper(O, ref("object"), SetItem("iterator") SetItem("attribute") SetItem("builtin-function") SetItem("builtin-method") SetItem("frame") SetItem("reference")) ~> (if O is not ref("object") : setref(N, "__dict__", {.KeyData}) else: pass) ~> ref(N) ...</k>
-       <nextLoc> N => N +Int 1 </nextLoc>
-       (. => <object>
-         <id>N</id>
-         <oattrs> "__class__" |-> ref(id(O)) </oattrs>
-       </object>) [allocation]
+ 
+  // since object is the base class of absolutely everything, we need object.__new__ to fail if we
+  // call it with any other builtin type.
+  rule <k> invokeBuiltin(obj("new_object",_), ListItem(O:Object) _, _) => newHelper(O, ref("object"), Objects -Set SetItem("object")) ~> mutable(., O) ...</k>
+       <builtinObjectsWithNewMethod> Objects:Set </builtinObjectsWithNewMethod>
 
   rule [init-object]: <k> invokeBuiltin(obj("init_object",_), _, _) => ref("None") ...</k>
 
   rule <k> invokeBuiltin(obj("eq_object",_), ListItem(O) ListItem(O2:Object), .) => test(plbool(O is O2), ref("True"), ref("NotImplemented")) ...</k>
   rule <k> invokeBuiltin(obj("ne_object",_), ListItem(O) ListItem(O2), .) => not (O == O2) ...</k>
  
-  rule [getMro]: getMro(O:Object, Bases:Object) => mroMerge(list(ListItem(list(ListItem(O)))),,getMros(listvalue(Bases)),,list(ListItem(list(listvalue(Bases)))))
+  syntax Test ::= hasDuplicates(List) [function]
+  rule hasDuplicates(ListItem(B) L:List) => true when B in Setify(L)
+  rule hasDuplicates((ListItem(B) => .) L:List) when notBool B in Setify(L)
+  rule hasDuplicates(.) => false
+
+  rule [getMro]: getMro(O:Object, Bases:Object) => test(hasDuplicates(Idify(listvalue(Bases))), raiseInternal("TypeError", "duplicate base class object"), mroMerge(list(ListItem(list(ListItem(O)))),,getMros(listvalue(Bases)),,list(ListItem(list(listvalue(Bases))))))
   context mroMerge(_,,HOLE,,_)
   context mroMerge(_,,list(_ ListItem(HOLE) _),,_)
   context mroMerge(_,,list(_ ListItem(list(_ ListItem(HOLE) _)) _),,_)
@@ -57,11 +60,23 @@ module PYTHON-SEMANTICS-OBJECTS
   rule invokeBuiltin(obj("module.__setattr__",_), ListItem(O) ListItem(Name) ListItem(Value), .) => setmember(O, Name, Value)
   rule invokeBuiltin(obj("setattr_type",_), ListItem(Type) ListItem(Name) ListItem(Value), .) => setmember(Type, Name, Value)
 
+  rule invokeBuiltin(obj("set_ref_dict",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => test(istype(Value, ref("dict")), setref(id(Instance), getattr(Self, "__get__"), Value), raiseInternal("TypeError", getattr(Self, "__get__") +String " must be set to a dictionary"))
+
   rule invokeBuiltin(obj("subclasshook_object",_), L:List, .) => ref("NotImplemented")
   rule invokeBuiltin(obj("instancecheck_type",_), ListItem(Self) ListItem(Instance), .) => bool(istype(Instance, Self))
   rule invokeBuiltin(obj("subclasscheck_type",_), ListItem(Self) ListItem(Subclass), .) => bool(hasbase(Subclass, Self))
 
-  rule invokeBuiltin(obj("isinstance",_), ListItem(Instance:Object) ListItem(Class:Object), .) => getmember(Class, "__instancecheck__", true, false, true)(Instance)
-  rule invokeBuiltin(obj("issubclass",_), ListItem(Subclass:Object) ListItem(Class:Object), .) => getmember(Class, "__subclasscheck__", true, false, true)(Subclass) 
+  rule invokeBuiltin(obj("isinstance",_), ListItem(Instance:Object) ListItem(Class:Object), .) => test(istype(Class, ref("tuple")), AnyIsInstance(Instance, listvalue(Class)), test(istype(Class, ref("type")), getmember(Class, "__instancecheck__", true, false, true)(Instance), raiseInternal("TypeError", "isinstance() arg 2 must be a type or tuple of types")))
+  rule invokeBuiltin(obj("issubclass",_), ListItem(Subclass:Object) ListItem(Class:Object), .) => test(istype(Class, ref("tuple")), AnyIsSubclass(Subclass, listvalue(Class)), test(istype(Class, ref("type")), getmember(Class, "__subclasscheck__", true, false, true)(Subclass), raiseInternal("TypeError", "issubclass() arg 2 must be a class or tuple of classes")))
+  syntax Exp ::= AnyIsInstance(Object, List)
+               | AnyIsSubclass(Object, List)
+  context AnyIsInstance(_, ListItem(HOLE) _)
+  context AnyIsSubclass(_, ListItem(HOLE) _)
+  rule AnyIsInstance(Instance, ListItem(O:Object) L) => ref("isinstance")(Instance, O) or AnyIsInstance(Instance, L)
+  rule AnyIsSubclass(Subclass, ListItem(O:Object) L) => ref("issubclass")(Subclass, O) or AnyIsSubclass(Subclass, L)
+  rule AnyIsInstance(_, .List) => ref("False")
+  rule AnyIsSubclass(_, .List) => ref("False")
+
+  rule invokeBuiltin(obj("NoneType.__new__",_), ListItem(Cls), .) => newHelper(Cls, ref("NoneType"), .) ~> ref("None")
 
 endmodule

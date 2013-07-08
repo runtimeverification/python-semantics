@@ -65,7 +65,8 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(_ (H |-> list(Values))) ...</oattrs>
        ...</object>
 
-  rule bucketInsert(B, H, Key, K, ListItem((Key2 : Value2)::KeyDatum) Suffix:List, Prefix:List) => test(plbool(Key == Key2), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem((Key2 : Value2)::KeyDatum)))
+  rule bucketInsert(B, H, Key, K, ListItem((Key2 : Value2)::KeyDatum) Suffix:List, Prefix:List) => test(plbool(Key2 == Key), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem((Key2 : Value2)::KeyDatum)))
+  rule bucketInsert(B, H, Key, K, ListItem(Key2) Suffix:List, Prefix:List) => test(plbool(Key2 == Key), setBucket(B, H, Prefix ListItem(K) Suffix), bucketInsert(B, H, Key, K, Suffix, Prefix ListItem(Key2)))
 
   rule <k> bucketInsert(B, H, Key, K, ., Prefix) => . ...</k>
        <object>...
@@ -97,7 +98,7 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
-  rule bucketLookup(Key, ListItem((Key2 : Value2)::KeyDatum) Suffix) => test(plbool(Key == Key2), Value2, bucketLookup(Key, Suffix))
+  rule bucketLookup(Key, ListItem((Key2 : Value2)::KeyDatum) Suffix) => test(plbool(Key2 == Key), Value2, bucketLookup(Key, Suffix))
   rule bucketLookup(Key:Object, .) => raise ref("KeyError") (Key)
 
   rule <k> tableDelete(B, H, Key) => bucketDelete(B, H, Key, Values, .) ...</k>
@@ -112,7 +113,7 @@ module PYTHON-SEMANTICS-LITERALS
          <oattrs>... "__value__" |-> map(M) ...</oattrs>
        ...</object> when notBool(H in keys(M))
 
-  rule bucketDelete(B, H, Key, ListItem((Key2 : Value2)::KeyDatum) Suffix, Prefix) => test(plbool(Key == Key2), setBucket(B, H, Prefix Suffix), bucketDelete(B, H, Key, Suffix, Prefix ListItem((Key2 : Value2)::KeyDatum)))
+  rule bucketDelete(B, H, Key, ListItem((Key2 : Value2)::KeyDatum) Suffix, Prefix) => test(plbool(Key2 == Key), setBucket(B, H, Prefix Suffix), bucketDelete(B, H, Key, Suffix, Prefix ListItem((Key2 : Value2)::KeyDatum)))
   rule bucketDelete(_, _, Key:Object, ., _) => raise ref("KeyError") (Key)
 
   rule <k> mutable(V:Value,O) => mutable("__value__" |-> V "__revision__" |-> 0, O) ...</k>
@@ -125,6 +126,21 @@ module PYTHON-SEMANTICS-LITERALS
          <id>N</id>
          <oattrs> "__class__" |-> ref(B) M </oattrs>
        ...</object>)
+       <object>...
+         <id>B</id>
+         <oenv> _ </oenv>
+       ...</object>
+
+  rule <k> mutable(M, N, obj(B,_)) => setref(N, "__dict__", {.KeyData}) ~> ref(N) ...</k>
+       (. =>
+       <object>...
+         <id>N</id>
+         <oattrs> "__class__" |-> ref(B) M </oattrs>
+       ...</object>)
+       <object>
+         <id>B</id>
+         <oattrs> _ </oattrs>
+       </object>
 
   rule immutable(V:Value, O) => immutable("__value__" |-> V, O)
 

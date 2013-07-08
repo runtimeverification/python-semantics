@@ -42,7 +42,9 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "LookupError"("type",ListItem("Exception"),.,.) ~>
          object "NameError"("type",ListItem("Exception"),.,.) ~>
          object "None"("NoneType",.,.,.) ~>
-         object "NoneType"("type",ListItem("object"),.,.) ~>
+         object "NoneType"("type",ListItem("object"),
+           "__new__" |-> def "NoneType.__new__"(1, 1, false)
+           ,.) ~>
          object "NotADirectoryError"("type",ListItem("OSError"),.,.) ~>
          object "NotImplemented"("NotImplementedType",.,.,.) ~>
          object "NotImplementedType"("type",ListItem("object"),.,.) ~>
@@ -236,11 +238,11 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__subclasshook__" |-> def "subclasshook_object"(0, -1, false)
            ,.) ~>
          object "__class__" ("attribute",.,., "__get__" |-> "__class__") ~>
-         object "object.__dict__" ("attribute", ., ., "__get__" |-> "__dict__") ~>
+         object "object.__dict__" ("attribute", ., ., "__get__" |-> "__dict__" "__set__" |-> def "set_ref_dict"(3, 3, false)) ~>
          (def "ord" (1, 1, false) ;) ~>
          object "range" ("type",ListItem("object"),
            "__iter__" |-> def "iter_range" (0, 0, true)
-           "__new__" |-> def "new_range" (1, 4, false)
+           "__new__" |-> def "new_range" (2, 4, false)
            ,.) ~>
          (def "repr" (1, 1, false) ;) ~>
          object "reversed" ("type", ListItem("object"),
@@ -289,10 +291,12 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__hash__" |-> def "hash_str" (0, 0, true)
            "__len__" |-> def "len_str"(0, 0, true)
            "__mod__" |-> def "mod_str"(1, 1, true)
-           "__mul__" |-> def "mul_str"(1, 1, true)
+           "__mul__" |-> def "str.__mul__"(1, 1, true)
            "__ne__" |-> def "ne_str" (1, 1, true)
            "__new__" |-> def "str.__new__" (1, 4, false)
            "__repr__" |-> def "str.__repr__" (0, 0, true)
+           "__rmul__" |-> def "str.__rmul__" (1, 1, true)
+           "__str__" |-> def "str.__str__" (0, 0, true)
            ,.) ~>
          object "super"("type",ListItem("object"),
            "__getattribute__" |-> def "super.__getattribute__"(1, 1, true)
@@ -401,11 +405,13 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          object "__name__function"("attribute",.,., "__get__" |-> "__name__" "__set__" |-> def "set_attr_string"(3, 3, false)) ~>
          object "generator"("type",ListItem("object"),
            "close" |-> def "close_generator"(0, 0, true)
+           "gi_running" |-> ref("gi_running")
            "send" |-> def "send_generator"(1, 1, true)
            "throw" |-> def "throw_generator"(1, 3, true)
            "__iter__" |-> def "iter_generator"(0, 0, true)
            "__next__" |-> def "next_generator"(0, 0, true)
            ,.) ~>
+         object "gi_running" ("attribute",.,., "__get__" |-> "gi_running") ~>
          object "method" ("type", ListItem("object"),
            "__call__" |-> def "call_method" (0, -1, true)
            "__func__" |-> ref("__func__")
@@ -612,6 +618,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "ZeroDivisionError" : ref("ZeroDivisionError")
 		 , "__debug__" : #if Constants("PYTHONOPTIMIZE") ==Int 0 #then ref("True") #else ref("False") #fi
          , "__doc__" : "Built-in functions, exceptions, and other objects.\n\nNoteworthy: None is the `nil' object; Ellipsis represents `...' in slices."
+         , "abs" : ref("abs")
          , "all" : ref("all")
          , "any" : ref("any")
          , "bool" : ref("bool")
@@ -698,7 +705,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "path_importer_cache" : {.KeyData}
          , "platform" : Constants("sys.platform")
          , "version" : "3.3.0 (kpython version 1.0.0a1)"
-         , "version_info" : ref("sys.version_info")(tuple(3, 3, 0, "final", 0))
+         , "version_info" : ref("sys.version_info")(tuple(3, 3, 2, "final", 0))
          }) ~>
          module "types"({
            "BuiltinFunctionType" : ref("builtin-function")

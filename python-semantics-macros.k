@@ -7,6 +7,7 @@ module PYTHON-SEMANTICS-MACROS
   syntax #Id ::= "AssertionError"
 
   rule pass => .K [macro]
+  rule ... => ref("Ellipsis")
 
   rule assert E => if __debug__ : if not E : raise AssertionError [macro]
   rule assert E , E2 => if __debug__ : if not E : raise AssertionError(E2 ::Exp) [macro]

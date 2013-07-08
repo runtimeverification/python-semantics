@@ -27,6 +27,7 @@ module PYTHON-SEMANTICS-COMMON
                   <gcThreshold> $GCTHRESHOLD:Int </gcThreshold>
                   <literals> .Map </literals>
                   <symbols> .Map </symbols>
+                  <builtinObjectsWithNewMethod> .Set </builtinObjectsWithNewMethod>
                   <builtinModules> .Map </builtinModules>
                   <references> .Map </references>
                   <bootstrapping> 3 </bootstrapping>
@@ -60,11 +61,15 @@ module PYTHON-SEMANTICS-COMMON
              | setArgs(Int, Map)
              | getMro(Exp, Exp) [strict]
              | doBind(String, Exp, Exp) [strict(3)]
+             | STORENAME(String, Exp, Exp, Exp) [strict(3, 4)]
+             | STOREDEREF(String, Exp, Exp, Exp) [strict(3, 4)]
+             | STOREGLOBAL(String, Exp, Exp, Exp) [strict(3, 4)]
 
   syntax #Id ::= "__class__" | "__dict__" | "__next__" | "f_builtins" | "co_freevars"
 
   syntax Test ::= "istype" "(" Exp "," Exp ")" [strict]
                 | "hasbase" "(" K "," Exp ")" [strict]
+                | hasbase(K, Set) [klabel('hasbaseSet)]
 				| hasmember(Exp, Exp, Bool) [strict(1, 2)]
 
   // TODO: figure out why the good goddamn fuck it is that if I make ref(K) of sort ObjRef then parsing dicts takes exponential time.
@@ -296,8 +301,11 @@ module PYTHON-SEMANTICS-COMMON
   rule hasbase(obj(N:Int,ObjState:Bag), Base:Object) => or(obj(N,ObjState) ==K Base, hasbase(getbases(obj(N,ObjState)), Base)) when hasattr(obj(N,ObjState), "__bases__")
   rule hasbase(obj(N,ObjState), _) => false when notBool hasattr(obj(N,ObjState),"__bases__")
 
-  rule hasbase(list(ListItem(N) L), Base) => or(hasbase(N, Base),hasbase(list(L), Base))
-  rule hasbase(list(.List), Base) => false
+  rule hasbase(list(ListItem(N) L), Base:Object) => or(hasbase(N, Base),hasbase(list(L), Base))
+  rule hasbase(list(.List), Base:Object) => false
+
+  rule hasbase(O:Object, SetItem(S:String) St:Set) => hasbase(O, ref(S)) or hasbase(O, St)
+  rule hasbase(O, .Set) => false
 
   rule invokeBuiltin(obj("get_attr",_), ListItem(Self) ListItem(Instance) ListItem(Owner), .) => describe(Self, Instance, Owner, "get_attr")
   rule invokeBuiltin(obj("set_attr",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => doCall(getref(Self, "__set__"), ListItem(Self) ListItem(Instance) ListItem(Value), .)
@@ -345,7 +353,7 @@ module PYTHON-SEMANTICS-COMMON
   rule <k> (list(.) => .) ~> map(_) ~> (mapping(_,_) => .) ...</k>
   context list(_) ~> addPair(_, HOLE) ~> map(_)
 
-  rule <k> newHelper(O:Object, Type:Object, St:Set) => test(hasbase(O, Type), test(id(O) in lookup(Sym, St), raiseInternal("TypeError", "unsafe builtin __new__ call error message"), .), raiseInternal("TypeError", "invalid builtin __new__ call argument type error message")) ...</k>
+  rule <k> newHelper(O:Object, Type:Object, St:Set) => test(hasbase(O, Type), test(hasbase(O, St), raiseInternal("TypeError", "unsafe argument to builtin __new__ call"), .), raiseInternal("TypeError", "invalid argument to builtin __new__ call")) ...</k>
        <symbols> Sym:Map </symbols>
 
   syntax K ::= keywordHelper(String, Map, Set)

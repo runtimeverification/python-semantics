@@ -42,6 +42,10 @@ module PYTHON-SEMANTICS-CALLS
   //leftover positional arguments get stored in vararg
   rule (. => addArg(Code . String2Id("co_varnames") [getattr(Code, "co_argcount") +Int getattr(Code, "co_kwonlyargcount")], tuple(DeListify(L:List)))) ~> matchArgs(_, Code:Object, (L => .), _, _, N, (false => true), _) when N >=Int getattr(Code, "co_argcount") andBool (getattr(Code, "co_flags") &Int 4) =/=Int 0
 
+  //if there are no leftover positional arguments, create empty varargs so we can proceed to
+  //process defaults
+  rule (. => addArg(Code . String2Id("co_varnames") [getattr(Code, "co_argcount") +Int getattr(Code, "co_kwonlyargcount")], tuple(.Exps))) ~> matchArgs(_, Code:Object, ., ., _, N, (false => true), _) when N <Int getattr(Code, "co_argcount") andBool (getattr(Code, "co_flags") &Int 4) =/=Int 0
+
   rule (addArg(O:Object, O2:Object) => .) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _, _, _)
   rule (addArg(O:Object, O2:Object) => .) ~> addKwArg(_,_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _, _, _)
   rule (addArg(O:Object, O2:Object) => .) ~> addDefaults(_,_) ~> addKwDefaults(_,_) ~> matchArgs(_,_,_,_,_ (. => String2Id(strvalue(O)) |-> ref(id(O2))), _, _, _)

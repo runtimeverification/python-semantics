@@ -72,7 +72,7 @@ module PYTHON-SEMANTICS-SLICING
   rule <k> indices(StartObj, StopObj, StepObj, LengthObj) => indices2(StartObj, StopObj, #if id(StepObj) ==K NoneId #then 1 #else intvalue(StepObj) #fi, intvalue(LengthObj)) ...</k>
        <symbols>... "None" |-> NoneId:Int ...</symbols> when id(StepObj) ==K NoneId orElseBool intvalue(StepObj) =/=Int 0
 
-  rule <k> indices2(StartObj, StopObj, Step:Int, Length:Int) => indices3(#if id(StartObj) ==K NoneId #then #if Step <Int 0 #then Length -Int 1 #else 0 #fi #else intvalue(StartObj) #fi, #if id(StopObj) ==K NoneId #then #if Step <Int 0 #then -1 #else Length #fi #else intvalue(StopObj) #fi, Step, Length) ...</k>
+  rule <k> indices2(StartObj, StopObj, Step:Int, Length:Int) => indices3(#if id(StartObj) ==K NoneId #then #if Step <Int 0 #then Length -Int 1 #else 0 #fi #else intvalue(StartObj) #fi, #if id(StopObj) ==K NoneId #then #if Step <Int 0 #then -1 -Int Length #else Length #fi #else intvalue(StopObj) #fi, Step, Length) ...</k>
        <symbols>... "None" |-> NoneId:Int ...</symbols>
 
   rule indices3(Start:Int, Stop:Int, Step, Length) => indices4(#if Start <Int 0 #then #if Start +Int Length <Int 0 #then #if Step <Int 0 #then -1 #else 0 #fi #else Start +Int Length #fi #else Start #fi, #if Stop <Int 0 #then #if Stop +Int Length <Int 0 #then #if Step <Int 0 #then -1 #else 0 #fi #else Stop +Int Length #fi #else Stop #fi, Step, Length)

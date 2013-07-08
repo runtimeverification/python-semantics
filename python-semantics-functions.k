@@ -124,9 +124,12 @@ module PYTHON-SEMANTICS-FUNCTIONS
              FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L)) -Set
              Setify(PARAMS(Params)))))) ~>
            setref(N, "co_names", tuple(DeListify(DeSetify(
-             ((Uses Globals) -Set
+             ((Defs Uses Globals) -Set
              FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L)) -Set
              LOCAL(Defs, Globals, Nonlocals, Params, Type))))) ~>
+           setref(N, "co_globals", tuple(DeListify(DeSetify(Globals)))) ~>
+           setref(N, "co_nonlocals", tuple(DeListify(DeSetify(Nonlocals)))) ~>
+           setattr(N, "co_type", Type ==K typeobject) ~>
            #if T #then setattr(N, "co_flags", getattr(ref(N), "co_flags") |Int 32) #else . #fi ...</k>
        <scope> ListItem(scope(ref(N), Defs:Set, Uses:Set, Nonlocals:Set, Globals:Set, ChildFree:Set, Params:List, Type, T:Bool)) L</scope>
 
@@ -140,13 +143,16 @@ module PYTHON-SEMANTICS-FUNCTIONS
 
   syntax Set ::= FREE(Set, Set, Set, Set, Set, List) [function]
   syntax Set ::= LOCAL(Set, Set, Set, List, CodeObjectType) [function]
+  syntax Set ::= REALLOCAL(Set, Set, Set, List, CodeObjectType) [function]
   syntax Set ::= BOUND(Set, List) [function]
   syntax List ::= PARAMS(List) [function]
-  rule LOCAL(Defs, Globals, Nonlocals, Params, Type) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set . andBool Type =/=K typeobject
-  rule LOCAL(Defs, Globals, Nonlocals, Params, typeobject) => ((Defs SetItem("__class__") Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set .
-  rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses Defs) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals andBool notBool "super" in Uses
-  rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses Defs SetItem("__class__")) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals andBool "super" in Uses
-  rule BOUND(Bound:Set, L ListItem(scope(_, Defs, _, Nonlocals, Globals2, _, Params, funcobject, _))) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params, funcobject)) -Set Globals2, L) 
+  rule LOCAL(Defs, Globals, Nonlocals, Params, Type) => REALLOCAL(Defs, Globals, Nonlocals, Params, Type) when Type =/=K typeobject
+  rule REALLOCAL(Defs, Globals, Nonlocals, Params, Type) => ((Defs Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set . andBool Type =/=K typeobject
+  rule REALLOCAL(Defs, Globals, Nonlocals, Params, typeobject) => ((Defs SetItem("__class__") Setify(PARAMS(Params))) -Set Globals) -Set Nonlocals when  Setify(PARAMS(Params)) &Set Nonlocals ==Set . andBool Setify(PARAMS(Params)) &Set Globals ==Set .
+  rule LOCAL(_, Globals, Nonlocals, _, typeobject) => (SetItem("__class__") -Set Globals) -Set Nonlocals
+  rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals andBool notBool "super" in Uses
+  rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses SetItem("__class__")) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals andBool "super" in Uses
+  rule BOUND(Bound:Set, L ListItem(scope(_, Defs, _, Nonlocals, Globals2, _, Params, funcobject, _))) => BOUND((Bound REALLOCAL(Defs, Globals2, Nonlocals, Params, funcobject)) -Set Globals2, L) 
   // if we are computing what is bound by a class definition scope, the only thing bound is __class__. Nothing in the local environment is bound.
   rule BOUND(Bound:Set, L ListItem(scope(_, _:Set, _:Set, _:Set, Globals2:Set, _:Set, _:List, typeobject, _))) => BOUND(Bound SetItem("__class__"), L) when notBool "__class__" in Globals2
   rule BOUND(Bound:Set, L ListItem(scope(_, _:Set, _:Set, _:Set, Globals2:Set, _:Set, _:List, moduleobject, _))) => BOUND(Bound, L)

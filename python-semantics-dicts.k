@@ -68,7 +68,7 @@ module PYTHON-SEMANTICS-DICTS
 
   syntax K ::= makeDict(Int, Exp) [strict(2)]
 
-  rule invokeBuiltin(obj("new_dict",_), ListItem(O) _, .) => newHelper(O, ref("dict"), .) ~> {.KeyData}
+  rule invokeBuiltin(obj("new_dict",_), ListItem(O) _, .) => newHelper(O, ref("dict"), .) ~> mutable(map(.), O)
   rule invokeBuiltin(obj("init_dict",_), ListItem(_:Object), .) => ref("None")
   rule invokeBuiltin(obj("init_dict",_), ListItem(O) ListItem(O2:Object), .) => mapping(O2, .Obj) -> iterate(O2, .) ~> makeDict(0, O)
 

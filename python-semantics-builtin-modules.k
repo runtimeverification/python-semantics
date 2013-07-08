@@ -121,7 +121,15 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
        <object>...
          <id>N</id>
          <oenv>... . => S |-> ref(id(O)) ...</oenv>
+       ...</object> when S =/=String "__new__"
+
+  rule <k> object N(_,_,("__new__" |-> O:Object => .) _,_) ...</k>
+       <object>...
+         <id>N</id>
+         <oenv>... . => "__new__" |-> ref(id(O)) ...</oenv>
+         <oattrs>... "__name__" |-> S ...</oattrs>
        ...</object>
+       <builtinObjectsWithNewMethod>... . => SetItem(S) ...</builtinObjectsWithNewMethod>
 
   rule <k> (def S:String(Min:Int, Max:Int, IsMethod:Bool) => ref(S)) ...</k>
        (. => <object>...

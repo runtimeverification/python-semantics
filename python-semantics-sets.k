@@ -3,7 +3,7 @@ require "python-semantics-literals.k"
 module PYTHON-SEMANTICS-SETS
   imports PYTHON-SEMANTICS-LITERALS
 
-  rule invokeBuiltin(obj("new_set",_), ListItem(O) _, .) => newHelper(O, ref("set"), .) ~> {.NeExps}
+  rule invokeBuiltin(obj("new_set",_), ListItem(O) _, .) => newHelper(O, ref("set"), .) ~> mutable(map(.), O)
   rule invokeBuiltin(obj("init_set",_), ListItem(O), .) => ref("None")
   rule invokeBuiltin(obj("init_set",_), ListItem(O) ListItem(O2), .) => iterate(O2, .) ~> makeSet(O)
 

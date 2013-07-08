@@ -14,8 +14,8 @@ module PYTHON-SEMANTICS-OPS
 
   rule <k> coerceUnary(O:Object, X, S) => coercion(getmember(O, X, true, false, false) (.Arguments)) -> (raiseInternal("TypeError", "bad operand type for " +String S)) ...</k>
 
-  rule <k> coercion(obj(N,ObjState:Bag)) => test(or((N ==Int NoneId), (N ==Int NotImplementedId)), .Obj, obj(N,ObjState)) ...</k>
-       <symbols>... "None" |-> NoneId "NotImplemented" |-> NotImplementedId ...</symbols>
+  rule <k> coercion(obj(N,ObjState:Bag)) => test(((N ==Int NotImplementedId)), .Obj, obj(N,ObjState)) ...</k>
+       <symbols>... "NotImplemented" |-> NotImplementedId ...</symbols>
   rule coercion(.Obj) => .Obj
 
 endmodule

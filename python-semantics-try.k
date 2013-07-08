@@ -36,7 +36,7 @@ module PYTHON-SEMANTICS-TRY
   rule <k> popx => . ...</k> 
        <xstack> _:ListItem => . ...</xstack>
 
-  rule <k> raise => raiseInternal("RuntimeError", "No active exception to reraise") ...</k>
+  rule <k> raise => raise ref("RuntimeError")("No active exception to reraise") ...</k>
        <xcontext> ref("None") </xcontext>
 
   rule <k> (. => ECs) ~> raise ...</k>
