@@ -141,7 +141,7 @@ module PYTHON-SEMANTICS-IO
   ref("None")
 
   syntax Exp ::= doOpen(String, String) [strict(2)]
-  rule doOpen(Name, "r") => raiseOSError(#open("file:" +String Name +String "\001r"), Name)
+  rule doOpen(Name, "r") => raiseOSError(#open(Name, "r"), Name)
   rule invokeBuiltin(obj("FileIO.readable",_), ListItem(Self), .) => if getref(Self, "fileno") < 0 : raiseInternal("ValueError", "I/O operation on closed file") else: getref(Self, "readable")
   rule invokeBuiltin(obj("FileIO.writable",_), ListItem(Self), .) => if getref(Self, "fileno") < 0 : raiseInternal("ValueError", "I/O operation on closed file") else: getref(Self, "writable")
   rule invokeBuiltin(obj("FileIO.seekable",_), ListItem(Self), .) => if getref(Self, "fileno") < 0 : raiseInternal("ValueError", "I/O operation on closed file") else: try: ref("FileIO.seek")(Self, 0, 1) ; except ref("IOError"): ref("False") else: ref("True")
@@ -153,7 +153,7 @@ module PYTHON-SEMANTICS-IO
   rule invokeBuiltin(obj("FileIO.readall",_), L:List, M:Map) => doCall(ref("_RawIOBase.readall"), L, M)
   rule invokeBuiltin(obj("FileIO.readinto",_), ListItem(Self) ListItem(ByteArray:Object), .) => test(istype(ByteArray, ref("bytearray")), doReadInto(getref(Self, "fileno"), ref("len")(ByteArray), ByteArray), raiseInternal("TypeError", "must be read-write buffer"))
   syntax Exp ::= doReadInto(Exp, Exp, Exp) [strict]
-  rule doReadInto(Fileno:Object, Len:Object, ByteArray) => readIntoBytearray(raiseOSError(#fReadBytes(intvalue(Fileno), intvalue(Len)), ""), ByteArray)
+  rule doReadInto(Fileno:Object, Len:Object, ByteArray) => readIntoBytearray(raiseOSError(#read(intvalue(Fileno), intvalue(Len)), ""), ByteArray)
   syntax Exp ::= readIntoBytearray(Exp, Exp) [strict]
   rule readIntoBytearray(O:Object, ByteArray) => setattr(id(ByteArray), "__value__", strvalue(O) +String substrString(getattr(ByteArray, "__value__"), lengthString(strvalue(O)), lengthString(strvalue(ByteArray)))) ~> lengthString(strvalue(O))
   rule raiseOSError(#EOF,_) ~> #freezer readIntoBytearray(HOLE, _) (.KList) => 0

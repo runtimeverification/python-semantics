@@ -14,7 +14,7 @@ module PYTHON-SEMANTICS-STRINGS
   rule <k> invokeBuiltin(obj("eq_str",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "str", "str", bool(strvalue(O) ==String strvalue(O2))) ...</k>
   rule <k> invokeBuiltin(obj("ne_str",_), ListItem(O) ListItem(O2), .) => binaryOp(O, O2, "str", "str", bool(strvalue(O) =/=String strvalue(O2))) ...</k>
 
-  rule [hash-str]: <k> invokeBuiltin(obj("hash_str",_), ListItem(O), .) => test(lengthString(strvalue(O)) ==Int 0, 0, accumulate(strvalue(O), (asciiString(substrString(strvalue(O), 0, 1)) <<Int 7) xorInt hashPrefix(Seed, Width), lengthString(strvalue(O)))) ...</k>
+  rule [hash-str]: <k> invokeBuiltin(obj("hash_str",_), ListItem(O), .) => test(lengthString(strvalue(O)) ==Int 0, 0, accumulate(strvalue(O), (ordChar(substrString(strvalue(O), 0, 1)) <<Int 7) xorInt hashPrefix(Seed, Width), lengthString(strvalue(O)))) ...</k>
        <constants>... "PYTHONHASHSEED" |-> Seed "sys.hash_info.width" |-> Width ...</constants>
 
   rule invokeBuiltin(obj("str.__new__",_), ListItem(Cls:Object), .) => newHelper(Cls, ref("str"), .) ~> immutable("", Cls)
@@ -30,7 +30,7 @@ module PYTHON-SEMANTICS-STRINGS
   rule hashSuffix(Seed, Width) => wrap(lcgRandom(Seed, Width /Int 4, Width) >>Int Width, Width)
   rule hashPrefix(Seed, Width) => wrap(lcgRandom(Seed, Width /Int 4, Width) &Int (2 ^Int Width -Int 1), Width)
 
-  rule <k> accumulate((S:String => substrString(S, 1, lengthString(S) -Int 1)), (I:Int => (mult(Imag, I, Width) xorInt asciiString(substrString(S, 0, 1)))), _) ...</k>
+  rule <k> accumulate((S:String => substrString(S, 1, lengthString(S))), (I:Int => (mult(Imag, I, Width) xorInt ordChar(substrString(S, 0, 1)))), _) ...</k>
        <constants>... "sys.hash_info.width" |-> Width "sys.hash_info.imag" |-> Imag ...</constants> when lengthString(S) =/=Int 0
 
   rule <k> accumulate("", I, Len:Int) => test((I xorInt Len xorInt hashSuffix(Seed, Width)) ==Int -1, -2, (I xorInt Len xorInt hashSuffix(Seed, Width))) ...</k>
@@ -75,24 +75,24 @@ module PYTHON-SEMANTICS-STRINGS
   rule substrString(S, notFound, _) => "" [simplification]
   rule substrString(S, Start, notFound) => substrString(S, Start, lengthString(S)) [simplification]
 
-  syntax Int ::= findChar(String, String, Int) [function]
-  rule findChar(S, Pattern, I) => minInt(#if findString(S, substrString(Pattern, 0, 1), I) ==Int -1 #then notFound #else findString(S, substrString(Pattern, 0, 1), I) #fi, findChar(S, substrString(Pattern, 1, lengthString(Pattern)), I)) when Pattern =/=String ""
-  rule findChar(S, "", _) => notFound
+  syntax Int ::= findCharsInString(String, String, Int) [function]
+  rule findCharsInString(S, Pattern, I) => minInt(#if findString(S, substrString(Pattern, 0, 1), I) ==Int -1 #then notFound #else findString(S, substrString(Pattern, 0, 1), I) #fi, findCharsInString(S, substrString(Pattern, 1, lengthString(Pattern)), I)) when Pattern =/=String ""
+  rule findCharsInString(S, "", _) => notFound
 
-  rule format(Format, L, M, IsAuto) => substrString(Format, 0, findChar(Format, "{}", 1)) + format(substrString(Format, findChar(Format, "{}", 1), lengthString(Format)), L, M, IsAuto) when substrString(Format, 0, 1) =/=String "{" andBool substrString(Format, 0, 1) =/=String "}" andBool Format =/=String ""
+  rule format(Format, L, M, IsAuto) => substrString(Format, 0, findCharsInString(Format, "{}", 1)) + format(substrString(Format, findCharsInString(Format, "{}", 1), lengthString(Format)), L, M, IsAuto) when substrString(Format, 0, 1) =/=String "{" andBool substrString(Format, 0, 1) =/=String "}" andBool Format =/=String ""
   rule format("", _, _, _) => ""
   rule format(Format, L, M, IsAuto) => raiseInternal("ValueError", "single '}' encountered in format string") when substrString(Format, 0, 1) ==String "}" andBool substrString(Format, 0, 2) =/=String "}}"
   rule format(Format, L, M, IsAuto) => "{" + format(substrString(Format, 2, lengthString(Format)), L, M, IsAuto) when substrString(Format, 0, 2) ==String "{{"
   rule format(Format, L, M, IsAuto) => "}" + format(substrString(Format, 2, lengthString(Format)), L, M, IsAuto) when substrString(Format, 0, 2) ==String "}}"
-  rule format(Format, L, M, IsAuto) => raiseInternal("ValueError", "unmatched '{' in format") when substrString(Format, 0, 1) ==String "{" andBool substrString(Format, findChar(Format, "{}", 1), 1) ==String "{"
-  rule format(Format, L, M, IsAuto) => raiseInternal("ValueError", "single '{' encountered in format string") when substrString(Format, 0, 1) ==String "{" andBool findChar(Format, "{}", 1) ==Int notFound
-  rule format(Format, L:Object, M:Object, IsAuto) => formatField(substrString(Format, 1, findChar(Format, "{}", 1) -Int 1), substrString(Format, findChar(Format, "{}", 1) +Int 1, lengthString(Format)), L, M, IsAuto) when substrString(Format, 0, 1) ==String "{" andBool substrString(Format, findChar(Format, "{}", 1), 1) ==String "}"
+  rule format(Format, L, M, IsAuto) => raiseInternal("ValueError", "unmatched '{' in format") when substrString(Format, 0, 1) ==String "{" andBool substrString(Format, findCharsInString(Format, "{}", 1), findCharsInString(Format, "{}", 1) +Int 1) ==String "{"
+  rule format(Format, L, M, IsAuto) => raiseInternal("ValueError", "single '{' encountered in format string") when substrString(Format, 0, 1) ==String "{" andBool findCharsInString(Format, "{}", 1) ==Int notFound
+  rule format(Format, L:Object, M:Object, IsAuto) => formatField(substrString(Format, 1, findCharsInString(Format, "{}", 1)), substrString(Format, findCharsInString(Format, "{}", 1) +Int 1, lengthString(Format)), L, M, IsAuto) when substrString(Format, 0, 1) ==String "{" andBool substrString(Format, findCharsInString(Format, "{}", 1), findCharsInString(Format, "{}", 1) +Int 1) ==String "}"
 
-  rule formatField(Field, Format, L, M, IsAuto) => lookupField(substrString(Field, 0, findChar(Field, "!:", 0)), Field, Format, L, M, IsAuto)
+  rule formatField(Field, Format, L, M, IsAuto) => lookupField(substrString(Field, 0, findCharsInString(Field, "!:", 0)), Field, Format, L, M, IsAuto)
 
-  rule lookupField(FieldName, Field, Format, L, M, IsAuto) => lookupField(substrString(FieldName, findChar(FieldName, ".[", 0), lengthString(FieldName)), lookupArgName(substrString(FieldName, 0, findChar(FieldName, ".[", 0))), Field, Format, L, M, IsAuto)
-  rule [format-getattr]: lookupField(FieldName, O:Object, Field, Format, L, M, IsAuto) => lookupField(substrString(FieldName, findChar(FieldName, ".[", 1), lengthString(FieldName)), ref("getattr")(O, substrString(FieldName, 1, findChar(FieldName, ".[", 1) -Int 1)), Field, Format, L, M, IsAuto) when substrString(FieldName, 0, 1) ==String "."
-  rule [format-getitem]: lookupField(FieldName, O:Object, Field, Format, L, M, IsAuto) => lookupField(substrString(FieldName, findChar(FieldName, "]", 1) +Int 1, lengthString(FieldName)), lookupElementIndex(substrString(FieldName, 1, findChar(FieldName, "]", 1) -Int 1), O), Field, Format, L, M, IsAuto) when substrString(FieldName, 0, 1) ==String "["
+  rule lookupField(FieldName, Field, Format, L, M, IsAuto) => lookupField(substrString(FieldName, findCharsInString(FieldName, ".[", 0), lengthString(FieldName)), lookupArgName(substrString(FieldName, 0, findCharsInString(FieldName, ".[", 0))), Field, Format, L, M, IsAuto)
+  rule [format-getattr]: lookupField(FieldName, O:Object, Field, Format, L, M, IsAuto) => lookupField(substrString(FieldName, findCharsInString(FieldName, ".[", 1), lengthString(FieldName)), ref("getattr")(O, substrString(FieldName, 1, findCharsInString(FieldName, ".[", 1))), Field, Format, L, M, IsAuto) when substrString(FieldName, 0, 1) ==String "."
+  rule [format-getitem]: lookupField(FieldName, O:Object, Field, Format, L, M, IsAuto) => lookupField(substrString(FieldName, findCharsInString(FieldName, "]", 1) +Int 1, lengthString(FieldName)), lookupElementIndex(substrString(FieldName, 1, findCharsInString(FieldName, "]", 1)), O), Field, Format, L, M, IsAuto) when substrString(FieldName, 0, 1) ==String "["
 
   context lookupField(_, HOLE, _, _, _, _, _) when isExp(HOLE)
 
@@ -105,14 +105,14 @@ module PYTHON-SEMANTICS-STRINGS
   rule lookupElementIndex(ElementIndex, O) => O[String2Int(ElementIndex)] when isInt(String2Int(ElementIndex))
   rule lookupElementIndex(ElementIndex, O) => O[ElementIndex] when isInt(String2Int(ElementIndex)) =/=K true
 
-  rule lookupField(_, O:Object, Field, Format, L, M, IsAuto) => ref("format")(convertField(O, substrString(Field, findChar(Field, ":!", 0), 3)), substrString(Field, findChar(Field, ":", 0) +Int 1, lengthString(Field))) + format(Format, L, M, IsAuto)
+  rule lookupField(_, O:Object, Field, Format, L, M, IsAuto) => ref("format")(convertField(O, substrString(Field, findCharsInString(Field, ":!", 0), findCharsInString(Field, ":!", 0) +Int 3)), substrString(Field, findCharsInString(Field, ":", 0) +Int 1, lengthString(Field))) + format(Format, L, M, IsAuto)
 
   rule convertField(O:Object, Conversion) => ref("str")(O) when Conversion ==String "!s" orBool Conversion ==String "!s:"
   rule convertField(O:Object, Conversion) => ref("repr")(O) when Conversion ==String "!r" orBool Conversion ==String "!r:"
   rule convertField(O:Object, Conversion) => ref("ascii")(O) when Conversion ==String "!a" orBool Conversion ==String "!a:"
   rule convertField(O:Object, Conversion) => O when Conversion ==String "" orBool substrString(Conversion, 0, 1) ==String ":"
-  rule convertField(O:Object, Conversion) => raiseInternal("ValueError", "unknown conversion specifier" +String substrString(Conversion, 1, 1)) when substrString(Conversion, 0, 1) ==String "!" andBool (substrString(Conversion, 2, 1) ==String ":" orBool lengthString(Conversion) ==Int 2)
-  rule convertField(O:Object, Conversion) => raiseInternal("ValueError", "expected ':' after format specifier") when substrString(Conversion, 0, 1) ==String "!" andBool (substrString(Conversion, 1, 1) ==String "s" orBool substrString(Conversion, 1, 1) ==String "r" orBool substrString(Conversion, 1, 1) ==String "a") andBool substrString(Conversion, 2, 1) =/=String "" andBool substrString(Conversion, 2, 1) =/=String ":"
+  rule convertField(O:Object, Conversion) => raiseInternal("ValueError", "unknown conversion specifier" +String substrString(Conversion, 1, 2)) when substrString(Conversion, 0, 1) ==String "!" andBool (substrString(Conversion, 2, 3) ==String ":" orBool lengthString(Conversion) ==Int 2)
+  rule convertField(O:Object, Conversion) => raiseInternal("ValueError", "expected ':' after format specifier") when substrString(Conversion, 0, 1) ==String "!" andBool (substrString(Conversion, 1, 2) ==String "s" orBool substrString(Conversion, 1, 2) ==String "r" orBool substrString(Conversion, 1, 2) ==String "a") andBool substrString(Conversion, 2, 3) =/=String "" andBool substrString(Conversion, 2, 3) =/=String ":"
 
   rule invokeBuiltin(obj("format",_), ListItem(O:Object), .) => ref("format")(O, "")
   rule invokeBuiltin(obj("format",_), ListItem(O:Object) ListItem(Format:Object), .) => checkFormat(getmember(O, "__format__", true, false, true)(Format))
@@ -134,17 +134,17 @@ module PYTHON-SEMANTICS-STRINGS
   syntax ObjRef ::= doFormatStr(String, FormatSpec)
 
   rule invokeBuiltin(obj("__format___str",_), ListItem(O:Object) ListItem(Format:Object), .) => doFormatStr(strvalue(O), parseFormatSpec(strvalue(Format)))
-  rule parseFormatSpec(Format) => #if substrString(Format, 1, 1) =/=String "<" andBool substrString(Format, 1, 1) =/=String ">" andBool substrString(Format, 1, 1) =/=String "=" andBool substrString(Format, 1, 1) =/=String "^" #then parseFormatSpec("", Format) #else parseFormatSpec(substrString(Format, 0, 1), substrString(Format, 1, lengthString(Format))) #fi
+  rule parseFormatSpec(Format) => #if substrString(Format, 1, 2) =/=String "<" andBool substrString(Format, 1, 2) =/=String ">" andBool substrString(Format, 1, 2) =/=String "=" andBool substrString(Format, 1, 2) =/=String "^" #then parseFormatSpec("", Format) #else parseFormatSpec(substrString(Format, 0, 2), substrString(Format, 1, lengthString(Format))) #fi
   rule parseFormatSpec(Fill, Format) => #if substrString(Format, 0, 1) ==String "<" orBool substrString(Format, 0, 1) ==String ">" orBool substrString(Format, 0, 1) ==String "=" orBool substrString(Format, 0, 1) ==String "^" #then parseFormatSpec(Fill, substrString(Format, 0, 1), substrString(Format, 1, lengthString(Format))) #else parseFormatSpec(Fill, "", Format) #fi
   rule parseFormatSpec(Fill, Align, Format) => #if substrString(Format, 0, 1) ==String "+" orBool substrString(Format, 0, 1) ==String "-" orBool substrString(Format, 0, 1) ==String " " #then parseFormatSpec(Fill, Align, substrString(Format, 0, 1), substrString(Format, 1, lengthString(Format))) #else parseFormatSpec(Fill, Align, "", Format) #fi
   rule parseFormatSpec(Fill, Align, Sign, Format) => #if substrString(Format, 0, 1) ==String "#" #then parseFormatSpec(Fill, Align, Sign, "#", substrString(Format, 1, lengthString(Format))) #else parseFormatSpec(Fill, Align, Sign, "", Format) #fi
   rule parseFormatSpec(Fill, Align, Sign, AltForm, Format) => #if substrString(Format, 0, 1) ==String "0" #then parseFormatSpec(#if Fill ==String "" #then "0" #else Fill #fi, #if Align ==String "" #then "=" #else Align #fi, Sign, AltForm, "", substrString(Format, 1, lengthString(Format))) #else parseFormatSpec(Fill, Align, Sign, AltForm, "", Format) #fi
-  rule parseFormatSpec(Fill, Align, Sign, AltForm, Width, Format) => parseFormatSpec(Fill, Align, Sign, AltForm, Width +String substrString(Format, 0, 1), substrString(Format, 1, lengthString(Format))) when asciiString(substrString(Format, 0, 1)) >=Int 48 andBool asciiString(substrString(Format, 0, 1)) <=Int 57
-  rule parseFormatSpec(Fill, Align, Sign, AltForm, Width, Format) => #if substrString(Format, 0, 1) ==String "," #then parseFormatSpec(Fill, Align, Sign, AltForm, Width, ",", substrString(Format, 1, lengthString(Format))) #else parseFormatSpec(Fill, Align, Sign, AltForm, Width, "", Format) #fi when asciiString(substrString(Format, 0, 1)) <Int 48 orElseBool asciiString(substrString(Format, 0, 1)) >Int 57 orElseBool Format ==String ""
+  rule parseFormatSpec(Fill, Align, Sign, AltForm, Width, Format) => parseFormatSpec(Fill, Align, Sign, AltForm, Width +String substrString(Format, 0, 1), substrString(Format, 1, lengthString(Format))) when ordChar(substrString(Format, 0, 1)) >=Int 48 andBool ordChar(substrString(Format, 0, 1)) <=Int 57
+  rule parseFormatSpec(Fill, Align, Sign, AltForm, Width, Format) => #if substrString(Format, 0, 1) ==String "," #then parseFormatSpec(Fill, Align, Sign, AltForm, Width, ",", substrString(Format, 1, lengthString(Format))) #else parseFormatSpec(Fill, Align, Sign, AltForm, Width, "", Format) #fi when ordChar(substrString(Format, 0, 1)) <Int 48 orElseBool ordChar(substrString(Format, 0, 1)) >Int 57 orElseBool Format ==String ""
   rule parseFormatSpec(Fill, Align, Sign, AltForm, Width, Thousands, Format) => #if substrString(Format, 0, 1) ==String "." #then parseFormatSpec(Fill, Align, Sign, AltForm, Width, Thousands, ".", substrString(Format, 1, lengthString(Format))) #else parseFormatSpec(Fill, Align, Sign, AltForm, Width, Thousands, "", Format) #fi
-  rule parseFormatSpec(Fill, Align, Sign, AltForm, Width, Thousands, Precision, Format) => parseFormatSpec(Fill, Align, Sign, AltForm, Width, Thousands, Precision +String substrString(Format, 0, 1), substrString(Format, 1, lengthString(Format))) when asciiString(substrString(Format, 0, 1)) >=Int 48 andBool asciiString(substrString(Format, 0, 1)) <=Int 57 andBool lengthString(Precision) >Int 0
-  rule parseFormatSpec(Fill, Align, Sign, AltForm, Width, Thousands, Precision, Format) => formatSpec(Fill, Align, Sign, AltForm, Width, Thousands, Precision, Format) when (asciiString(substrString(Format, 0, 1)) <Int 48 orElseBool asciiString(substrString(Format, 0, 1)) >Int 57 orElseBool lengthString(Precision) ==Int 0 orElseBool Format ==String "") andBool lengthString(Format) <=Int 1
-  rule parseFormatSpec(_, _, _, _, _, _, Precision, Format) => invalidFormatSpec when (asciiString(substrString(Format, 0, 1)) <Int 48 orBool asciiString(substrString(Format, 0, 1)) <Int 48 orBool asciiString(substrString(Format, 0, 1)) >Int 57 orBool lengthString(Precision) ==Int 0) andBool lengthString(Format) >Int 1
+  rule parseFormatSpec(Fill, Align, Sign, AltForm, Width, Thousands, Precision, Format) => parseFormatSpec(Fill, Align, Sign, AltForm, Width, Thousands, Precision +String substrString(Format, 0, 1), substrString(Format, 1, lengthString(Format))) when ordChar(substrString(Format, 0, 1)) >=Int 48 andBool ordChar(substrString(Format, 0, 1)) <=Int 57 andBool lengthString(Precision) >Int 0
+  rule parseFormatSpec(Fill, Align, Sign, AltForm, Width, Thousands, Precision, Format) => formatSpec(Fill, Align, Sign, AltForm, Width, Thousands, Precision, Format) when (ordChar(substrString(Format, 0, 1)) <Int 48 orElseBool ordChar(substrString(Format, 0, 1)) >Int 57 orElseBool lengthString(Precision) ==Int 0 orElseBool Format ==String "") andBool lengthString(Format) <=Int 1
+  rule parseFormatSpec(_, _, _, _, _, _, Precision, Format) => invalidFormatSpec when (ordChar(substrString(Format, 0, 1)) <Int 48 orBool ordChar(substrString(Format, 0, 1)) <Int 48 orBool ordChar(substrString(Format, 0, 1)) >Int 57 orBool lengthString(Precision) ==Int 0) andBool lengthString(Format) >Int 1
 
   rule doFormatStr(_, invalidFormatSpec) => raiseInternal("ValueError", "Invalid format specifier")
   rule doFormatStr(_, formatSpec(_, "=", _, _, _, _, _, _)) => raiseInternal("ValueError", "'=' alignment not allowed in string format specifier")

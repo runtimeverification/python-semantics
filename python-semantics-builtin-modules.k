@@ -24,9 +24,9 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
   rule refs(.List) => .List
 
   syntax K ::= "bootstrap" | saveConfiguration(Int, String) | loadConfiguration(Int, String) | loadConfigurationByte(K)
-  rule <k> initialize(bootstrap) => builtins ~> resolve ~> modules ~> importlib ~> saveConfiguration(#open("file:bootstrapped.bin"), .K) ...</k>
+  rule <k> initialize(bootstrap) => builtins ~> resolve ~> modules ~> importlib ~> saveConfiguration(#open("bootstrapped.bin"), .K) ...</k>
   //the semantics of sys.path is that the first element is "" for the interpreter and the directory containing the file being executed if a file is being executed
-  rule <k> initialize(Program:K) => loadConfiguration(#open("file:" +String SemanticsDir +String "bootstrapped.bin\001r"), "") ~> ref("sys") . String2Id("path") [ 0 ] = SysPath:String ~> ref("sys") . String2Id("argv") = [ DeListify(L) ] ~> executeModule(codeObject(String2Id("__main__"), .Parameters, Program, moduleobject), ref("builtins"), {.KeyData}) ...</k>
+  rule <k> initialize(Program:K) => loadConfiguration(#open(SemanticsDir +String "bootstrapped.bin", "r"), "") ~> ref("sys") . String2Id("path") [ 0 ] = SysPath:String ~> ref("sys") . String2Id("argv") = [ DeListify(L) ] ~> executeModule(codeObject(String2Id("__main__"), .Parameters, Program, moduleobject), ref("builtins"), {.KeyData}) ...</k>
        <sysPath> ListItem(SysPath) ...</sysPath>
        <sysArgv> L:List </sysArgv>
        <semanticsdir> SemanticsDir </semanticsdir> when Program =/=K bootstrap
@@ -35,9 +35,9 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
          <k> saveConfiguration(Fd:Int, (.K => Bag2String(B))) ...</k>
          B:Bag
        </T>
-  rule (. => #fPutBytes(Fd, substrString(S, 0, 1000))) ~> saveConfiguration(Fd:Int, (S:String => substrString(S, 1000, lengthString(S)))) when S =/=String ""
+  rule (. => #write(Fd, substrString(S, 0, 1000))) ~> saveConfiguration(Fd:Int, (S:String => substrString(S, 1000, lengthString(S)))) when S =/=String ""
   rule saveConfiguration(Fd:Int, "") => #close(Fd)
-  rule (. => loadConfigurationByte(#fReadBytes(Fd, 1000))) ~> loadConfiguration(Fd:Int, _)
+  rule (. => loadConfigurationByte(#read(Fd, 1000))) ~> loadConfiguration(Fd:Int, _)
   rule (loadConfigurationByte(S2:String) => .) ~> loadConfiguration(Fd:Int, (S:String => S +String S2))
   rule loadConfigurationByte(#EOF) ~> loadConfiguration(Fd:Int, S:String) => doLoadConfiguration(String2Bag(S))
 

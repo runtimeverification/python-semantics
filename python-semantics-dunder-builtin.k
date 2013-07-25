@@ -454,6 +454,10 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          (def "imp_release_lock" (0, 0, false) ;) ~>
 
          //module "_io"
+         object "BufferedRandom" ("type", ListItem("_BufferedIOBase"), ., .) ~>
+         object "BufferedReader" ("type", ListItem("_BufferedIOBase"), ., .) ~>
+         object "BufferedRWPair" ("type", ListItem("_BufferedIOBase"), ., .) ~>
+         object "BufferedWriter" ("type", ListItem("_BufferedIOBase"), ., .) ~>
          object "BytesIO"("type", ListItem("_BufferedIOBase"),
            "__init__" |-> def "BytesIO.__init__"(0, 1, true)
            "readline" |-> def "BytesIO.readline"(0, 1, true)
@@ -485,6 +489,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__init__" |-> def "IncrementalNewlineDecoder.__init__"(2, 3, true)
            "decode" |-> def "IncrementalNewlineDecoder.decode"(1, 2, true)
            ,.) ~>
+         object "StringIO"("type", ListItem("_TextIOBase"), ., .) ~>
+         object "TextIOWrapper"("type", ListItem("_TextIOBase"), ., .) ~>
          object "UnsupportedOperation"("type", ListItem("ValueError") ListItem("OSError"),.,.) ~>
          object "_IOBase"("type", ListItem("object"),
            "__enter__" |-> def "_IOBase.__enter__"(0, 0, true)
@@ -513,6 +519,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "readall" |-> def "_RawIOBase.readall"(0, 0, true)
            ,.) ~>
          object "_BufferedIOBase"("type", ListItem("_IOBase"),.,.) ~>
+         object "_TextIOBase"("type", ListItem("_IOBase"), ., .) ~>
 
          //module "_warnings" 
          (def "_warnings.warn" (1, 3, false) ;) ~>
@@ -568,10 +575,16 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          module "_io"({
 		   "_IOBase" : ref("_IOBase")
 		 , "_RawIOBase" : ref("_RawIOBase")
+         , "BufferedRandom" : ref("BufferedRandom")
+         , "BufferedReader" : ref("BufferedReader")
+         , "BufferedRWPair" : ref("BufferedRWPair")
+         , "BufferedWriter" : ref("BufferedWriter")
          , "BytesIO" : ref("BytesIO")
 		 , "DEFAULT_BUFFER_SIZE" : Constants("_io.DEFAULT_BUFFER_SIZE")
          , "FileIO" : ref("FileIO")
          , "IncrementalNewlineDecoder" : ref("IncrementalNewlineDecoder")
+         , "StringIO" : ref("StringIO")
+         , "TextIOWrapper" : ref("TextIOWrapper")
 		 , "UnsupportedOperation" : ref("UnsupportedOperation")
      }) ~>
          module "_warnings"({
@@ -713,6 +726,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          , "CodeType" : ref("code")
          , "FrameType" : ref("frame")
          , "FunctionType" : ref("function")
+         , "GeneratorType" : ref("generator")
          , "GetSetDescriptorType" : ref("attribute")
          , "LambdaType" : ref("function")
          , "MemberDescriptorType" : ref("attribute")

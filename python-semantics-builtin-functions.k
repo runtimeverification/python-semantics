@@ -55,7 +55,7 @@ module PYTHON-SEMANTICS-BUILTIN-FUNCTIONS
   test(strvalue(Mode) =/=String "exec" andBool strvalue(Mode) =/=String "eval" andBool strvalue(Mode) =/=String "single", raiseInternal("ValueError", "compile() arg 3 must be 'exec', 'eval' or 'single'"), .K) ~>
   test(istype(Source, ref("AST")), ?AST:Stmt, .K) ~>
   test(hasattr(Source, "__value__") andBool (isString(getattr(Source, "__value__")) ==K true), .K, raiseInternal("TypeError", "compile() arg 1 must be a string or read buffer")) ~>
-  test(findString(strvalue(Source), "\000", 0) =/=Int -1, raiseInternal("TypeError", "source code string cannot contain null bytes"), .K) ~>
+  test(findString(strvalue(Source), "\x00", 0) =/=Int -1, raiseInternal("TypeError", "source code string cannot contain null bytes"), .K) ~>
   parseAndCompile(strvalue(Source), strvalue(Filename), strvalue(Mode)) ~> setOptimize(CurrentOptimize)...</k>
   <constants> Constants:Map </constants>
   <optimize> CurrentOptimize </optimize>
