@@ -152,8 +152,8 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            //TODO: getattribute, getnewargs
            "__gt__" |-> def "gt_int" (1, 1, true)
            "__hash__" |-> def "hash_int" (0, 0, true)
-           "__index__" |-> ref("int_int")
-           "__int__" |-> def "int_int" (0, 0, true)
+           "__index__" |-> ref("int.__int__")
+           "__int__" |-> def "int.__int__" (0, 0, true)
            "__invert__" |-> def "invert_int" (0, 0, true)
            "__le__" |-> def "le_int" (1, 1, true)
            "__lshift__" |-> def "lshift_int" (1, 1, true)
@@ -228,7 +228,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
          (def "next" (1, 2, false) ;) ~>
          object "object"("type",.,
            "__class__" |-> ref("__class__")
-           "__getattribute__" |-> def "getattribute_object" (1, 1, true)
+           "__getattribute__" |-> def "object.__getattribute__" (1, 1, true)
            "__eq__" |-> def "eq_object" (1, 1, true)
            "__format__" |-> def "format_object" (1, 1, true)
            "__init__" |-> def "init_object" (0, -1, true)
@@ -325,7 +325,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__bases__" |-> ref("__bases__")
            "__call__" |-> def "call_type" (0, -1, true)
            "__dict__" |-> ref("type.__dict__")
-           "__getattribute__" |-> def "getattribute_type" (1, 1, true)
+           "__getattribute__" |-> def "type.__getattribute__" (1, 1, true)
            "__instancecheck__" |-> def "instancecheck_type" (1, 1, true)
            "__mro__" |-> ref("__mro__")
            "__name__" |-> ref("type.__name__")
@@ -347,7 +347,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
              "__call__" |-> def "call_builtin_function" (0, -1, true)
            , "__name__" |-> ?Name2:String) ~>
          object "builtin-method" ("type",ListItem("object"),
-           "__get__" |-> def "get_builtin_method" (1, 2, true)
+           "__get__" |-> def "builtin-method.__get__" (1, 2, true)
            , "__name__" |-> ?Name3:String) ~>
          object "code"("type",ListItem("object"),
            "co_name" |-> ref("co_name")
@@ -413,7 +413,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            ,.) ~>
          object "gi_running" ("attribute",.,., "__get__" |-> "gi_running") ~>
          object "method" ("type", ListItem("object"),
-           "__call__" |-> def "call_method" (0, -1, true)
+           "__call__" |-> def "method.__call__" (0, -1, true)
            "__func__" |-> ref("__func__")
            "__self__" |-> ref("__self__")
            , .) ~>

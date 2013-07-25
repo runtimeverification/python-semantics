@@ -21,7 +21,7 @@ module PYTHON-SEMANTICS-STRINGS
   rule invokeBuiltin(obj("str.__new__",_), ListItem(Cls:Object) ListItem(O:Object), .) => newHelper(Cls, ref("str"), .) ~> immutable(strvalue(getmember(O, "__str__", true, false, true)(.Arguments)), Cls)
   context immutable(strvalue(HOLE), _)
 
-  rule invokeBuiltin(obj("str.__str__",_), ListItem(O), .) => immutable(strvalue(O), ref("str"))
+  rule invokeBuiltin(obj("str.__str__",_), ListItem(O), .) => strvalue(O)
 
   syntax ObjRef ::= accumulate(String, Int, Int)
   syntax Int ::= hashPrefix(Int, Int) [function]

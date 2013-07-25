@@ -56,9 +56,9 @@ module PYTHON-SEMANTICS-OBJECTS
 
   rule invokeBuiltin(obj("setattr",_), ListItem(O) ListItem(Name:Object) ListItem(Value:Object), .) => getmember(O, "__setattr__", true, false, true) (Name, Value)
 
-  rule invokeBuiltin(obj("setattr_object",_), ListItem(O) ListItem(Name) ListItem(Value), .) => test(istype(O, ref("type")), raiseInternal("TypeError", "can't apply this __setattr__ to type object"), setmember(O, Name, Value))
+  rule invokeBuiltin(obj("object.__setattr__",_), ListItem(O) ListItem(Name) ListItem(Value), .) => test(istype(O, ref("type")), raiseInternal("TypeError", "can't apply this __setattr__ to type object"), setmember(O, Name, Value))
   rule invokeBuiltin(obj("module.__setattr__",_), ListItem(O) ListItem(Name) ListItem(Value), .) => setmember(O, Name, Value)
-  rule invokeBuiltin(obj("setattr_type",_), ListItem(Type) ListItem(Name) ListItem(Value), .) => setmember(Type, Name, Value)
+  rule invokeBuiltin(obj("type.__setattr__",_), ListItem(Type) ListItem(Name) ListItem(Value), .) => setmember(Type, Name, Value)
 
   rule invokeBuiltin(obj("set_ref_dict",_), ListItem(Self) ListItem(Instance) ListItem(Value), .) => test(istype(Value, ref("dict")), setref(id(Instance), getattr(Self, "__get__"), Value), raiseInternal("TypeError", getattr(Self, "__get__") +String " must be set to a dictionary"))
 

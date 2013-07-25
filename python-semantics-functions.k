@@ -149,10 +149,10 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule LOCAL(_, Globals, Nonlocals, _, typeobject) => (SetItem("__class__") -Set Globals) -Set Nonlocals
   rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals andBool notBool "super" in Uses
   rule FREE(Defs, Uses, Globals, Nonlocals, ChildFree, L) => Nonlocals ChildFree (((Uses SetItem("__class__")) &Set BOUND(.,L)) -Set Globals) when (Nonlocals &Set BOUND(., L)) ==Set Nonlocals andBool "super" in Uses
-  rule BOUND(Bound:Set, L ListItem(scope(_, Defs, _, Nonlocals, Globals2, _, Params, funcobject, _))) => BOUND((Bound LOCAL(Defs, Globals2, Nonlocals, Params, funcobject)) -Set Globals2, L) 
+  rule BOUND(Bound:Set, L ListItem(scope(_, Defs, _, Nonlocals, Globals, _, Params, funcobject, _))) => BOUND((Bound LOCAL(Defs, Globals, Nonlocals, Params, funcobject)) -Set Globals, L) 
   // if we are computing what is bound by a class definition scope, the only thing bound is __class__. Nothing in the local environment is bound.
-  rule BOUND(Bound:Set, L ListItem(scope(_, _:Set, _:Set, _:Set, Globals2:Set, _:Set, _:List, typeobject, _))) => BOUND(Bound SetItem("__class__"), L) when notBool "__class__" in Globals2
-  rule BOUND(Bound:Set, L ListItem(scope(_, _:Set, _:Set, _:Set, Globals2:Set, _:Set, _:List, moduleobject, _))) => BOUND(Bound, L)
+  rule BOUND(Bound:Set, L ListItem(scope(_, _:Set, _:Set, _:Set, Globals:Set, _:Set, _:List, typeobject, _))) => BOUND(Bound SetItem("__class__"), L) when notBool "__class__" in Globals
+  rule BOUND(Bound:Set, L ListItem(scope(_, _:Set, _:Set, _:Set, Globals:Set, _:Set, _:List, moduleobject, _))) => BOUND(Bound, L)
   rule BOUND(Bound, .) => Bound 
   rule PARAMS(ListItem(X:Id) Params) => ListItem(Id2String(X)) PARAMS(Params) 
   rule PARAMS(ListItem(* X:Exp) Params) => PARAMS(Params ListItem(* X)) when Params =/=List . 
@@ -167,8 +167,8 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule createClass(X:Id, As, O:Object) => visited((X)::Target = class(As, O))
   rule createGenerator(O:Object) => visited(function(.Parameters, O, .Obj)(.Arguments))
 
-  rule comprehension(E, for T in E2 Comps ::Comps) => for T in E2 : comprehension(E, Comps) else: pass
-  rule comprehension(E, if E2 Comps ::Comps) => if E2 : comprehension(E, Comps) else: pass
+  rule comprehension(E, for T in E2 Comps ::Comps) => for T in E2 : comprehension(E, Comps)
+  rule comprehension(E, if E2 Comps ::Comps) => if E2 : comprehension(E, Comps)
   rule comprehension(E, .Comps) => yield E ;
 
   rule makeCodeObject(N, ., Ss, _) => visit(Ss, 'optimizeVisitor) ~> visit(Ss, 'compileVisitor) ~> visit(Ss, 'childScopeVisitor) ~> visit(Ss, 'syntaxCheckerVisitor) ~> storescope ~> propscope ~> delscope

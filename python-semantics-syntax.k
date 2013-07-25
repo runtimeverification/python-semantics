@@ -6,10 +6,8 @@ module PYTHON-SEMANTICS-SYNTAX
   syntax Value ::= NUMBER
                  | STRING
 
-  syntax Object ::= "obj" "(" ObjId "," Bag ")"
-
-  syntax ObjId ::= Int
-                   | String
+  syntax Object ::= obj(ObjId, Bag)
+  syntax ObjId ::= Int | String
 
   syntax Exp ::= ObjRef
                 | Null

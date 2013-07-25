@@ -60,7 +60,7 @@ module PYTHON-SEMANTICS-INTEGERS
   rule invokeBuiltin(obj("new_int",_), ListItem(O) ListItem(O2), .) => newHelper(O, ref("int"), SetItem("bool")) ~> immutable(intvalue((try: getmember(O2, "__int__", true, false, true) except ref("AttributeError"): raiseInternal("TypeError", "int argument must have a __int__ method"))::K (.Arguments)), O)
   context immutable(intvalue(HOLE), _)
 
-  rule invokeBuiltin(obj("int_int",_), ListItem(O), .) => immutable(intvalue(O), ref("int"))
+  rule invokeBuiltin(obj("int.__int__",_), ListItem(O), .) => intvalue(O)
   rule invokeBuiltin(obj("int.__float__",_), ListItem(O:Object), .) => Int2Float(intvalue(O))
 
   rule <k> invokeBuiltin(obj("hash_int",_), ListItem(O), .) => unaryOp(O, "int", #if intvalue(O) %Int Modulus ==Int -1 #then -2 #else intvalue(O) %Int Modulus #fi) ...</k>
