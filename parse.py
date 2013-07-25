@@ -247,7 +247,7 @@ class KPythonVisitor(ast.NodeVisitor):
       return "'yield(.KList)"
 
   def visit_Compare(self, node):
-    return self.visit(node.ops[0]) + "(" + self.visit(node.left) + ",," + self.visit_ops(node.comparators, [self.visit(n) for n in node.ops[1:]]) + ")"
+    return "'Compare(" + self.visit(node.ops[0]) + "(" + self.visit(node.left) + ",," + self.visit_ops(node.comparators, [self.visit(n) for n in node.ops[1:]]) + "))"
 
   def visit_ops(self, nodes, ops):
     if len(nodes) == 1:

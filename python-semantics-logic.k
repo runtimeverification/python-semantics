@@ -17,6 +17,8 @@ module PYTHON-SEMANTICS-LOGIC
   syntax Test ::= "not" Test [strict]
   syntax Test ::= Exp "is" "None" [strict]
   syntax Test ::= Exp "is" "not" "None"
+  syntax Test ::= "if" Test ":" K "else" ":" K [strict(1)]
+  syntax Test ::= K "if" Test "else" K [strict(2)]
 
   //TODO: is None / is not None
 
@@ -36,10 +38,14 @@ module PYTHON-SEMANTICS-LOGIC
 
   rule test(true, K:K, _) => K
   rule test(false, _, K) => K
+  rule if true : K else: _ => K
+  rule if false : _ else: K => K
+  rule K if true else _ => K
+  rule _ if false else K => K
 
-  rule (O:Object -> _) => O
+  rule O:Object -> _ => O
   rule map(M:Map) -> _ => map(M)
-  rule .Obj -> Chain:K => Chain
+  rule .Obj -> Chain => Chain
   rule .Obj (_) => .Obj
 
   rule <k> obj(N,_) is None => N ==K NoneObj ...</k>

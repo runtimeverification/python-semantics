@@ -83,7 +83,7 @@ module PYTHON-SEMANTICS-GARBAGE-COLLECTION
   rule refcountbag(<object> <id> _ </id> <oattrs> Attrs:Map </oattrs> </object>) => refcountset(values Attrs)
 
   rule refcountk(Lbl:KLabel(Kl:KList) ~> Lbl2:KLabel(Kl2:KList) ~> K2) => refcountk(Lbl(Kl)) refcountk(Lbl2(Kl2)) refcountk(K2)
-  rule refcountk(Lbl:KLabel(Kl:KList)) => refcountklabel(Lbl) refcountlistk(Kl) when Lbl =/=KLabel 'obj`(_`,_`) andThenBool Lbl =/=KLabel 'ref`(_`)
+  rule refcountk(Lbl:KLabel(Kl:KList)) => refcountklabel(Lbl) refcountlistk(Kl) when Lbl =/=KLabel 'obj andThenBool Lbl =/=KLabel 'ref`(_`)
   rule refcountk(.) => .
   rule refcountk(HOLE) => .
 

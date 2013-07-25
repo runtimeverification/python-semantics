@@ -56,7 +56,7 @@ module PYTHON-SEMANTICS-CALLS
   // if there is no vararg, leftover positional arguments raise TypeError
   rule matchArgs(Function:Object, Code:Object, ListItem(_) L, _, _, N, _, _) => raiseInternal("TypeError", name(Function) + "() takes at most " +String Int2String(getattr(Code, "co_argcount")) +String " positional arguments (" +String Int2String(N +Int lengthList L +Int 1) +String " given)") when N >=Int getattr(Code, "co_argcount") andBool (getattr(Code, "co_flags") &Int 4) ==Int 0
 
-  // keyword arguments fill positional and kwonly arguments
+  // keyword arguments fill positional and kwonly parameters
   rule (. => if S in Code . String2Id("co_varnames") [0 : getattr(Code, "co_argcount") +Int getattr(Code, "co_kwonlyargcount") : ] : addArg(S, O) else: addKwArg(S, O, Code . String2Id("co_varnames") [numArgs(Code) -Int 1])) ~> matchArgs(_, Code:Object, ., (S |-> O => .) _, M, _, _, HasKwarg) when notBool(String2Id(S) in keys(M)) andBool (HasKwarg orBool getattr(Code, "co_flags") &Int 8 ==Int 0)
  
   // cannot specify a parameter both positionally and as a keyword
@@ -88,7 +88,7 @@ module PYTHON-SEMANTICS-CALLS
 
   syntax #Id ::= "co_cellvars"
 
-  rule <k> invoke(obj(_:Int,<oattrs>... "__closure__" |-> Closure "__code__" |-> ref(Code) "__globals__" |-> Globals ...</oattrs>), M) ~> K:K => executeFrame(N, ref(Code), ref(Frame), makeLocals(ref(Code) . String2Id("co_freevars"), Closure), Globals, Globals ["__builtins__"], makeCells(ref(Code) . String2Id("co_freevars"), ref(Code) . String2Id("co_cellvars"), Closure, N), M) ~> return </k>
+  rule <k> invoke(obj(_:Int,<oattrs>... "__closure__" |-> Closure "__code__" |-> ref(Code) "__globals__" |-> Globals ...</oattrs>), M) ~> K:K => executeFrame(N, ref(Code), ref(Frame), makeLocals(getref2(ref(Code), "co_freevars"), Closure), Globals, Globals ["__builtins__"], makeCells(getref2(ref(Code), "co_freevars"), getref2(ref(Code), "co_cellvars"), Closure, N), M) ~> return </k>
        <nextLoc> N => N +Int 1 </nextLoc>
        <control>...
          <currentFrame>

@@ -5,7 +5,7 @@ module PYTHON-SEMANTICS-METHODS
 
   syntax ObjRef ::= "method" "(" Exp "," Exp ")" [strict]
 
-  rule invokeBuiltin(obj("get_builtin_method",_), ListItem(Self:Object) ListItem(Instance:Object) ListItem(Owner:Object), .) => describe(Self, Instance, Owner, "get_function")
+  rule invokeBuiltin(obj("builtin-method.__get__",_), ListItem(Self:Object) ListItem(Instance:Object) ListItem(Owner:Object), .) => describe(Self, Instance, Owner, "get_function")
   rule invokeBuiltin(obj("get_function",_), ListItem(Self:Object) ListItem(Instance:Object) ListItem(Owner:Object), .) => describe(Self, Instance, Owner, "get_function")
   rule doDescribe(Self, .Obj, O, "get_function") => Self
   rule doDescribe(Self, O:Object, _, "get_function") => method(Self, O)
@@ -15,7 +15,7 @@ module PYTHON-SEMANTICS-METHODS
   //can't use descriptors because method descriptors use it
   rule [call]: obj(N:Int,ObjState:Bag) (Args:K) => test(istype(obj(N,ObjState), ref("method")), getref(obj(N,ObjState), "__func__")(getref(obj(N,ObjState), "__self__"), Args), (getmember(obj(N,ObjState), "__call__", true, false, false) (Args))) -> (raiseInternal("TypeError", "object is not callable"))
 
-  rule invokeBuiltin(obj("call_method",_), ListItem(obj(N, <oattrs>... "__func__" |-> Func "__self__" |-> Self ...</oattrs>)) L:List, M:Map) => doCall(Func, ListItem(Self) L, M)
+  rule invokeBuiltin(obj("method.__call__",_), ListItem(obj(N, <oattrs>... "__func__" |-> Func "__self__" |-> Self ...</oattrs>)) L:List, M:Map) => doCall(Func, ListItem(Self) L, M)
 
   rule doCall((O:Object => .), _, _) ~> (. => O (.Arguments))
   rule doCall(., _ (ListItem(K:Argument) => .), .) ~> _:Object (Args:K => (K , Args))

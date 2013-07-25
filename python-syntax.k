@@ -100,20 +100,10 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
 
                    > Exp "^" Exp [seqstrict, left]
 
-                  > Exp "|" Exp [seqstrict, left]
+                  > Exp "|" Exp [seqstrict, left, orexpr]
 
-                      > Exp "<" Exp        [right]
-                      | Exp ">" Exp        [right]
-                      | Exp "==" Exp       [right]
-                      | Exp ">=" Exp       [right]
-                      | Exp "<=" Exp       [right]
-                      | Exp "!=" Exp       [right]
-                      | Exp "is" Exp       [right]
-                      | Exp "is" "not" Exp [right]
-                      | Exp "in" Exp       [right]
-                      | Exp "not" "in" Exp [right]
-
-                   > "not" Exp [strict]
+                  > Compare [klabel('Compare)]
+                   > "not" Exp [strict, nottest]
 
                    > Exp "and" Exp [strict(1), left]
 
@@ -121,6 +111,33 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
 
                       > Exp "if" Exp "else" Exp [strict(2), right]
                       > "lambda" Parameters ":" Exp
+
+  context 'Compare(HOLE)
+
+  syntax priorities orexpr > compare > nottest
+  syntax priorities compare > 'Compare
+
+  syntax Compare ::= right:
+                    Exp "<" Compare        [compare]
+                  | Exp ">" Compare        [compare]
+                  | Exp "==" Compare       [compare]
+                  | Exp ">=" Compare       [compare]
+                  | Exp "<=" Compare       [compare]
+                  | Exp "!=" Compare       [compare]
+                  | Exp "is" Compare       [compare]
+                  | Exp "is" "not" Compare [compare]
+                  | Exp "in" Compare       [compare]
+                  | Exp "not" "in" Compare [compare]
+                  | Exp "<" Exp        [compare, avoid]
+                  | Exp ">" Exp        [compare, avoid]
+                  | Exp "==" Exp       [compare, avoid]
+                  | Exp ">=" Exp       [compare, avoid]
+                  | Exp "<=" Exp       [compare, avoid]
+                  | Exp "!=" Exp       [compare, avoid]
+                  | Exp "is" Exp       [compare, avoid]
+                  | Exp "is" "not" Exp [compare, avoid]
+                  | Exp "in" Exp       [compare, avoid]
+                  | Exp "not" "in" Exp [compare, avoid]
 
   syntax "*" -/- [\*]
 

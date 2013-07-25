@@ -35,7 +35,7 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule O:Object and K:K => test(plbool(bool(O)), K, O)
   rule O:Object or K => test(plbool(bool(O)), O, K)
 
-  syntax ObjRef ::= "comparison" "(" Exp "," Exp "," KLabel ")" [strict(1), klabel('comparison)]
+  syntax Exp ::= comparison(Exp, Exp, KLabel) [strict(1)]
 
   rule A ::Exp is B ::Exp => comparison(A, B, '_is_) [macro]
   rule A ::Exp is not B ::Exp => comparison(A, B, '_isnot_) [macro]
@@ -47,6 +47,8 @@ module PYTHON-SEMANTICS-BOOLEAN-OPS
   rule A ::Exp == B ::Exp => comparison(A, B, '_==_) [macro]
   rule A ::Exp in B ::Exp => comparison(A, B, '_in_) [macro]
   rule A ::Exp not in B ::Exp => comparison(A, B, '_notin_) [macro]
+
+  rule 'Compare(O:Object) => O
 
   context comparison(O:Object, HOLE, _) when getKLabel HOLE =/=KLabel 'comparison
   context comparison(O:Object, comparison(HOLE, _, _), _)
