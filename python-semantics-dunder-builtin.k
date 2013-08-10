@@ -234,7 +234,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__init__" |-> def "init_object" (0, -1, true)
            "__ne__" |-> def "ne_object" (1, 1, true)
            "__new__" |-> def "new_object" (1, -1, false)
-           "__setattr__" |-> def "setattr_object"(2, 2, true)
+           "__setattr__" |-> def "object.__setattr__"(2, 2, true)
            "__subclasshook__" |-> def "subclasshook_object"(0, -1, false)
            ,.) ~>
          object "__class__" ("attribute",.,., "__get__" |-> "__class__") ~>
@@ -331,7 +331,7 @@ module PYTHON-SEMANTICS-DUNDER-BUILTIN
            "__name__" |-> ref("type.__name__")
            "__new__" |-> def "new_type"(2, 4, false)
            "__prepare__" |-> def "prepare_type"(0, -1, false)
-           "__setattr__" |-> def "setattr_type"(2, 2, true)
+           "__setattr__" |-> def "type.__setattr__"(2, 2, true)
            "__subclasscheck__" |-> def "subclasscheck_type"(1, 1, true)
            ,.) ~>
          object "type.__dict__" ("attribute", ., ., "__get__" |-> "__dict__") ~>
