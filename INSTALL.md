@@ -23,8 +23,7 @@ do any installation steps not listed explicitly.
 - This version of the Python semantics works with the v3.2.1 release of the
   K framework. Download the repository and check out the tag with the following commands:
 ```
-$ git clone https://github.com/kframework/k.git
-$ git checkout tags/v3.2.1
+git clone https://github.com/kframework/k.git; git checkout tags/v3.2.1
 ```
 - See the README included with K for build and installation instructions.
 
