@@ -16,11 +16,15 @@ jenkins-test: ${TEST_RESULTS}
 
 ref: ${TEST_REFERENCE}
 
-%.out: %.py bootstrapped.bin
+%.out: %.py bootstrapped.bin programs/files/stat4
 	@echo "Testing $<"
 	@./kpython --output-mode raw -- $< one two "three four" > $@.tmp
 	@- test "`grep "< k > .K </ k >" $@.tmp`" && cp $@.tmp $@ && echo "$< passed"
 
+programs/files/stat4:
+	rm -rf programs/files/stat4
+	mkdir programs/files/stat4
+	chmod ugo-rwx programs/files/stat4
 
 %.ref: %.py
 	-PYTHONHASHSEED=1 python3.3 $< one two "three four" > /dev/null 2>&1 && touch $@

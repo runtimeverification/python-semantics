@@ -13,6 +13,7 @@ module PYTHON-SEMANTICS-MACROS
   rule assert E , E2 => if __debug__ : if not E : raise AssertionError(E2 ::Exp) [macro]
 
   rule if E ::Exp : S => if E : S else : pass [macro]
+  rule for T in E : S1 => for T in E : S1 else: pass [macro]
 
   rule return => return ref("None") [macro]
   rule yield => yield ref("None") [macro]

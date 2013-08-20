@@ -116,28 +116,22 @@ module PYTHON-SYNTAX imports PYTHON-TOKENS
 
   syntax priorities orexpr > compare > nottest
   syntax priorities compare > 'Compare
+  syntax priorities compareExp > 'Compare
+
+  syntax CompareExp ::= Exp [compareExp]
+                      | Compare
 
   syntax Compare ::= right:
-                    Exp "<" Compare        [compare, onlyLabel]
-                  | Exp ">" Compare        [compare, onlyLabel]
-                  | Exp "==" Compare       [compare, onlyLabel]
-                  | Exp ">=" Compare       [compare, onlyLabel]
-                  | Exp "<=" Compare       [compare, onlyLabel]
-                  | Exp "!=" Compare       [compare, onlyLabel]
-                  | Exp "is" Compare       [compare, onlyLabel]
-                  | Exp "is" "not" Compare [compare, onlyLabel]
-                  | Exp "in" Compare       [compare, onlyLabel]
-                  | Exp "not" "in" Compare [compare, onlyLabel]
-                  | Exp "<" Exp        [compare, avoid]
-                  | Exp ">" Exp        [compare, avoid]
-                  | Exp "==" Exp       [compare, avoid]
-                  | Exp ">=" Exp       [compare, avoid]
-                  | Exp "<=" Exp       [compare, avoid]
-                  | Exp "!=" Exp       [compare, avoid]
-                  | Exp "is" Exp       [compare, avoid]
-                  | Exp "is" "not" Exp [compare, avoid]
-                  | Exp "in" Exp       [compare, avoid]
-                  | Exp "not" "in" Exp [compare, avoid]
+                    Exp "<" CompareExp        [compare]
+                  | Exp ">" CompareExp        [compare]
+                  | Exp "==" CompareExp       [compare]
+                  | Exp ">=" CompareExp       [compare]
+                  | Exp "<=" CompareExp       [compare]
+                  | Exp "!=" CompareExp       [compare]
+                  | Exp "is" CompareExp       [compare]
+                  | Exp "is" "not" CompareExp [compare]
+                  | Exp "in" CompareExp       [compare]
+                  | Exp "not" "in" CompareExp [compare]
 
   syntax "*" -/- [\*]
 

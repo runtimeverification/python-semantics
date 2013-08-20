@@ -75,7 +75,7 @@ module PYTHON-SEMANTICS-STATEMENTS
   rule isKResult(O:KResult as _) => true
 
   // we copy from python-semantics-try.k so we can reuse finally functionality and still choose whether we suppress a raised exception
-  rule <k> (doWith(Exit:Object, Enter:Object, T, Ss) => #if T ==K . #then . #else T ::Target = Enter #fi ~> Ss ~> popfinally ~> Exit(* ref("sys_exc_info")(.Arguments)) ;) ~> K </k>
+  rule <k> (doWith(Exit:Object, Enter:Object, T, Ss) => #if T ==K . #then . #else (T) ::Target = Enter #fi ~> Ss ~> popfinally ~> Exit(* ref("sys_exc_info")(.Arguments)) ;) ~> K </k>
        <currentFrame>
          <xstack> (. => ListItem(finally(if not Exit(* ref("sys_exc_info")(.Arguments)): raise else: (setx(Ex) ~> K), C, XL, LL, FL, Ex))) XL:List </xstack> 
          <lstack> (. => ListItem(finally(Exit(* ref("sys_exc_info")(.Arguments)) ;, C, XL, LL, FL, Ex))) LL:List </lstack>

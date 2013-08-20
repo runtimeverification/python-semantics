@@ -73,7 +73,7 @@ module PYTHON-SEMANTICS-FUNCTIONS
   rule [makeFunction-kwdefaults]: (. => test(plbool(getref2(ref(N), "__kwdefaults__") is ref("None")), setref(N, "__kwdefaults__", {Id2String(X) : O}), (getref2(ref(N), "__kwdefaults__")[Id2String(X)] = O))) ~> makeFunction(N, ((ListItem((X:Id = O:Object)::Argument) => ListItem(X)) _), _, true)
   rule [makeFunction-parameter]: makeFunction(_, ((ListItem(X:Id) => .) _), _, _)
 
-  rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 4)) ~> addParam(* X:NAME ::Exp)) ~> makeCodeObject(N, ((ListItem(* X ::Exp) => ListItem(*)) L), _, false) 
+  rule (. => setattr(N, "co_flags", (getattr(ref(N), "co_flags") |Int 4)) ~> addParam(* X:NAME ::Exp)) ~> makeCodeObject(N, ((ListItem(* (X) ::Exp) => ListItem(*)) L), _, false) 
   context setattr(_, _, (getattr(HOLE, _) |Int _:Int))
   rule [makeFunction-vararg]: makeFunction(N, ((ListItem(* X:NAME ::Exp) => ListItem(*)) L), _, _)
   rule makeFunction(_, ((ListItem(*) => .) L), _, (false => true))

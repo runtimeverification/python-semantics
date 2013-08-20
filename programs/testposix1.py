@@ -10,7 +10,7 @@ sr = posix.stat("programs/files/stat")
 assert sr.st_mode & mask == S_IFREG
 assert sr.st_mode & mask2 == 0o664
 assert sr.st_dev == 0x815
-assert 6830000 > sr.st_ino > 6820000
+assert sr.st_ino.__class__ is int
 assert sr.st_nlink.__class__ is int
 assert sr.st_uid == 1003
 assert sr.st_gid == 1003

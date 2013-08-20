@@ -15,6 +15,8 @@ module PYTHON-SEMANTICS-BUILTIN-MODULES
              | "module" ObjId "(" Exp ")" [strict(2)]
              | "struct" ObjId "(" Exps ")"
 
+  syntax "module" -/- [a-zA-Z]
+
   syntax ObjRef ::= "def" String "(" Int "," Int "," Bool ")"
 
   syntax ListItem ::= "refs" "(" List ")"

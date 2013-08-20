@@ -38,5 +38,5 @@ SYS_PATH="ListItem($PROGRAM_DIR) ListItem(\"$PYTHON_LIB\")"
 HASHSEED='"PYTHONHASHSEED" |-> 1'
 ERRNO=`python3.3 $DIR/errno.py`
 OS='"sys.platform" |-> "linux" "posix.O_WRONLY" |-> 1 "posix.O_CREAT" |-> 64 "posix.O_EXCL" |-> 128'
-ulimit -s unlimited
+ulimit -s `ulimit -H -s`
 krun --compiled-def "$DIR/python-kompiled" --parser "$DIR/parse.py" -cGCTHRESHOLD="$GC_THRESHOLD" -cSYSPATH="$SYS_PATH" -cSYSARGV="$SYS_ARGV" -cCONSTANTS="$DEBUG $VERBOSE $HASHINFO $HASHSEED $OS $ERRNO $DEFAULT_BUFFER_SIZE" -cENVIRON="$ENVIRON" -cSEMANTICSDIR=" \"$DIR/\" " --cfg-parser="$DIR/parse.py" -cIMPORTLIB="$IMPORTLIB" --cfg-parser="kast -groundParser -e" "$@"
